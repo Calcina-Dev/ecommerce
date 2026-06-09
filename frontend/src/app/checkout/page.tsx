@@ -139,7 +139,9 @@ export default function CheckoutPage() {
                 <div key={item.id} className="flex gap-4 items-center">
                   <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-muted border flex-shrink-0">
                     <Image 
-                      src={item.image_url ? `http://localhost:8000/storage/${item.image_url}` : "https://images.unsplash.com/photo-1584308666744-24d5e47ac9db?q=80&w=600&auto=format&fit=crop"} 
+                      src={item.image_url 
+                        ? (item.image_url.startsWith('http') ? item.image_url : `http://localhost:8000/storage/${item.image_url}`)
+                        : "https://images.unsplash.com/photo-1584308666744-24d5e47ac9db?q=80&w=600&auto=format&fit=crop"} 
                       alt={item.name} 
                       fill 
                       className="object-cover"

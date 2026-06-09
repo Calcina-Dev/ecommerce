@@ -21,7 +21,9 @@ export function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((state) => state.addItem);
 
   const imageUrl = product.primary_image?.image_url 
-    ? `http://localhost:8000/storage/${product.primary_image.image_url}` 
+    ? (product.primary_image.image_url.startsWith('http')
+        ? product.primary_image.image_url
+        : `http://localhost:8000/storage/${product.primary_image.image_url}`)
     : "https://images.unsplash.com/photo-1584308666744-24d5e47ac9db?q=80&w=600&auto=format&fit=crop";
 
   const handleAddToCart = (e: React.MouseEvent) => {
