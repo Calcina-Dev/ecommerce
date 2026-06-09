@@ -35,7 +35,9 @@ export function Header() {
         <div className="flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-4">
-              <span className="text-sm font-medium hidden sm:inline-block">Hola, {user.name}</span>
+              <Link href="/mi-cuenta" className="text-sm font-medium hidden sm:inline-block hover:text-primary transition-colors">
+                Hola, {user.name}
+              </Link>
               <Button variant="outline" size="sm" onClick={handleLogout} className="rounded-xl">
                 Cerrar Sesión
               </Button>
