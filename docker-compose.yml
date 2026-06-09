@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  pgsql:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: vitaminas_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgsql-data:/var/lib/postgresql/data
+    networks:
+      - ecomerce-network
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - ecomerce-network
+
+  backend:
+    build: ./backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:80"
+    networks:
+      - ecomerce-network
+    depends_on:
+      - pgsql
+      - redis
+
+networks:
+  ecomerce-network:
+    driver: bridge
+
+volumes:
+  pgsql-data:
+  redis-data:
