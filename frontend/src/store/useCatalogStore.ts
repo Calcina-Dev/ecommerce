@@ -6,6 +6,8 @@ interface CatalogFilters {
   minPrice?: number;
   maxPrice?: number;
   search?: string;
+  page?: number;
+  onSale?: boolean;
 }
 
 interface CatalogState {

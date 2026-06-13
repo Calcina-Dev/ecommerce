@@ -1,13 +1,32 @@
 "use client"
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useCatalogStore } from "@/store/useCatalogStore";
 import { ProductCard } from "@/components/ProductCard";
 
-export default function CatalogPage() {
+function CatalogContent() {
   const { filters, setFilters } = useCatalogStore();
   const [products, setProducts] = useState<any[]>([]);
+  const [pagination, setPagination] = useState({ current_page: 1, last_page: 1 });
   const [filterData, setFilterData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+
+  // Sincronizar URL parameters con el store al cargar la página
+  useEffect(() => {
+    const categoryId = searchParams.get('category');
+    const search = searchParams.get('search');
+    const ofertas = searchParams.get('ofertas');
+    
+    // Si hay parámetros en la URL, los seteamos (solo en el montaje inicial)
+    if (categoryId || search || ofertas) {
+      setFilters({ 
+        categoryId: categoryId ? parseInt(categoryId) : undefined,
+        search: search || undefined,
+        onSale: ofertas === 'true' || ofertas === '1'
+      });
+    }
+  }, [searchParams]);
 
   // Cargar filtros disponibles
   useEffect(() => {
@@ -24,11 +43,14 @@ export default function CatalogPage() {
     if (filters.categoryId) queryParams.append('category_id', filters.categoryId.toString());
     if (filters.brandId) queryParams.append('brand_id', filters.brandId.toString());
     if (filters.search) queryParams.append('search', filters.search);
+    if (filters.page) queryParams.append('page', filters.page.toString());
+    if (filters.onSale) queryParams.append('on_sale', '1');
 
     fetch(`http://localhost:8000/api/catalog/products?${queryParams.toString()}`)
       .then(res => res.json())
       .then(data => {
         setProducts(data.data || []);
+        setPagination({ current_page: data.current_page || 1, last_page: data.last_page || 1 });
         setLoading(false);
       })
       .catch(err => {
@@ -54,8 +76,21 @@ export default function CatalogPage() {
               placeholder="Ej. Vitamina C..." 
               className="w-full px-4 py-2 border rounded-xl bg-background"
               value={filters.search || ""}
-              onChange={(e) => setFilters({ search: e.target.value })}
+              onChange={(e) => setFilters({ search: e.target.value, page: 1 })}
             />
+          </div>
+
+          <div>
+            <h3 className="font-medium text-lg mb-4">Ofertas</h3>
+            <label className="flex items-center space-x-3 cursor-pointer group">
+              <input 
+                type="checkbox"
+                className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer transition-colors"
+                checked={!!filters.onSale}
+                onChange={(e) => setFilters({ onSale: e.target.checked, page: 1 })}
+              />
+              <span className="text-sm font-medium group-hover:text-primary transition-colors">Solo productos con descuento</span>
+            </label>
           </div>
 
           {filterData?.categories && (
@@ -63,7 +98,7 @@ export default function CatalogPage() {
               <h3 className="font-medium text-lg mb-4">Categorías</h3>
               <div className="space-y-2">
                 <button 
-                  onClick={() => setFilters({ categoryId: undefined })}
+                  onClick={() => setFilters({ categoryId: undefined, page: 1 })}
                   className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${!filters.categoryId ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                 >
                   Todas
@@ -71,7 +106,7 @@ export default function CatalogPage() {
                 {filterData.categories.map((cat: any) => (
                   <button 
                     key={cat.id}
-                    onClick={() => setFilters({ categoryId: cat.id })}
+                    onClick={() => setFilters({ categoryId: cat.id, page: 1 })}
                     className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${filters.categoryId === cat.id ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                   >
                     {cat.name}
@@ -86,7 +121,7 @@ export default function CatalogPage() {
               <h3 className="font-medium text-lg mb-4">Marcas</h3>
               <div className="space-y-2">
                 <button 
-                  onClick={() => setFilters({ brandId: undefined })}
+                  onClick={() => setFilters({ brandId: undefined, page: 1 })}
                   className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${!filters.brandId ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                 >
                   Todas
@@ -94,7 +129,7 @@ export default function CatalogPage() {
                 {filterData.brands.map((brand: any) => (
                   <button 
                     key={brand.id}
-                    onClick={() => setFilters({ brandId: brand.id })}
+                    onClick={() => setFilters({ brandId: brand.id, page: 1 })}
                     className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${filters.brandId === brand.id ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                   >
                     {brand.name}
@@ -114,11 +149,46 @@ export default function CatalogPage() {
               ))}
             </div>
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {products.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {pagination.last_page > 1 && (
+                <div className="flex justify-center items-center gap-4 mt-12">
+                  <button
+                    onClick={() => {
+                      if (pagination.current_page > 1) {
+                        setFilters({ page: pagination.current_page - 1 });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
+                    disabled={pagination.current_page === 1}
+                    className="px-4 py-2 border rounded-xl disabled:opacity-50 hover:bg-muted transition-colors"
+                  >
+                    Anterior
+                  </button>
+                  <span className="text-sm font-medium">
+                    Página {pagination.current_page} de {pagination.last_page}
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (pagination.current_page < pagination.last_page) {
+                        setFilters({ page: pagination.current_page + 1 });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
+                    disabled={pagination.current_page === pagination.last_page}
+                    className="px-4 py-2 border rounded-xl disabled:opacity-50 hover:bg-muted transition-colors"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-20 bg-muted/30 rounded-2xl border border-dashed">
               <h3 className="text-xl font-medium text-muted-foreground">No se encontraron productos</h3>
@@ -133,5 +203,13 @@ export default function CatalogPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function CatalogPage() {
+  return (
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-6 sm:px-12 py-12 text-center text-muted-foreground">Cargando catálogo...</div>}>
+      <CatalogContent />
+    </Suspense>
   );
 }

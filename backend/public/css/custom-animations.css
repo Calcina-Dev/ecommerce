@@ -1,0 +1,62 @@
+/* Emil Kowalski Style Animations for Filament */
+
+:root {
+    --spring-easing: cubic-bezier(0.32, 0.72, 0, 1);
+    --spring-duration: 0.4s;
+}
+
+/* Smooth transitions for all standard states */
+*, ::before, ::after {
+    transition-timing-function: var(--spring-easing) !important;
+}
+
+/* Squishy Buttons */
+button, 
+a.fi-btn,
+.fi-icon-btn,
+.fi-tabs-item {
+    transition: transform 0.2s var(--spring-easing), background-color 0.2s var(--spring-easing), color 0.2s var(--spring-easing) !important;
+}
+
+button:active, 
+a.fi-btn:active,
+.fi-icon-btn:active,
+.fi-tabs-item:active {
+    transform: scale(0.97) !important;
+}
+
+/* Modal Entry */
+.fi-modal-window {
+    animation: modalSpringIn var(--spring-duration) var(--spring-easing) forwards !important;
+}
+
+@keyframes modalSpringIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+        filter: blur(4px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: blur(0px);
+    }
+}
+
+/* Table Rows Hover */
+.fi-ta-record {
+    transition: background-color 0.3s var(--spring-easing), transform 0.3s var(--spring-easing) !important;
+}
+
+/* Subtle scale down on table row click if actionable */
+.fi-ta-record:active {
+    transform: scale(0.99) !important;
+}
+
+/* Sidebar Links */
+.fi-sidebar-item-button {
+    transition: background-color 0.3s var(--spring-easing), transform 0.2s var(--spring-easing) !important;
+}
+.fi-sidebar-item-button:active {
+    transform: scale(0.96) !important;
+}

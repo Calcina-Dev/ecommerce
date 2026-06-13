@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/useCartStore";
+import { motion } from "framer-motion";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -93,20 +94,29 @@ export default function ProductDetailPage() {
 
             <div className="space-y-4 mb-8">
               <div className="flex items-center gap-4">
-                <Button 
-                  size="lg" 
-                  className="w-full text-lg rounded-2xl h-14"
-                  onClick={() => addItem({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    image_url: product.primary_image?.image_url || product.images?.[0]?.image_url || null,
-                    quantity: 1,
-                    slug: product.slug
-                  })}
+                <motion.button 
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap text-lg font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 rounded-2xl h-14"
+                  onClick={() => {
+                    addItem({
+                      id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      image_url: product.primary_image?.image_url || product.images?.[0]?.image_url || null,
+                      quantity: 1,
+                      slug: product.slug
+                    });
+                    import("sonner").then(({ toast }) => {
+                      toast.success("Producto agregado", {
+                        description: `${product.name} está en tu carrito.`,
+                        icon: <svg className="w-4 h-4 text-emerald-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                      });
+                    });
+                  }}
                 >
                   Agregar al Carrito
-                </Button>
+                </motion.button>
               </div>
               <p className="text-sm text-center text-muted-foreground">
                 Envío gratis en compras mayores a S/ 150

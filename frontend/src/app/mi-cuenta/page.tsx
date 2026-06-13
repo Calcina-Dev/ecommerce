@@ -1,18 +1,37 @@
 "use client"
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 
 export default function MiCuentaPage() {
   const router = useRouter();
-  const { user, token } = useAuthStore();
+  const { user, token, setAuth } = useAuthStore();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', dni: '', phone: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
+
   useEffect(() => {
+    if (user) {
+      setEditForm({ name: user.name || '', dni: user.dni || '', phone: user.phone || '' });
+    }
+  }, [user]);
+
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    
     if (!user || !token) {
       router.push("/login");
       return;
@@ -37,7 +56,31 @@ export default function MiCuentaPage() {
     };
 
     fetchOrders();
-  }, [user, token, router]);
+  }, [user, token, router, isHydrated]);
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    try {
+      const res = await fetch("http://localhost:8000/api/user/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(editForm),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAuth(data.user, token!);
+        setIsEditing(false);
+      }
+    } catch (err) {
+      console.error("Error guardando perfil:", err);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -45,14 +88,51 @@ export default function MiCuentaPage() {
     <div className="min-h-screen bg-muted/20 py-10">
       <div className="max-w-4xl mx-auto px-6">
         
-        <div className="bg-background rounded-3xl p-8 border shadow-sm mb-8 flex items-center gap-6">
-          <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center text-2xl font-bold">
-            {user.name.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">{user.name}</h1>
-            <p className="text-muted-foreground">{user.email}</p>
-          </div>
+        <div className="bg-background rounded-3xl p-8 border shadow-sm mb-8">
+          {!isEditing ? (
+            <div className="flex items-center justify-between flex-wrap gap-6">
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center text-2xl font-bold">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold">{user.name}</h1>
+                  <p className="text-muted-foreground">{user.email}</p>
+                  {(user.phone || user.dni) && (
+                    <div className="mt-2 text-sm text-muted-foreground flex gap-4">
+                      {user.phone && <span>📞 {user.phone}</span>}
+                      {user.dni && <span>🪪 DNI: {user.dni}</span>}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <Button onClick={() => setIsEditing(true)} variant="outline" className="rounded-xl">Editar Perfil</Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSaveProfile} className="space-y-4">
+              <h2 className="text-xl font-bold mb-4">Editar Perfil</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Nombre Completo</label>
+                  <input required value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full px-4 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">DNI / RUC</label>
+                  <input value={editForm.dni} onChange={e => setEditForm({...editForm, dni: e.target.value})} className="w-full px-4 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Teléfono</label>
+                  <input value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="w-full px-4 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+              </div>
+              <div className="flex gap-4 mt-6">
+                <Button type="submit" disabled={savingProfile} className="rounded-xl">
+                  {savingProfile ? 'Guardando...' : 'Guardar Cambios'}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setIsEditing(false)} className="rounded-xl">Cancelar</Button>
+              </div>
+            </form>
+          )}
         </div>
 
         <h2 className="text-xl font-bold mb-6">Historial de Pedidos</h2>
@@ -115,7 +195,13 @@ export default function MiCuentaPage() {
                             {item.quantity}x
                           </div>
                           <div className="flex-1">
-                            <p className="font-medium text-sm">{item.product_name}</p>
+                            {item.product && item.product.slug ? (
+                              <Link href={`/productos/${item.product.slug}`} className="font-medium text-sm hover:text-accent hover:underline transition-all">
+                                {item.product_name}
+                              </Link>
+                            ) : (
+                              <p className="font-medium text-sm">{item.product_name}</p>
+                            )}
                             <p className="text-xs text-muted-foreground">S/ {parseFloat(item.price).toFixed(2)} c/u</p>
                           </div>
                           <div className="font-bold text-sm">
@@ -125,12 +211,27 @@ export default function MiCuentaPage() {
                       ))}
                     </div>
                     
+                    {order.discount_amount > 0 && order.coupon && (
+                      <div className="mt-4 pt-4 border-t flex justify-between text-sm font-medium text-green-600">
+                        <span>Descuento aplicado ({order.coupon.code})</span>
+                        <span>- S/ {parseFloat(order.discount_amount).toFixed(2)}</span>
+                      </div>
+                    )}
+                    
                     <div className="mt-6 pt-6 border-t grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
                       <div>
                         <span className="block font-semibold mb-1 text-muted-foreground">Enviado a:</span>
                         <p>{order.shipping_name}</p>
                         <p>{order.shipping_address}, {order.shipping_city}</p>
                         <p>{order.shipping_phone}</p>
+                        {order.shipping_method && (
+                          <p className="mt-2 text-primary font-medium text-xs border border-primary/20 bg-primary/5 inline-block px-2 py-1 rounded">
+                            {order.shipping_method.name}
+                          </p>
+                        )}
+                        {order.tracking_code && (
+                          <p className="mt-2 font-medium">Tracking: <span className="bg-muted px-2 py-1 rounded font-mono text-xs">{order.tracking_code}</span></p>
+                        )}
                       </div>
                       <div>
                         <span className="block font-semibold mb-1 text-muted-foreground">Método de Pago:</span>

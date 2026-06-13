@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "./ui/button";
 import { useCartStore } from "@/store/useCartStore";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { CheckCircle2 } from "lucide-react";
 
 interface Product {
   id: number;
@@ -36,50 +38,86 @@ export function ProductCard({ product }: { product: Product }) {
       quantity: 1,
       slug: product.slug
     });
+    
+    // Emil Kowalski style toast
+    toast.success("Producto agregado", {
+      description: `${product.name} está en tu carrito.`,
+      icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+    });
   };
 
   return (
-    <Link href={`/productos/${product.slug}`} className="group block">
-      <div className="bg-card rounded-2xl overflow-hidden border shadow-sm transition-all hover:shadow-md h-full flex flex-col">
-        <div className="relative aspect-square bg-muted/50 overflow-hidden">
-          <Image
-            src={imageUrl}
-            alt={product.name}
-            fill
-            className="object-cover transition-transform group-hover:scale-105 duration-300"
-          />
-        </div>
-        <div className="p-5 flex flex-col flex-grow">
-          {product.brand && (
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              {product.brand.name}
+    <motion.div 
+      whileHover={{ y: -6, transition: { type: "spring", stiffness: 400, damping: 25 } }}
+      className="group relative block bg-white rounded-2xl overflow-hidden border border-gray-100 transition-shadow duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] h-full flex flex-col isolate [transform:translateZ(0)]"
+    >
+      
+      {/* Badges */}
+      <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+        {product.compare_at_price && parseFloat(product.compare_at_price) > parseFloat(product.price) && (
+          <span className="bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wider uppercase">
+            Oferta
+          </span>
+        )}
+      </div>
+
+      <Link href={`/productos/${product.slug}`} className="relative aspect-[4/5] bg-gray-50 overflow-hidden rounded-t-2xl block" style={{ transform: 'translateZ(0)' }}>
+        <Image
+          src={imageUrl}
+          alt={product.name}
+          fill
+          className="object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-110"
+        />
+      </Link>
+
+      {/* Hover Quick Action - Desktop Only */}
+      <div className="absolute bottom-32 left-0 right-0 px-4 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hidden md:block z-20">
+        <motion.button 
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          onClick={handleAddToCart}
+          className="w-full bg-accent hover:bg-accent/90 text-white font-bold py-2.5 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Agregar
+        </motion.button>
+      </div>
+
+      <Link href={`/productos/${product.slug}`} className="p-5 flex flex-col flex-grow bg-white z-10">
+        {product.brand && (
+          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+            {product.brand.name}
+          </span>
+        )}
+        <h3 className="font-semibold text-gray-900 text-[15px] leading-snug mb-2 line-clamp-2 transition-colors group-hover:text-accent">
+          {product.name}
+        </h3>
+        
+        <div className="mt-auto flex items-center gap-2">
+          <span className="text-lg font-bold text-gray-900">
+            S/ {parseFloat(product.price).toFixed(2)}
+          </span>
+          {product.compare_at_price && parseFloat(product.compare_at_price) > parseFloat(product.price) && (
+            <span className="text-sm font-medium text-gray-400 line-through">
+              S/ {parseFloat(product.compare_at_price).toFixed(2)}
             </span>
           )}
-          <h3 className="font-medium text-lg leading-tight mb-2 line-clamp-2">
-            {product.name}
-          </h3>
-          <div className="mt-auto pt-4 flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="text-lg font-bold">
-                S/ {parseFloat(product.price).toFixed(2)}
-              </span>
-              {product.compare_at_price && (
-                <span className="text-sm text-muted-foreground line-through">
-                  S/ {parseFloat(product.compare_at_price).toFixed(2)}
-                </span>
-              )}
-            </div>
-            <Button 
-              variant="default" 
-              size="sm" 
-              className="rounded-xl px-4"
-              onClick={handleAddToCart}
-            >
-              Agregar
-            </Button>
-          </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+
+      {/* Mobile Add to Cart (Visible always on mobile) */}
+      <motion.button 
+        whileTap={{ scale: 0.9 }}
+        onClick={handleAddToCart}
+        className="md:hidden absolute bottom-4 right-4 bg-gray-900 text-white p-2.5 rounded-full shadow-md z-20"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+      </motion.button>
+
+    </motion.div>
   );
 }

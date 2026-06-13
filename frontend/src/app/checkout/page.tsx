@@ -21,6 +21,12 @@ export default function CheckoutPage() {
     shipping_city: "",
   });
 
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState("");
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [couponError, setCouponError] = useState("");
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+
   // Prellenar si el usuario está logueado
   useEffect(() => {
     if (user) {
@@ -43,6 +49,44 @@ export default function CheckoutPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    
+    setValidatingCoupon(true);
+    setCouponError("");
+    
+    try {
+      const res = await fetch("http://localhost:8000/api/checkout/validate-coupon", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(useAuthStore.getState().token ? { "Authorization": `Bearer ${useAuthStore.getState().token}` } : {})
+        },
+        body: JSON.stringify({
+          coupon_code: couponCode,
+          total_amount: totalPrice(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Cupón inválido");
+      }
+
+      if (data.valid) {
+        setDiscountAmount(data.discount);
+        setAppliedCoupon(couponCode);
+      }
+    } catch (err: any) {
+      setCouponError(err.message);
+      setDiscountAmount(0);
+      setAppliedCoupon("");
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -51,7 +95,8 @@ export default function CheckoutPage() {
     try {
       const payload = {
         ...formData,
-        items: items.map(item => ({ id: item.id, quantity: item.quantity }))
+        items: items.map(item => ({ id: item.id, quantity: item.quantity })),
+        coupon_code: appliedCoupon || null,
       };
 
       const res = await fetch("http://localhost:8000/api/checkout", {
@@ -160,6 +205,30 @@ export default function CheckoutPage() {
               ))}
             </div>
 
+            {/* Coupon Input */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">¿Tienes un código de descuento?</label>
+              <div className="flex gap-2">
+                <input 
+                  value={couponCode} 
+                  onChange={(e) => setCouponCode(e.target.value)} 
+                  placeholder="Ingresa tu cupón" 
+                  className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-primary outline-none uppercase" 
+                />
+                <Button 
+                  type="button" 
+                  onClick={handleApplyCoupon} 
+                  disabled={validatingCoupon || !couponCode}
+                  variant="secondary"
+                  className="rounded-xl"
+                >
+                  {validatingCoupon ? "..." : "Aplicar"}
+                </Button>
+              </div>
+              {couponError && <p className="text-destructive text-xs mt-2">{couponError}</p>}
+              {appliedCoupon && !couponError && <p className="text-success text-xs mt-2 text-green-600 font-medium">Cupón {appliedCoupon} aplicado (-S/ {discountAmount.toFixed(2)})</p>}
+            </div>
+
             <div className="border-t pt-4 space-y-3 mb-6 text-sm">
               <div className="flex justify-between text-muted-foreground">
                 <span>Subtotal ({totalItems()} ítems)</span>
@@ -167,11 +236,17 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Envío</span>
-                <span>Calculado en el próximo paso</span>
+                <span>Gratis</span>
               </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-green-600 font-medium">
+                  <span>Descuento ({appliedCoupon})</span>
+                  <span>- S/ {discountAmount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-lg pt-3 border-t">
                 <span>Total</span>
-                <span>S/ {totalPrice().toFixed(2)}</span>
+                <span>S/ {Math.max(0, totalPrice() - discountAmount).toFixed(2)}</span>
               </div>
             </div>
 

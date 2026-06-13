@@ -45,6 +45,9 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
             ])
+            ->assets([
+                \Filament\Support\Assets\Css::make('custom-animations', public_path('css/custom-animations.css')),
+            ])
             ->navigationGroups([
                 \Filament\Navigation\NavigationGroup::make()
                      ->label('Ventas'),
