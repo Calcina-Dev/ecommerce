@@ -8,12 +8,64 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
+use App\Models\Coupon;
+use Carbon\Carbon;
 
 class CheckoutController extends Controller
 {
+    public function validateCoupon(Request $request)
+    {
+        $request->validate([
+            'coupon_code' => 'required|string',
+            'total_amount' => 'required|numeric|min:0',
+        ]);
+
+        $coupon = Coupon::where('code', strtoupper($request->coupon_code))->first();
+
+        if (!$coupon) {
+            return response()->json(['valid' => false, 'message' => 'Cupón no encontrado.'], 404);
+        }
+
+        if (!$coupon->is_active) {
+            return response()->json(['valid' => false, 'message' => 'El cupón no está activo.'], 400);
+        }
+
+        if ($coupon->valid_from && Carbon::now()->lt($coupon->valid_from)) {
+            return response()->json(['valid' => false, 'message' => 'El cupón aún no es válido.'], 400);
+        }
+
+        if ($coupon->valid_until && Carbon::now()->gt($coupon->valid_until)) {
+            return response()->json(['valid' => false, 'message' => 'El cupón ha expirado.'], 400);
+        }
+
+        if ($coupon->usage_limit !== null && $coupon->times_used >= $coupon->usage_limit) {
+            return response()->json(['valid' => false, 'message' => 'El cupón ha alcanzado su límite de uso.'], 400);
+        }
+
+        $discount = 0;
+        if ($coupon->type === 'percentage') {
+            $discount = ($request->total_amount * $coupon->value) / 100;
+        } elseif ($coupon->type === 'fixed') {
+            $discount = $coupon->value;
+        }
+
+        // Evitar que el descuento sea mayor al total
+        if ($discount > $request->total_amount) {
+            $discount = $request->total_amount;
+        }
+
+        return response()->json([
+            'valid' => true,
+            'discount' => round($discount, 2),
+            'coupon_id' => $coupon->id,
+            'message' => 'Cupón aplicado correctamente.',
+        ]);
+    }
+
     public function checkout(Request $request)
     {
         $request->validate([
@@ -25,6 +77,7 @@ class CheckoutController extends Controller
             'items' => 'required|array|min:1',
             'items.*.id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
+            'coupon_code' => 'nullable|string',
         ]);
 
         try {
@@ -52,14 +105,38 @@ class CheckoutController extends Controller
                     'quantity' => $item['quantity'],
                     'subtotal' => $subtotal,
                 ];
+            }
 
-                // Descontar stock
-                $product->decrement('stock', $item['quantity']);
+            $discountAmount = 0;
+            $couponId = null;
+            $appliedCoupon = null;
+
+            if ($request->coupon_code) {
+                $appliedCoupon = Coupon::where('code', strtoupper($request->coupon_code))->where('is_active', true)->first();
+                if ($appliedCoupon) {
+                    if ($appliedCoupon->type === 'percentage') {
+                        $discountAmount = ($totalAmount * $appliedCoupon->value) / 100;
+                    } elseif ($appliedCoupon->type === 'fixed') {
+                        $discountAmount = $appliedCoupon->value;
+                    }
+                    if ($discountAmount > $totalAmount) {
+                        $discountAmount = $totalAmount;
+                    }
+                    $couponId = $appliedCoupon->id;
+                    $totalAmount -= $discountAmount;
+                }
             }
 
             // 2. Crear la Orden Principal
+            $userId = auth('sanctum')->id();
+            $user = auth('sanctum')->user();
+            
+            if ($user && empty($user->phone) && !empty($request->shipping_phone)) {
+                $user->update(['phone' => $request->shipping_phone]);
+            }
+
             $order = Order::create([
-                'user_id' => auth('sanctum')->id(), // Nullable si es invitado
+                'user_id' => $userId, // Nullable si es invitado
                 'order_number' => 'ORD-' . strtoupper(Str::random(8)),
                 'status' => 'pending_payment',
                 'total_amount' => $totalAmount,
@@ -68,7 +145,13 @@ class CheckoutController extends Controller
                 'shipping_phone' => $request->shipping_phone,
                 'shipping_address' => $request->shipping_address,
                 'shipping_city' => $request->shipping_city,
+                'coupon_id' => $couponId,
+                'discount_amount' => $discountAmount,
             ]);
+
+            if ($appliedCoupon) {
+                $appliedCoupon->increment('times_used');
+            }
 
             // 3. Insertar Detalle de la Orden
             foreach ($orderItemsData as $itemData) {
@@ -77,7 +160,18 @@ class CheckoutController extends Controller
 
             DB::commit();
 
-            // 4. Crear Preferencia en Mercado Pago
+            // 4. Enviar notificación a los administradores
+            $admins = \App\Models\User::whereIn('role', ['admin', 'employee'])->get();
+            if ($admins->count() > 0) {
+                \Filament\Notifications\Notification::make()
+                    ->title('¡Nueva Venta Web!')
+                    ->body("Orden {$order->order_number} por S/ " . number_format($order->total_amount, 2))
+                    ->icon('heroicon-o-shopping-bag')
+                    ->success()
+                    ->sendToDatabase($admins);
+            }
+
+            // 5. Crear Preferencia en Mercado Pago
             $mpAccessToken = env('MERCADOPAGO_ACCESS_TOKEN', 'TEST-7590855325992440-060820-21a719c8f8c47a544c80302ed1918a22-140228811');
             
             $mpItems = array_map(function($item) {

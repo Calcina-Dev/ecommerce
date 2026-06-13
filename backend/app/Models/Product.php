@@ -54,4 +54,44 @@ class Product extends Model
             $query->orderBy('sort_order')->limit(1);
         });
     }
+
+    public function stockBalances()
+    {
+        return $this->hasMany(StockBalance::class);
+    }
+
+    public function getAverageEntryCostAttribute()
+    {
+        $movements = StockMovement::where('product_id', $this->id)->where('type', 'IN')->get();
+        $totalQuantity = $movements->sum('quantity');
+        
+        if ($totalQuantity == 0) {
+            return 0;
+        }
+
+        $totalCost = $movements->sum(function ($mov) {
+            return $mov->quantity * $mov->unit_cost;
+        });
+
+        return $totalCost / $totalQuantity;
+    }
+
+    public function getRecommendedPriceAttribute()
+    {
+        $cost = $this->average_entry_cost;
+        // Margen de ganancia sugerido: 60%
+        return $cost * 1.60;
+    }
+
+    public function getTotalStockAttribute()
+    {
+        return $this->stockBalances()->sum('on_hand');
+    }
+
+    public function warehouses()
+    {
+        return $this->belongsToMany(Warehouse::class)
+            ->withPivot('stock')
+            ->withTimestamps();
+    }
 }

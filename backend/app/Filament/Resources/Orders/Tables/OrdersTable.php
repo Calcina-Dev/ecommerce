@@ -18,6 +18,14 @@ class OrdersTable
                     ->label('N° Pedido')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('document_number')
+                    ->label('Comprobante')
+                    ->getStateUsing(fn ($record) => $record->document_series ? "{$record->document_series}-{$record->document_number}" : 'Pendiente')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Pendiente' => 'gray',
+                        default => 'success',
+                    }),
                 TextColumn::make('shipping_name')
                     ->label('Cliente')
                     ->searchable(),
@@ -40,15 +48,45 @@ class OrdersTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                \Filament\Tables\Filters\SelectFilter::make('status')
+                    ->label('Estado de Pedido')
+                    ->options([
+                        'pending' => 'Pendiente',
+                        'pending_payment' => 'Pendiente de Pago',
+                        'processing' => 'Procesando',
+                        'shipped' => 'Enviado',
+                        'delivered' => 'Entregado',
+                        'cancelled' => 'Cancelado',
+                    ]),
+                \Filament\Tables\Filters\SelectFilter::make('payment_status')
+                    ->label('Estado de Pago')
+                    ->options([
+                        'pending' => 'Pendiente',
+                        'paid' => 'Pagado',
+                        'failed' => 'Fallido',
+                    ]),
+                \Filament\Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        \Filament\Forms\Components\DatePicker::make('created_from')->label('Desde'),
+                        \Filament\Forms\Components\DatePicker::make('created_until')->label('Hasta'),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
             ])
             ->recordActions([
                 EditAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+            ->bulkActions([
+                //
             ]);
     }
 }

@@ -6,7 +6,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
+use App\Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -26,20 +26,38 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
+            ->brandName('Vitamin OS')
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Indigo,
+                'gray' => Color::Slate,
             ])
+            ->font('Inter')
+            ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
             ])
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('5s')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+            ])
+            ->navigationGroups([
+                \Filament\Navigation\NavigationGroup::make()
+                     ->label('Ventas'),
+                \Filament\Navigation\NavigationGroup::make()
+                     ->label('Catálogo'),
+                \Filament\Navigation\NavigationGroup::make()
+                     ->label('Inventario & Logística'),
+                \Filament\Navigation\NavigationGroup::make()
+                     ->label('Compras & Recepciones'),
+                \Filament\Navigation\NavigationGroup::make()
+                     ->label('Tesorería y Pagos'),
+                \Filament\Navigation\NavigationGroup::make()
+                     ->label('Configuración'),
             ])
             ->middleware([
                 EncryptCookies::class,

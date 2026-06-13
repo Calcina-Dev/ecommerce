@@ -83,7 +83,7 @@ class CatalogSeeder extends Seeder
             'description' => 'La proteína en polvo de suero de leche más vendida del mundo. Aporta 24g de proteína de suero de leche de alta calidad, principalmente de aislado de proteína de suero (WPI), con bajos niveles de grasa y azúcares.',
             'price' => 299.90,
             'compare_at_price' => 350.00,
-            'stock' => 50,
+            'stock' => 0,
             'is_featured' => true,
             'brand_id' => $optimum->id,
             'category_id' => $proteinas->id,
@@ -103,7 +103,7 @@ class CatalogSeeder extends Seeder
             'description' => 'Apoya el reciclaje de ATP para movimientos explosivos. 5 gramos de creatina monohidratada pura por porción para apoyar el desarrollo de fuerza y masa muscular.',
             'price' => 139.90,
             'compare_at_price' => 160.00,
-            'stock' => 40,
+            'stock' => 0,
             'is_featured' => true,
             'brand_id' => $optimum->id,
             'category_id' => $creatinas->id,
@@ -122,7 +122,7 @@ class CatalogSeeder extends Seeder
             'short_description' => 'Aminoácidos con cafeína de fuentes naturales.',
             'description' => 'Fórmula para cualquier momento que requieras energía mental, enfoque, y recuperación física. Contiene aminoácidos esenciales y cafeína natural proveniente del té verde.',
             'price' => 149.90,
-            'stock' => 30,
+            'stock' => 0,
             'is_featured' => false,
             'brand_id' => $optimum->id,
             'category_id' => $aminoacidos->id,
@@ -141,7 +141,7 @@ class CatalogSeeder extends Seeder
             'short_description' => 'Multivitamínico diario completo para adultos.',
             'description' => 'Formulado con vitaminas y minerales clave para ayudar a cubrir las necesidades nutricionales diarias. Apoya la energía, la inmunidad y el metabolismo.',
             'price' => 89.90,
-            'stock' => 100,
+            'stock' => 0,
             'is_featured' => true,
             'brand_id' => $centrum->id,
             'category_id' => $vitaminas->id,
@@ -161,7 +161,7 @@ class CatalogSeeder extends Seeder
             'description' => 'Formulado para apoyar la salud ósea, la apariencia saludable de la piel, cabello y uñas, además de aportar energía diaria.',
             'price' => 95.00,
             'compare_at_price' => 110.00,
-            'stock' => 60,
+            'stock' => 0,
             'is_featured' => true,
             'brand_id' => $centrum->id,
             'category_id' => $vitaminas->id,
@@ -181,7 +181,7 @@ class CatalogSeeder extends Seeder
             'description' => 'Contiene niveles más altos de vitaminas del complejo B y zinc para apoyar la función muscular, la salud del corazón y el metabolismo energético masculino.',
             'price' => 95.00,
             'compare_at_price' => 110.00,
-            'stock' => 65,
+            'stock' => 0,
             'is_featured' => false,
             'brand_id' => $centrum->id,
             'category_id' => $vitaminas->id,
@@ -201,7 +201,7 @@ class CatalogSeeder extends Seeder
             'description' => 'Fórmula científicamente diseñada para todos los atletas que buscan más músculo, más fuerza y mejor rendimiento. Contiene aislado de proteína de suero y péptidos, además de 3g de creatina.',
             'price' => 279.90,
             'compare_at_price' => 310.00,
-            'stock' => 25,
+            'stock' => 0,
             'is_featured' => true,
             'brand_id' => $muscletech->id,
             'category_id' => $proteinas->id,
@@ -220,7 +220,7 @@ class CatalogSeeder extends Seeder
             'short_description' => 'Creatina pura micronizada ultrafina.',
             'description' => 'Entrega creatina directamente a tus músculos, impulsando el rendimiento. La creatina aumenta la fuerza muscular y acelera la recuperación entre entrenamientos.',
             'price' => 125.00,
-            'stock' => 45,
+            'stock' => 0,
             'is_featured' => false,
             'brand_id' => $muscletech->id,
             'category_id' => $creatinas->id,
@@ -240,7 +240,7 @@ class CatalogSeeder extends Seeder
             'description' => 'Una de las proteínas más limpias y de absorción más rápida del mercado. Cero grasas, cero lactosa, perfecta para definición muscular extrema.',
             'price' => 359.90,
             'compare_at_price' => 399.00,
-            'stock' => 20,
+            'stock' => 0,
             'is_featured' => true,
             'brand_id' => $dymatize->id,
             'category_id' => $proteinas->id,
@@ -260,7 +260,7 @@ class CatalogSeeder extends Seeder
             'description' => 'Complejo de rendimiento definitivo cargado con más de 85 nutrientes clave. Diseñado para culturistas y atletas de fuerza que exigen el máximo rendimiento de sus cuerpos.',
             'price' => 229.90,
             'compare_at_price' => 250.00,
-            'stock' => 35,
+            'stock' => 0,
             'is_featured' => true,
             'brand_id' => $universal->id,
             'category_id' => $vitaminas->id,
@@ -279,7 +279,7 @@ class CatalogSeeder extends Seeder
             'short_description' => 'Aminoácidos ramificados ratio 2:1:1.',
             'description' => 'Aporta 5g de BCAAs (L-Leucina, L-Isoleucina y L-Valina) por servicio para proteger el músculo del catabolismo y acelerar la recuperación post-entrenamiento.',
             'price' => 119.90,
-            'stock' => 15,
+            'stock' => 0,
             'is_featured' => false,
             'brand_id' => $optimum->id,
             'category_id' => $aminoacidos->id,
@@ -289,5 +289,48 @@ class CatalogSeeder extends Seeder
             'image_url' => 'https://images.unsplash.com/photo-1546483875-ad9014c88eba?q=80&w=600&auto=format&fit=crop',
             'is_primary' => true,
         ]);
+
+        // --- GENERACIÓN DINÁMICA DE 30 PRODUCTOS ADICIONALES ---
+        $prefixes = ['Whey Protein', 'Creatine Monohydrate', 'BCAA 2:1:1', 'Pre-Workout', 'Mass Gainer', 'Glutamine', 'Omega 3', 'Multivitamin', 'ZMA', 'Casein', 'Isolate Protein', 'Carnitine', 'CLA', 'Colágeno Hidrolizado', 'Magnesio', 'Vitamina D3', 'Ashwagandha', 'Tribulus'];
+        $suffixes = ['Gold', 'Pro', 'Elite', 'Max', 'Extreme', 'Ultra', 'Performance', '100%', 'Advanced', 'Platinum', 'Premium', 'Essential'];
+        $sizes = ['1 lb', '2 lbs', '5 lbs', '300g', '500g', '30 serv', '60 caps', '120 caps', '1kg', '90 tabs'];
+        
+        $images = [
+            'https://images.unsplash.com/photo-1574680096145-d05b474e2155?q=80&w=600&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1546483875-ad9014c88eba?q=80&w=600&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?q=80&w=600&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1616679911721-eff6eec18fcd?q=80&w=600&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1584308666744-24d5e47ac9db?q=80&w=600&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?q=80&w=600&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?q=80&w=600&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1605296830714-7c02e14957ac?q=80&w=600&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1550583713-33e1eb6eb2c6?q=80&w=600&auto=format&fit=crop',
+        ];
+
+        for ($i = 12; $i <= 41; $i++) {
+            $name = $prefixes[array_rand($prefixes)] . ' ' . $suffixes[array_rand($suffixes)] . ' (' . $sizes[array_rand($sizes)] . ')';
+            $basePrice = rand(40, 350) + 0.90;
+            
+            $p = Product::create([
+                'name' => $name,
+                'slug' => \Illuminate\Support\Str::slug($name) . '-' . $i,
+                'sku' => 'SUPP-GEN-' . str_pad($i, 3, '0', STR_PAD_LEFT),
+                'short_description' => 'Suplemento nutricional de alta calidad y rendimiento para acompañar tu estilo de vida.',
+                'description' => 'Fórmula científicamente comprobada para ayudarte a alcanzar tus metas físicas. Fabricado bajo los más altos estándares de calidad internacional.',
+                'price' => $basePrice,
+                'compare_at_price' => rand(0, 1) ? $basePrice + rand(20, 50) : null,
+                'stock' => 0,
+                'is_featured' => rand(0, 4) === 0, // 20% probabilidad de ser destacado
+                'brand_id' => Brand::inRandomOrder()->first()->id,
+                'category_id' => Category::inRandomOrder()->first()->id,
+            ]);
+            
+            ProductImage::create([
+                'product_id' => $p->id,
+                'image_url' => $images[array_rand($images)],
+                'is_primary' => true,
+            ]);
+        }
     }
 }

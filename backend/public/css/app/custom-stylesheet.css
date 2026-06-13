@@ -1,0 +1,27 @@
+/* Estilos personalizados para darle un look iOS a Filament */
+
+/* Bordes más redondeados en las tarjetas */
+.fi-wi-stats-overview-stat,
+.fi-wi-chart {
+    border-radius: 16px !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid rgba(0, 0, 0, 0.03) !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Redondear botones */
+.fi-btn {
+    border-radius: 12px !important;
+}
+
+/* Fondo general un poco más claro/gris estilo iOS */
+body {
+    background-color: #F5F5F7 !important;
+}
+
+/* Sombras suaves estilo Apple */
+.fi-sidebar {
+    box-shadow: 1px 0 10px rgba(0,0,0,0.03) !important;
+}

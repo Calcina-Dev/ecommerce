@@ -47,6 +47,11 @@ class CatalogController extends Controller
             $query->where('name', 'ilike', '%' . $request->search . '%');
         }
 
+        if ($request->boolean('on_sale')) {
+            $query->where('compare_at_price', '>', 0)
+                  ->whereColumn('compare_at_price', '>', 'price');
+        }
+
         $products = $query->paginate(12);
 
         return response()->json($products);
