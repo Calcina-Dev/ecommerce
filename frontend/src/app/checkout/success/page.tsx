@@ -38,3 +38,11 @@ function SuccessContent() {
     </div>
   );
 }
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <SuccessContent />
+    </Suspense>
+  );
+}

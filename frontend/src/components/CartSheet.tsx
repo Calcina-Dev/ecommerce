@@ -23,13 +23,22 @@ export function CartSheet() {
 
         <ScrollArea className="flex-1 p-6">
           {items.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center space-y-4 text-center py-20">
-              <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center opacity-50">
-                <svg className="w-10 h-10 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+            <div className="h-full flex flex-col items-center justify-center space-y-6 text-center py-24 px-4">
+              <div className="relative w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-2">
+                <div className="absolute inset-0 border-2 border-emerald-100 rounded-full animate-ping opacity-20"></div>
+                <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
               </div>
-              <p className="text-lg font-medium text-muted-foreground">Tu bolsa está vacía</p>
-              <Button variant="outline" className="rounded-xl" onClick={() => setIsOpen(false)}>
-                Seguir comprando
+              <div className="space-y-2">
+                <p className="text-xl font-bold tracking-tight text-gray-900">Tu bolsa está vacía</p>
+                <p className="text-sm text-gray-500 max-w-[200px] mx-auto">Parece que aún no has añadido ninguna vitamina o suplemento.</p>
+              </div>
+              <Button 
+                className="rounded-2xl h-12 px-8 shadow-md active:scale-95 transition-transform mt-4 font-semibold" 
+                onClick={() => setIsOpen(false)}
+              >
+                Explorar Catálogo
               </Button>
             </div>
           ) : (
@@ -88,7 +97,7 @@ export function CartSheet() {
               <span className="text-xl font-bold">S/ {totalPrice().toFixed(2)}</span>
             </div>
             <Link href="/checkout" onClick={() => setIsOpen(false)}>
-              <Button size="lg" className="w-full rounded-2xl h-14 text-lg shadow-md hover:shadow-lg transition-all">
+              <Button size="lg" className="w-full rounded-2xl h-14 text-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98]">
                 Proceder al Pago
               </Button>
             </Link>

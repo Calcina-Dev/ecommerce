@@ -24,6 +24,22 @@ class CustomerResource extends Resource
     protected static \UnitEnum|string|null $navigationGroup = 'CRM & Ventas';
     protected static ?string $navigationLabel = 'Clientes';
 
+    protected static ?string $recordTitleAttribute = 'name';
+    
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'email', 'phone'];
+    }
+
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return [
+            'Email' => $record->email,
+            'Teléfono' => $record->phone ?? '-',
+            'Total Compras' => 'S/ ' . number_format($record->total_spent ?? 0, 2),
+        ];
+    }
+
     public static function form(Schema $schema): Schema
     {
         return CustomerForm::configure($schema);

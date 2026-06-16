@@ -58,6 +58,7 @@ class MarketingReport extends BaseDashboard
     public function getWidgets(): array
     {
         return [
+            \App\Filament\Widgets\CustomerRetentionChart::class,
             \App\Filament\Widgets\ChannelEfficiencyChart::class,
             \App\Filament\Widgets\TopCategoriesChart::class,
             \App\Filament\Widgets\CouponsUsageTable::class,

@@ -6,13 +6,13 @@ use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Support\Facades\DB;
 
-class TopCategoriesChart extends ChartWidget
+class ProfitByCategoryChart extends ChartWidget
 {
     protected ?string $pollingInterval = null;
     use InteractsWithPageFilters;
 
-    protected static ?int $sort = 6;
-    protected ?string $heading = 'Rendimiento por Categoría (Ingresos)';
+    protected static ?int $sort = 3;
+    protected ?string $heading = 'Rentabilidad por Categoría';
     protected ?string $maxHeight = '300px';
 
     protected function getData(): array
@@ -52,12 +52,12 @@ class TopCategoriesChart extends ChartWidget
         }
 
         $salesData = $saleItemsQuery
-            ->select('products.category_id', DB::raw('SUM(sale_items.subtotal) as total_revenue'))
+            ->select('products.category_id', DB::raw('SUM(sale_items.subtotal) as total_revenue'), DB::raw('SUM(sale_items.quantity * sale_items.unit_cost) as total_cost'))
             ->groupBy('products.category_id')
             ->get();
 
         $ordersData = $orderItemsQuery
-            ->select('products.category_id', DB::raw('SUM(order_items.subtotal) as total_revenue'))
+            ->select('products.category_id', DB::raw('SUM(order_items.subtotal) as total_revenue'), DB::raw('SUM(order_items.quantity * order_items.unit_cost) as total_cost'))
             ->groupBy('products.category_id')
             ->get();
 
@@ -68,21 +68,23 @@ class TopCategoriesChart extends ChartWidget
             ->filter(fn($item) => !is_null($item->category_id))
             ->groupBy('category_id')
             ->map(function ($items, $categoryId) use ($categories) {
+                $revenue = $items->sum('total_revenue');
+                $cost = $items->sum('total_cost');
                 return [
                     'name' => $categories[$categoryId] ?? 'Categoría ' . $categoryId,
-                    'revenue' => $items->sum('total_revenue')
+                    'profit' => $revenue - $cost
                 ];
             })
-            ->sortByDesc('revenue')
+            ->sortByDesc('profit')
             ->take(5);
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Ingresos Netos (S/)',
-                    'data' => $combined->pluck('revenue')->values()->toArray(),
-                    'backgroundColor' => '#ec4899', // pink-500
-                    'borderRadius' => 4,
+                    'label' => 'Utilidad Neta (S/)',
+                    'data' => $combined->pluck('profit')->values()->toArray(),
+                    'backgroundColor' => ['#4f46e5', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6'],
+                    'hoverOffset' => 4
                 ],
             ],
             'labels' => $combined->pluck('name')->values()->toArray(),
@@ -91,7 +93,7 @@ class TopCategoriesChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'bar';
+        return 'doughnut';
     }
 
     protected function getOptions(): array
@@ -99,7 +101,7 @@ class TopCategoriesChart extends ChartWidget
         return [
             'animation' => [
                 'duration' => 1500,
-                'easing' => 'easeOutElastic',
+                'easing' => 'easeOutQuart',
             ],
         ];
     }

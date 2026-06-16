@@ -8,6 +8,7 @@ use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
 class TopProductsChart extends ChartWidget
 {
+    protected ?string $pollingInterval = null;
     use InteractsWithPageFilters;
 
     protected static ?int $sort = 4;
@@ -89,6 +90,10 @@ class TopProductsChart extends ChartWidget
     {
         return [
             'indexAxis' => 'y',
+            'animation' => [
+                'duration' => 1500,
+                'easing' => 'easeOutElastic',
+            ],
             'scales' => [
                 'x' => [
                     'display' => false,

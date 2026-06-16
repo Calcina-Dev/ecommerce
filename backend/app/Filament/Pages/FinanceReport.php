@@ -2,18 +2,27 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
 use Filament\Schemas\Schema;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 
-class Dashboard extends \Filament\Pages\Dashboard
+class FinanceReport extends BaseDashboard
 {
     use HasFiltersForm;
 
-    protected static string|\BackedEnum|null $navigationIcon = \Filament\Support\Icons\Heroicon::OutlinedPresentationChartLine;
-    protected static ?string $title = 'Panel de Control';
+    protected static ?string $title = 'Finanzas y Tesorería';
+    protected static ?int $navigationSort = 4;
+    protected static string $routePath = 'finance-report';
+
+    public static function getNavigationIcon(): string | \Illuminate\Contracts\Support\Htmlable | null
+    {
+        return 'heroicon-o-banknotes';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Analítica y Reportes';
+    }
 
     public function filtersForm(Schema $schema): Schema
     {
@@ -22,35 +31,37 @@ class Dashboard extends \Filament\Pages\Dashboard
                 \Filament\Forms\Components\Select::make('period')
                     ->label('Período')
                     ->options([
+                        'today' => 'Hoy',
                         'week' => 'Esta Semana',
                         'month' => 'Este Mes',
                         'year' => 'Este Año',
                         'custom' => 'Personalizado',
                     ])
-                    ->default('month')
-                    ->native(false)
-                    ->selectablePlaceholder(false)
+                    ->default('today')
                     ->live(),
                 \Filament\Forms\Components\DatePicker::make('date_from')
                     ->label('Desde')
                     ->visible(fn ($get) => $get('period') === 'custom')
-                    ->maxDate(fn ($get) => $get('date_to') ?: now()),
+                    ->live(),
                 \Filament\Forms\Components\DatePicker::make('date_to')
                     ->label('Hasta')
                     ->visible(fn ($get) => $get('period') === 'custom')
-                    ->minDate(fn ($get) => $get('date_from'))
-                    ->maxDate(now()),
+                    ->live(),
             ])
             ->columns(3);
+    }
+
+    public function getColumns(): array | int
+    {
+        return 2;
     }
 
     public function getWidgets(): array
     {
         return [
-            \App\Filament\Widgets\StatsOverviewWidget::class,
-            \App\Filament\Widgets\SalesTrendChart::class,
-            \App\Filament\Widgets\TopProductsChart::class,
-            \App\Filament\Widgets\LowStockWidget::class,
+            \App\Filament\Widgets\CashFlowOverview::class,
+            \App\Filament\Widgets\PaymentMethodsBreakdownChart::class,
+            \App\Filament\Widgets\DiscrepanciesTable::class,
         ];
     }
 }

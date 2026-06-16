@@ -22,6 +22,22 @@ class OrderResource extends Resource
 
     protected static \UnitEnum|string|null $navigationGroup = 'Ventas';
 
+    protected static ?string $recordTitleAttribute = 'order_number';
+    
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['order_number', 'user.name', 'user.email', 'shipping_name', 'shipping_email'];
+    }
+
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return [
+            'Cliente' => $record->user?->name ?? $record->shipping_name ?? 'Anónimo',
+            'Total' => 'S/ ' . number_format($record->total_amount, 2),
+            'Estado' => ucfirst($record->status),
+        ];
+    }
+
     public static function form(Schema $schema): Schema
     {
         return OrderForm::configure($schema);

@@ -105,8 +105,20 @@ class CashSessionResource extends Resource
                     ->placeholder('-')
                     ->sortable(),
             ])
+            ->defaultSort('opened_at', 'desc')
             ->filters([
-                //
+                \Filament\Tables\Filters\SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'open' => 'En Curso',
+                        'closed' => 'Cerrado',
+                    ]),
+                \Filament\Tables\Filters\SelectFilter::make('cash_register_id')
+                    ->label('Caja')
+                    ->relationship('register', 'name'),
+                \Filament\Tables\Filters\SelectFilter::make('user_id')
+                    ->label('Cajero')
+                    ->relationship('user', 'name'),
             ])
             ->recordActions([
                 EditAction::make(),

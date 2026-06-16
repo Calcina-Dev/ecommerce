@@ -5,14 +5,26 @@
     --spring-duration: 0.4s;
 }
 
-/* Smooth transitions for all standard states */
-*:not(canvas):not(.fi-wi-chart *), ::before, ::after {
+/* Smooth transitions ONLY for interactive elements (avoids layout loops) */
+button, a, input, select, textarea, .fi-btn, .fi-modal-window, .fi-dropdown-panel {
     transition-timing-function: var(--spring-easing) !important;
 }
 
-/* CRITICAL FIX: Prevent ResizeObserver infinite loop causing "breathing" effect */
-.fi-wi-chart, .fi-wi-chart *, canvas {
+/* CRITICAL FIX: Prevent ResizeObserver infinite layout loops on charts in grid layouts */
+.fi-wi-chart, .fi-wi-chart *, canvas, .fi-wi-chart-canvas-ctn {
     transition: none !important;
+}
+
+/* SAFARI SPECIFIC FIX: WebKit ResizeObserver infinite loop on fractional grid layouts */
+.fi-wi-chart-canvas-ctn {
+    position: relative;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    transform: translateZ(0); /* Bypass Safari layout thrashing */
+}
+
+.fi-wi-chart-canvas-ctn canvas {
+    max-width: 100% !important;
 }
 
 /* Squishy Buttons */

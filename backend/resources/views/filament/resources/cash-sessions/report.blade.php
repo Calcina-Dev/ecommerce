@@ -168,7 +168,7 @@
         
         @if($record->status === 'closed')
             @php
-                $diferencia = $record->closing_balance - $efectivoEsperado;
+                $diferencia = round($record->closing_balance - $efectivoEsperado, 2);
             @endphp
             <div class="ios-row" style="margin-top: 8px;">
                 <span class="ios-label">Efectivo Físico Contado</span>

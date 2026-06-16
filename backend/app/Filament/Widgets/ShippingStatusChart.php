@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class ShippingStatusChart extends ChartWidget
 {
+    protected ?string $pollingInterval = null;
     use InteractsWithPageFilters;
 
     protected static ?int $sort = 1;
@@ -91,6 +92,17 @@ class ShippingStatusChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'pie';
+        return 'doughnut';
     }
+
+    protected function getOptions(): array
+    {
+        return [
+            'animation' => [
+                'duration' => 1500,
+                'easing' => 'easeOutQuart',
+            ],
+        ];
+    }
+
 }

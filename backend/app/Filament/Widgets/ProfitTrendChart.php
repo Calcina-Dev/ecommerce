@@ -9,10 +9,12 @@ use Carbon\Carbon;
 
 class ProfitTrendChart extends ChartWidget
 {
+    protected ?string $pollingInterval = null;
     use InteractsWithPageFilters;
 
     protected static ?int $sort = 3;
     protected ?string $heading = 'Tendencia de Utilidad Neta';
+    protected int | string | array $columnSpan = 'full';
     protected ?string $maxHeight = '300px';
 
     protected function getData(): array
@@ -96,5 +98,20 @@ class ProfitTrendChart extends ChartWidget
     protected function getType(): string
     {
         return 'line';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'animation' => [
+                'duration' => 1500,
+                'easing' => 'easeOutQuart',
+            ],
+            'elements' => [
+                'line' => [
+                    'tension' => 0.4,
+                ],
+            ],
+        ];
     }
 }

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class ChannelEfficiencyChart extends ChartWidget
 {
+    protected ?string $pollingInterval = null;
     use InteractsWithPageFilters;
 
     protected static ?int $sort = 5;
@@ -61,6 +62,16 @@ class ChannelEfficiencyChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'doughnut';
+        return 'bar';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'animation' => [
+                'duration' => 1500,
+                'easing' => 'easeOutElastic',
+            ],
+        ];
     }
 }

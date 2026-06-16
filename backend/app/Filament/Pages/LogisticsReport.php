@@ -58,6 +58,7 @@ class LogisticsReport extends BaseDashboard
     public function getWidgets(): array
     {
         return [
+            \App\Filament\Widgets\DeliveryTimeStats::class,
             \App\Filament\Widgets\ShippingStatusChart::class,
             \App\Filament\Widgets\OrdersMapWidget::class,
             \App\Filament\Widgets\LogisticsReportTable::class,

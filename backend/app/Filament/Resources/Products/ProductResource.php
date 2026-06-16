@@ -22,6 +22,23 @@ class ProductResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;
     protected static \UnitEnum|string|null $navigationGroup = 'Catálogo';
+    
+    protected static ?string $recordTitleAttribute = 'name';
+    
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'sku'];
+    }
+
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return [
+            'SKU' => $record->sku,
+            'Precio' => 'S/ ' . number_format($record->price, 2),
+            'Stock' => $record->total_stock . ' uds',
+        ];
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ProductForm::configure($schema);

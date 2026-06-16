@@ -29,9 +29,11 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('Vitamin OS')
             ->path('admin')
             ->login()
+            ->spa()
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->colors([
-                'primary' => Color::Indigo,
-                'gray' => Color::Slate,
+                'primary' => Color::Emerald,
+                'gray' => Color::Zinc,
             ])
             ->font('Inter')
             ->sidebarCollapsibleOnDesktop()
@@ -46,7 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
             ])
             ->assets([
-                \Filament\Support\Assets\Css::make('custom-animations', public_path('css/custom-animations.css')),
+                \Filament\Support\Assets\Css::make('custom-animations-v6', public_path('css/custom-animations-v6.css')),
             ])
             ->navigationGroups([
                 \Filament\Navigation\NavigationGroup::make()

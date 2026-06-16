@@ -9,6 +9,7 @@ use Carbon\Carbon;
 
 class WebPaymentMethodsChart extends ChartWidget
 {
+    protected ?string $pollingInterval = null;
     use InteractsWithPageFilters;
 
     protected static ?int $sort = 4;
@@ -89,5 +90,15 @@ class WebPaymentMethodsChart extends ChartWidget
     protected function getType(): string
     {
         return 'doughnut';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'animation' => [
+                'duration' => 1500,
+                'easing' => 'easeOutQuart',
+            ],
+        ];
     }
 }

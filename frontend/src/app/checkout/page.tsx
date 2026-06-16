@@ -255,7 +255,7 @@ export default function CheckoutPage() {
               form="checkout-form"
               disabled={loading} 
               size="lg" 
-              className="w-full rounded-2xl h-14 text-lg shadow-md"
+              className="w-full rounded-2xl h-14 text-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
             >
               {loading ? "Procesando..." : "Confirmar Pedido"}
             </Button>

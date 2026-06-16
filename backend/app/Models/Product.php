@@ -60,6 +60,11 @@ class Product extends Model
         return $this->hasMany(StockBalance::class);
     }
 
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
     public function getAverageEntryCostAttribute()
     {
         $movements = StockMovement::where('product_id', $this->id)->where('type', 'IN')->get();

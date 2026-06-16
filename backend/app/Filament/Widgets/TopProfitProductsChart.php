@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class TopProfitProductsChart extends ChartWidget
 {
+    protected ?string $pollingInterval = null;
     use InteractsWithPageFilters;
 
     protected static ?int $sort = 2;
@@ -90,5 +91,15 @@ class TopProfitProductsChart extends ChartWidget
     protected function getType(): string
     {
         return 'bar';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'animation' => [
+                'duration' => 1500,
+                'easing' => 'easeOutElastic',
+            ],
+        ];
     }
 }

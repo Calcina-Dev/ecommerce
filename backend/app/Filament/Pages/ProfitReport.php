@@ -61,6 +61,7 @@ class ProfitReport extends BaseDashboard
         return [
             \App\Filament\Widgets\ProfitOverviewWidget::class,
             \App\Filament\Widgets\TopProfitProductsChart::class,
+            \App\Filament\Widgets\ProfitByCategoryChart::class,
             \App\Filament\Widgets\ProfitTrendChart::class,
             \App\Filament\Widgets\ProfitByProductTable::class,
         ];

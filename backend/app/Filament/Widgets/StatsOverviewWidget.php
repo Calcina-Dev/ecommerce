@@ -23,29 +23,36 @@ class StatsOverviewWidget extends BaseStatsOverviewWidget
         
         $saleQuery = Sale::query()->where('status', 'CONFIRMED');
         $orderQuery = \App\Models\Order::query()->where('payment_status', 'paid');
+        $customerQuery = \App\Models\Customer::query();
 
         if ($period === 'week') {
             $saleQuery->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
             $orderQuery->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+            $customerQuery->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
         } elseif ($period === 'month') {
             $saleQuery->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
             $orderQuery->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
+            $customerQuery->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
         } elseif ($period === 'year') {
             $saleQuery->whereBetween('created_at', [now()->startOfYear(), now()->endOfYear()]);
             $orderQuery->whereBetween('created_at', [now()->startOfYear(), now()->endOfYear()]);
+            $customerQuery->whereBetween('created_at', [now()->startOfYear(), now()->endOfYear()]);
         } elseif ($period === 'custom') {
             if ($dateFrom) {
                 $saleQuery->whereDate('created_at', '>=', $dateFrom);
                 $orderQuery->whereDate('created_at', '>=', $dateFrom);
+                $customerQuery->whereDate('created_at', '>=', $dateFrom);
             }
             if ($dateTo) {
                 $saleQuery->whereDate('created_at', '<=', $dateTo);
                 $orderQuery->whereDate('created_at', '<=', $dateTo);
+                $customerQuery->whereDate('created_at', '<=', $dateTo);
             }
         }
 
         $sales = $saleQuery->get();
         $orders = $orderQuery->get();
+        $nuevosClientes = $customerQuery->count();
 
         $totalVentas = $sales->sum('total_amount') + $orders->sum('total_amount');
         $totalCost = $sales->sum('total_cost') + $orders->sum('total_cost');

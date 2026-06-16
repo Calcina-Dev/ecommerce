@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from 'sonner';
+import { MobileTabBar } from "@/components/MobileTabBar";
 
 export default function RootLayout({
   children,
@@ -30,13 +31,14 @@ export default function RootLayout({
       className="h-full antialiased"
     >
       <body className={`${poppins.className} min-h-full flex flex-col bg-background`}>
-        <div vaul-drawer-wrapper="" className="min-h-full flex flex-col bg-background">
-          <Header />
+        <Header />
+        <div vaul-drawer-wrapper="" className="flex-1 flex flex-col bg-background pt-16 pb-16 md:pb-0">
           <CartSheet />
           {children}
           <WhatsAppButton />
           <Footer />
         </div>
+        <MobileTabBar />
         <Toaster position="bottom-center" toastOptions={{ style: { borderRadius: '12px' } }} richColors />
       </body>
     </html>
