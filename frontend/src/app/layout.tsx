@@ -19,12 +19,15 @@ export const metadata: Metadata = {
 
 import { Toaster } from 'sonner';
 import { MobileTabBar } from "@/components/MobileTabBar";
+import { getStoreSettings } from "@/services/settings";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await getStoreSettings();
+
   return (
     <html
       lang="es"
@@ -35,8 +38,8 @@ export default function RootLayout({
         <div vaul-drawer-wrapper="" className="flex-1 flex flex-col bg-background pt-16 pb-16 md:pb-0">
           <CartSheet />
           {children}
-          <WhatsAppButton />
-          <Footer />
+          <WhatsAppButton settings={settings} />
+          <Footer settings={settings} />
         </div>
         <MobileTabBar />
         <Toaster position="bottom-center" toastOptions={{ style: { borderRadius: '12px' } }} richColors />

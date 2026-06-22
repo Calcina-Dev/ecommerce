@@ -190,13 +190,20 @@ function CatalogContent() {
               )}
             </>
           ) : (
-            <div className="text-center py-20 bg-muted/30 rounded-2xl border border-dashed">
-              <h3 className="text-xl font-medium text-muted-foreground">No se encontraron productos</h3>
+            <div className="text-center py-24 bg-white rounded-3xl border shadow-[0_2px_10px_rgba(0,0,0,0.02)] ring-1 ring-black/[0.03]">
+              <div className="mx-auto w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6 relative">
+                <div className="absolute inset-0 border-2 border-gray-100 rounded-full animate-ping opacity-30"></div>
+                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 tracking-tight">No encontramos resultados</h3>
+              <p className="mt-2 text-sm text-gray-500 max-w-sm mx-auto">Prueba con otros términos de búsqueda o quita los filtros actuales para ver más productos.</p>
               <button 
-                onClick={() => setFilters({ search: undefined, categoryId: undefined, brandId: undefined })}
-                className="mt-4 text-primary font-medium hover:underline"
+                onClick={() => setFilters({ search: undefined, categoryId: undefined, brandId: undefined, onSale: undefined, page: 1 })}
+                className="mt-6 px-6 py-2.5 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-all active:scale-95 duration-200 ease-[var(--spring-easing)] shadow-sm"
               >
-                Limpiar filtros
+                Limpiar todos los filtros
               </button>
             </div>
           )}

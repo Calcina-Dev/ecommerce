@@ -1,8 +1,14 @@
 import Link from "next/link";
+import { StoreSettings } from "@/services/settings";
 
-export function WhatsAppButton() {
-  const phoneNumber = "51928586883";
-  const message = "¡Hola! Más información de Compra Saludable - TIENDA ONLINE DE SUPLEMENTOS Y VITAMINAS en https://comprasaludable.com/";
+export function WhatsAppButton({ settings }: { settings?: StoreSettings | null }) {
+  const defaultPhone = "51928586883";
+  const rawPhone = settings?.whatsapp_number || defaultPhone;
+  // Clean phone number (remove non-digits)
+  const phoneNumber = rawPhone.replace(/\D/g, '');
+  
+  const storeName = settings?.store_name || "Compra Saludable";
+  const message = `¡Hola! Más información de ${storeName} - TIENDA ONLINE DE SUPLEMENTOS Y VITAMINAS en https://comprasaludable.com/`;
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
   return (

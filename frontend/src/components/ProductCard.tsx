@@ -49,10 +49,13 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <motion.div 
       whileHover={{ y: -6, scale: 1.01, transition: { type: "spring", stiffness: 400, damping: 25 } }}
-      whileTap={{ scale: 0.98 }}
-      className="group relative block bg-white rounded-2xl overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.02)] ring-1 ring-black/[0.03] transition-all duration-300 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:ring-black/[0.08] h-full flex flex-col isolate [transform:translateZ(0)]"
+      whileTap={{ scale: 0.96 }}
+      className="group relative block bg-white rounded-2xl overflow-hidden shadow-sm ring-1 ring-black/5 transition-all duration-500 ease-[var(--spring-easing)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.04),0_10px_40px_rgba(0,0,0,0.04)] hover:ring-black/10 h-full flex flex-col isolate [transform:translateZ(0)]"
     >
       
+      {/* Glare Effect */}
+      <div className="absolute inset-0 z-30 pointer-events-none rounded-2xl bg-gradient-to-tr from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-[var(--spring-easing)] mix-blend-overlay"></div>
+
       {/* Badges */}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
         {product.compare_at_price && parseFloat(product.compare_at_price) > parseFloat(product.price) && (

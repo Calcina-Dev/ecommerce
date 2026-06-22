@@ -46,9 +46,12 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --shadow-premium: 0 4px 20px rgba(0,0,0,0.03), 0 10px 40px rgba(0,0,0,0.04);
 }
 
 :root {
+  --spring-easing: cubic-bezier(0.32, 0.72, 0, 1);
+  --spring-duration: 0.4s;
   --background: #fafafa;
   --foreground: #111827; /* very dark text */
   --card: #ffffff;
@@ -123,6 +126,12 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Hide scrollbar globally for premium feel */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  body::-webkit-scrollbar {
+    display: none;
   }
   html {
     @apply font-sans;
@@ -166,4 +175,12 @@
   );
   animation: shimmer 2s infinite;
   content: '';
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

@@ -7,6 +7,11 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\MercadoPagoWebhookController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\StorefrontPageController;
+use App\Http\Controllers\Api\StoreSettingController;
+
+Route::get('/storefront/settings', [StoreSettingController::class, 'index']);
+Route::get('/storefront/pages/{slug}', [StorefrontPageController::class, 'show']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();

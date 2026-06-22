@@ -11,10 +11,20 @@ export function CartSheet() {
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetContent className="w-full sm:max-w-md flex flex-col p-0 border-l rounded-l-3xl overflow-hidden">
+      <SheetContent showCloseButton={false} className="w-full sm:max-w-md flex flex-col p-0 border-l rounded-l-3xl overflow-hidden">
         <SheetHeader className="p-6 border-b bg-muted/20">
           <SheetTitle className="text-xl font-bold flex items-center justify-between">
-            <span>Tu Bolsa</span>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 hover:bg-black/5 rounded-full transition-colors"
+              >
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+              </button>
+              <span>Tu Bolsa</span>
+            </div>
             <span className="bg-primary text-primary-foreground text-sm px-3 py-1 rounded-full">
               {totalItems()}
             </span>
@@ -97,7 +107,7 @@ export function CartSheet() {
               <span className="text-xl font-bold">S/ {totalPrice().toFixed(2)}</span>
             </div>
             <Link href="/checkout" onClick={() => setIsOpen(false)}>
-              <Button size="lg" className="w-full rounded-2xl h-14 text-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98]">
+              <Button size="lg" className="w-full rounded-2xl h-14 text-lg shadow-sm hover:shadow-md transition-all active:scale-95 duration-200 ease-[var(--spring-easing)] font-semibold">
                 Proceder al Pago
               </Button>
             </Link>
