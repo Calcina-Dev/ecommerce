@@ -53,7 +53,7 @@ class OnlineOrderSeeder extends Seeder
             ['department' => 'Piura', 'province' => 'Piura', 'district' => 'Piura', 'postal_code' => '200101'],
         ];
 
-        for ($i = 0; $i < 40; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             $user = $users->random();
             $orderDate = Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 24));
             $targetStatus = $targetStatuses[$i];

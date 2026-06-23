@@ -37,8 +37,8 @@ class SaleSeeder extends Seeder
         if ($paymentMethods->isEmpty()) return;
 
 
-        // 3. Generate data for the last 30 days
-        for ($i = 29; $i >= 0; $i--) {
+        // 3. Generate data for the last 5 days to avoid timeout on deploy (22s limit)
+        for ($i = 4; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
 
             // Each day, pick a random user to open the cash register
