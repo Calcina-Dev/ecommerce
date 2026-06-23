@@ -147,7 +147,7 @@ export default function CheckoutPage() {
     try {
       const { KR } = await KRGlue.loadLibrary(
         "https://api.micuentaweb.pe",
-        "18265624:testpublickey_hBeKMJ3VoHvaIBJBnNvpMHgWkzrMkjt4m7Oxzo3m8eWK2"
+        "18265624:testpublickey_hBeKMJ3VoHvalBJBnNvpMHgWkzrMkjt4m7Oxzo3m8eWK2"
       );
 
       await KR.setFormConfig({
@@ -158,13 +158,29 @@ export default function CheckoutPage() {
       // Handle successful payment
       KR.onSubmit(async (paymentData: any) => {
         if (paymentData.clientAnswer.orderStatus === "PAID") {
+          try {
+            // Avisar al backend localmente para que marque como pagado
+            await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/checkout/verify-izipay`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                "kr-answer": JSON.stringify(paymentData.clientAnswer),
+                "kr-hash": paymentData.hash
+              })
+            });
+          } catch (e) {
+            console.error('Error verifying locally', e);
+          }
           clearCart();
           router.push(`/checkout/success?order=${orderNumber}&status=approved`);
         }
-        return false; // Stop the standard form submission
+        return false; 
       });
 
+      // Show form in our custom modal
       await KR.attachForm("#izipay-form-container");
+      await KR.showForm("#izipay-form-container");
+      
     } catch (error) {
       console.error("Izipay loading error", error);
       setError("No se pudo cargar la pasarela de pagos.");
@@ -173,21 +189,50 @@ export default function CheckoutPage() {
     }
   };
 
-  if (items.length === 0 && !showIzipayForm) return null;
-
-  if (showIzipayForm) {
-    return (
-      <div className="min-h-screen bg-muted/20 py-10 flex flex-col items-center justify-center">
-        <div className="bg-background rounded-3xl p-8 border shadow-sm w-full max-w-md">
-          <h2 className="text-2xl font-bold mb-6 text-center">Completa tu pago</h2>
-          <div id="izipay-form-container"></div>
-        </div>
-      </div>
-    );
-  }
+  if (items.length === 0) return null;
 
   return (
-    <div className="min-h-screen bg-muted/20 py-10">
+    <div className="min-h-screen bg-muted/20 py-10 relative">
+      {/* Izipay Theme & Customizations */}
+      <link rel="stylesheet" href="https://api.micuentaweb.pe/static/js/krypton-client/V4.0/ext/classic-reset.css" />
+      <script src="https://api.micuentaweb.pe/static/js/krypton-client/V4.0/ext/classic.js" async></script>
+      <style>{`
+        /* Personalización de colores Izipay para que coincida con el verde de la tienda */
+        .kr-embedded .kr-payment-button {
+          background-color: #10b981 !important; /* Verde primario */
+          color: white !important;
+          border-radius: 8px !important;
+          font-weight: bold !important;
+          text-transform: uppercase;
+        }
+        .kr-embedded .kr-payment-button:hover {
+          background-color: #059669 !important;
+        }
+      `}</style>
+
+      {/* Modal Overlay Personalizado para Izipay */}
+      {showIzipayForm && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-300">
+            <button 
+              onClick={() => setShowIzipayForm(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center transition-colors"
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-bold mb-6 text-center text-gray-800">Completa tu pago seguro</h2>
+            <div className="flex justify-center w-full">
+              <div id="izipay-form-container" className="w-full flex justify-center">
+                <div className="kr-embedded w-full"></div>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-center items-center gap-2 text-xs text-gray-500">
+              <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              Pago procesado de forma segura por Izipay
+            </div>
+          </div>
+        </div>
+      )}
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-10">
         
         {/* Formulario */}

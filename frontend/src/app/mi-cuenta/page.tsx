@@ -46,7 +46,9 @@ export default function MiCuentaPage() {
         });
         if (res.ok) {
           const data = await res.json();
-          setOrders(data);
+          // Filtrar órdenes abandonadas (pending_payment) para no llenar el historial
+          const validOrders = data.filter((o: any) => o.status !== 'pending_payment');
+          setOrders(validOrders);
         }
       } catch (err) {
         console.error("Error cargando pedidos:", err);
