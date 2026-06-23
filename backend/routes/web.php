@@ -9,3 +9,8 @@ Route::get('/', function () {
 Route::get('/sales/{sale}/ticket', [\App\Http\Controllers\SaleTicketController::class, 'download'])
     ->name('sale.ticket')
     ->middleware(['web', 'auth']);
+
+Route::get('/force-migrate', function () {
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    return 'Migrated successfully!';
+});
