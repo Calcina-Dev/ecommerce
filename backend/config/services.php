@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'izipay' => [
+        'client_id' => env('IZIPAY_CLIENT_ID', '18265624'),
+        'client_secret' => env('IZIPAY_CLIENT_SECRET', 'testpassword_QX9wBlcyq805SNI76F6CjIuRvRrDa7VSZQLo5AX2EQQVS'),
+        'public_key' => env('IZIPAY_PUBLIC_KEY', '18265624:testpublickey_hBeKMJ3VoHvaIBJBnNvpMHgWkzrMkjt4m7Oxzo3m8eWK2'),
+        'hmac_key' => env('IZIPAY_HMAC_KEY', 'C4qwclxyquNaSPBegmriqkG1VaxcUhyKIJz3lPdVbCf3w'),
+        'endpoint' => env('IZIPAY_ENDPOINT', 'https://api.micuentaweb.pe'),
+    ],
+
 ];

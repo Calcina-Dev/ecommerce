@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\MercadoPagoWebhookController;
+use App\Http\Controllers\Api\IzipayWebhookController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\StorefrontPageController;
 use App\Http\Controllers\Api\StoreSettingController;
@@ -44,3 +45,4 @@ Route::prefix('catalog')->group(function () {
 Route::post('/checkout/validate-coupon', [CheckoutController::class, 'validateCoupon']);
 Route::post('/checkout', [CheckoutController::class, 'checkout']);
 Route::post('/webhooks/mercadopago', [MercadoPagoWebhookController::class, 'handleWebhook']);
+Route::post('/webhooks/izipay', [IzipayWebhookController::class, 'handleWebhook']);

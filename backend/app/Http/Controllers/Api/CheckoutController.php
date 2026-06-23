@@ -78,6 +78,7 @@ class CheckoutController extends Controller
             'items.*.id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'coupon_code' => 'nullable|string',
+            'payment_method' => 'nullable|string|in:mercadopago,izipay',
         ]);
 
         try {
@@ -171,7 +172,27 @@ class CheckoutController extends Controller
                     ->sendToDatabase($admins);
             }
 
-            // 5. Crear Preferencia en Mercado Pago
+            $paymentMethod = $request->payment_method ?? 'izipay';
+
+            if ($paymentMethod === 'izipay') {
+                $izipayService = new \App\Services\IzipayService();
+                $formToken = $izipayService->createPaymentFormToken(
+                    $order->total_amount,
+                    $order->order_number,
+                    $request->shipping_email,
+                    $request->shipping_name
+                );
+
+                return response()->json([
+                    'message' => 'Orden creada exitosamente',
+                    'order_number' => $order->order_number,
+                    'order_id' => $order->id,
+                    'form_token' => $formToken,
+                    'payment_method' => 'izipay',
+                ], 201);
+            }
+
+            // Fallback a Mercado Pago
             $mpAccessToken = env('MERCADOPAGO_ACCESS_TOKEN', 'TEST-7590855325992440-060820-21a719c8f8c47a544c80302ed1918a22-140228811');
             
             $mpItems = array_map(function($item) {
@@ -183,6 +204,7 @@ class CheckoutController extends Controller
                 ];
             }, $orderItemsData);
 
+            $frontendUrl = env('NEXT_PUBLIC_FRONTEND_URL', 'http://localhost:3000');
             $preferenceData = [
                 'items' => $mpItems,
                 'external_reference' => $order->order_number,
@@ -191,9 +213,9 @@ class CheckoutController extends Controller
                     'email' => $request->shipping_email,
                 ],
                 'back_urls' => [
-                    'success' => "http://localhost:3000/checkout/success",
-                    'failure' => "http://localhost:3000/checkout/success",
-                    'pending' => "http://localhost:3000/checkout/success",
+                    'success' => "{$frontendUrl}/checkout/success",
+                    'failure' => "{$frontendUrl}/checkout/success",
+                    'pending' => "{$frontendUrl}/checkout/success",
                 ],
                 'auto_return' => 'approved',
             ];
@@ -203,7 +225,6 @@ class CheckoutController extends Controller
             $initPoint = null;
 
             if ($response->failed()) {
-                // Si el token es inválido y estamos en local, simulamos la redirección para no bloquear el desarrollo
                 if (app()->environment('local') && $response->status() === 401) {
                     $initPoint = "http://localhost:3000/checkout/success?status=approved&external_reference=" . $order->order_number;
                 } else {
@@ -219,6 +240,7 @@ class CheckoutController extends Controller
                 'order_number' => $order->order_number,
                 'order_id' => $order->id,
                 'init_point' => $initPoint,
+                'payment_method' => 'mercadopago',
             ], 201);
 
         } catch (\Exception $e) {
