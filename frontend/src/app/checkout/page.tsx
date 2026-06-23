@@ -172,8 +172,8 @@ export default function CheckoutPage() {
           } catch (e) {
             console.error('Error verifying locally', e);
           }
-          clearCart();
-          router.push(`/checkout/success?order=${orderNumber}&status=approved`);
+          
+          router.push(`/checkout/success?order_id=${orderNumber}&status=approved`);
         }
         return false; 
       });
