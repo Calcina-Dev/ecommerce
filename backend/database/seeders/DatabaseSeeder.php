@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder
             SaleSeeder::class,
             OnlineOrderSeeder::class,
             StorefrontPageSeeder::class,
+            StoreSettingSeeder::class,
         ]);
     }
 }

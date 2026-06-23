@@ -19,6 +19,8 @@ class StoreSettingController extends Controller
             'tiktok_url' => $settings->tiktok_url ?? '',
             'contact_email' => $settings->contact_email ?? '',
             'store_address' => $settings->store_address ?? '',
+            'footer_theme' => $settings->footer_theme ?? 'light',
+            'footer_columns' => $settings->footer_columns ?? [],
         ]);
     }
 }
