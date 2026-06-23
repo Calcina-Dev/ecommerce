@@ -271,9 +271,16 @@ class CheckoutController extends Controller
         }
 
         if ($orderStatus === 'PAID') {
-            $order->update(['status' => 'paid']);
+            $order->update([
+                'status' => 'processing',
+                'payment_status' => 'paid',
+                'payment_method' => 'izipay',
+            ]);
         } elseif ($orderStatus === 'CANCELED' || $orderStatus === 'UNPAID') {
-            $order->update(['status' => 'cancelled']);
+            $order->update([
+                'status' => 'cancelled',
+                'payment_status' => 'failed',
+            ]);
         }
 
         return response()->json(['status' => 'OK']);

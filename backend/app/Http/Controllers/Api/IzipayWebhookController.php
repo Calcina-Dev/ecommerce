@@ -35,10 +35,17 @@ class IzipayWebhookController extends Controller
 
         // 3. Update order status based on Izipay status
         if ($orderStatus === 'PAID') {
-            $order->update(['status' => 'paid']);
+            $order->update([
+                'status' => 'processing',
+                'payment_status' => 'paid',
+                'payment_method' => 'izipay',
+            ]);
             // Here you could dispatch an event to send an email, etc.
         } elseif ($orderStatus === 'CANCELED' || $orderStatus === 'UNPAID') {
-            $order->update(['status' => 'cancelled']);
+            $order->update([
+                'status' => 'cancelled',
+                'payment_status' => 'failed',
+            ]);
         }
 
         // Return 200 OK so Izipay knows we received it
