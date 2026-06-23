@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
+import KRGlue from "@lyracom/embedded-form-glue";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -26,6 +27,11 @@ export default function CheckoutPage() {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [couponError, setCouponError] = useState("");
   const [validatingCoupon, setValidatingCoupon] = useState(false);
+
+  const [paymentMethod, setPaymentMethod] = useState("izipay");
+  const [izipayFormToken, setIzipayFormToken] = useState("");
+  const [showIzipayForm, setShowIzipayForm] = useState(false);
+  const [orderCreated, setOrderCreated] = useState<string | null>(null);
 
   // Prellenar si el usuario está logueado
   useEffect(() => {
@@ -97,6 +103,7 @@ export default function CheckoutPage() {
         ...formData,
         items: items.map(item => ({ id: item.id, quantity: item.quantity })),
         coupon_code: appliedCoupon || null,
+        payment_method: paymentMethod,
       };
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/checkout`, {
@@ -114,13 +121,19 @@ export default function CheckoutPage() {
         throw new Error(data.message || "Error al procesar el pedido");
       }
 
-      // Vaciar carrito
-      clearCart();
-
       // Si Mercado Pago nos devolvió el link de pago, redirigimos
-      if (data.init_point) {
+      if (data.payment_method === 'mercadopago' && data.init_point) {
+        clearCart();
         window.location.href = data.init_point;
+      } 
+      // Si Izipay devuelve token, inicializamos el formulario embebido
+      else if (data.payment_method === 'izipay' && data.form_token) {
+        setIzipayFormToken(data.form_token);
+        setOrderCreated(data.order_number);
+        setShowIzipayForm(true);
+        initIzipay(data.form_token, data.order_number);
       } else {
+        clearCart();
         router.push(`/checkout/success?order=${data.order_number}`);
       }
 
@@ -130,7 +143,48 @@ export default function CheckoutPage() {
     }
   };
 
-  if (items.length === 0) return null;
+  const initIzipay = async (formToken: string, orderNumber: string) => {
+    try {
+      const { KR } = await KRGlue.loadLibrary(
+        "https://api.micuentaweb.pe",
+        "18265624:testpublickey_hBeKMJ3VoHvaIBJBnNvpMHgWkzrMkjt4m7Oxzo3m8eWK2"
+      );
+
+      await KR.setFormConfig({
+        formToken: formToken,
+        'kr-language': 'es-ES',
+      });
+
+      // Handle successful payment
+      KR.onSubmit(async (paymentData: any) => {
+        if (paymentData.clientAnswer.orderStatus === "PAID") {
+          clearCart();
+          router.push(`/checkout/success?order=${orderNumber}&status=approved`);
+        }
+        return false; // Stop the standard form submission
+      });
+
+      await KR.attachForm("#izipay-form-container");
+    } catch (error) {
+      console.error("Izipay loading error", error);
+      setError("No se pudo cargar la pasarela de pagos.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (items.length === 0 && !showIzipayForm) return null;
+
+  if (showIzipayForm) {
+    return (
+      <div className="min-h-screen bg-muted/20 py-10 flex flex-col items-center justify-center">
+        <div className="bg-background rounded-3xl p-8 border shadow-sm w-full max-w-md">
+          <h2 className="text-2xl font-bold mb-6 text-center">Completa tu pago</h2>
+          <div id="izipay-form-container"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted/20 py-10">
@@ -247,6 +301,42 @@ export default function CheckoutPage() {
               <div className="flex justify-between font-bold text-lg pt-3 border-t">
                 <span>Total</span>
                 <span>S/ {Math.max(0, totalPrice() - discountAmount).toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Selector de Método de Pago */}
+            <div className="mb-8">
+              <label className="block text-sm font-bold mb-3">Método de Pago</label>
+              <div className="space-y-3">
+                <label className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'izipay' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-gray-50'}`}>
+                  <input 
+                    type="radio" 
+                    name="payment_method" 
+                    value="izipay" 
+                    checked={paymentMethod === 'izipay'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-4 h-4 text-primary focus:ring-primary"
+                  />
+                  <div className="flex-1">
+                    <span className="font-semibold block">Pago Seguro con Tarjeta</span>
+                    <span className="text-xs text-muted-foreground">Visa, Mastercard, Yape, Plin (Vía Izipay)</span>
+                  </div>
+                </label>
+                
+                <label className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'mercadopago' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-gray-50'}`}>
+                  <input 
+                    type="radio" 
+                    name="payment_method" 
+                    value="mercadopago" 
+                    checked={paymentMethod === 'mercadopago'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-4 h-4 text-primary focus:ring-primary"
+                  />
+                  <div className="flex-1">
+                    <span className="font-semibold block">Mercado Pago</span>
+                    <span className="text-xs text-muted-foreground">Paga con tu cuenta de Mercado Pago o tarjeta</span>
+                  </div>
+                </label>
               </div>
             </div>
 
