@@ -3,7 +3,7 @@ import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
