@@ -9,7 +9,7 @@ class StorefrontPageSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('storefront_pages')->truncate();
+
 
         $pages = [
             [

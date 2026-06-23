@@ -44,12 +44,14 @@ class OnlineOrderSeeder extends Seeder
             array_fill(0, 5, 'pending_payment')
         );
 
-        // Cargar ubigeos una sola vez para evitar Memory Limit (OOM)
-        $ubigeosPath = database_path('data/ubigeos_peru.json');
-        $ubigeos = [];
-        if (file_exists($ubigeosPath)) {
-            $ubigeos = json_decode(file_get_contents($ubigeosPath), true) ?? [];
-        }
+        // Array fijo de ubigeos para evitar leer el JSON de 2MB en memoria y causar OOM
+        $ubigeos = [
+            ['department' => 'Lima', 'province' => 'Lima', 'district' => 'Miraflores', 'ubigeo' => '150122'],
+            ['department' => 'Lima', 'province' => 'Lima', 'district' => 'San Isidro', 'ubigeo' => '150131'],
+            ['department' => 'Arequipa', 'province' => 'Arequipa', 'district' => 'Arequipa', 'ubigeo' => '040101'],
+            ['department' => 'Cusco', 'province' => 'Cusco', 'district' => 'Wanchaq', 'ubigeo' => '080108'],
+            ['department' => 'Piura', 'province' => 'Piura', 'district' => 'Piura', 'ubigeo' => '200101'],
+        ];
 
         for ($i = 0; $i < 40; $i++) {
             $user = $users->random();

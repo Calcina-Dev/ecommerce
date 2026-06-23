@@ -36,11 +36,6 @@ class SaleSeeder extends Seeder
         $paymentMethods = PaymentMethod::all();
         if ($paymentMethods->isEmpty()) return;
 
-        // Clear old sales to regenerate cleanly
-        DB::table('sale_items')->truncate();
-        DB::table('sale_payments')->truncate();
-        DB::table('sales')->truncate();
-        DB::table('cash_sessions')->truncate();
 
         // 3. Generate data for the last 30 days
         for ($i = 29; $i >= 0; $i--) {
