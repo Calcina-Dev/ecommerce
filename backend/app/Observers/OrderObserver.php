@@ -61,7 +61,7 @@ class OrderObserver
                     try {
                         \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderShipped($order));
                     } catch (\Throwable $e) {
-                        \Illuminate\Support\Facades\Log::error("Failed to send shipped email: " . $e->getMessage());
+                        error_log("Failed to send shipped email: " . $e->getMessage());
                     }
                 }
             } elseif ($order->status === 'cancelled' && in_array($order->getOriginal('status'), ['shipped', 'delivered'])) {
@@ -81,7 +81,7 @@ class OrderObserver
                 try {
                     \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderPaid($order));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error("Failed to send paid email: " . $e->getMessage());
+                    error_log("Failed to send paid email: " . $e->getMessage());
                 }
             }
         }

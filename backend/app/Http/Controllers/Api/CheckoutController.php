@@ -359,7 +359,7 @@ class CheckoutController extends Controller
 
             return response()->json(['status' => 'OK']);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Verify Izipay Fatal Error: " . $e->getMessage() . " on line " . $e->getLine());
+            error_log("Verify Izipay Fatal Error: " . $e->getMessage() . " on line " . $e->getLine());
             return response()->json([
                 'error' => 'Fatal Error',
                 'message' => $e->getMessage(),
