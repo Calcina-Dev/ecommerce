@@ -263,17 +263,23 @@ class CheckoutController extends Controller
     {
         $postData = $request->all();
 
-        // If local verification from frontend callback
-        // The signature validation is the same as webhook
-        if (!$izipayService->checkHash($postData)) {
-            return response()->json(['error' => 'Invalid signature'], 400);
+        $answer = json_decode($postData['kr-answer'] ?? '{}', true);
+        $transactionUuid = $answer['transactions'][0]['uuid'] ?? null;
+
+        if (!$transactionUuid) {
+            return response()->json(['error' => 'No transaction UUID found'], 400);
         }
 
-        $answer = json_decode($postData['kr-answer'] ?? '{}', true);
-        
-        $orderStatus = $answer['orderStatus'] ?? null;
-        $orderId = $answer['orderDetails']['orderId'] ?? null;
-        $orderTotalAmount = $answer['orderDetails']['orderTotalAmount'] ?? 0;
+        // Fetch transaction securely from Izipay API
+        $transaction = $izipayService->getTransaction($transactionUuid);
+
+        if (!$transaction) {
+            return response()->json(['error' => 'Transaction not found in Izipay'], 404);
+        }
+
+        $orderStatus = $transaction['orderStatus'] ?? null;
+        $orderId = $transaction['orderDetails']['orderId'] ?? null;
+        $orderTotalAmount = $transaction['orderDetails']['orderTotalAmount'] ?? 0;
 
         $order = Order::where('order_number', $orderId)->first();
 

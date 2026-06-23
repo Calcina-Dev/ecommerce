@@ -70,4 +70,22 @@ class IzipayService
         // Securely compare the hashes to prevent timing attacks
         return hash_equals($calculatedHash, $hash);
     }
+
+    /**
+     * Retrieves transaction details from Izipay API using the transaction UUID.
+     */
+    public function getTransaction(string $transactionUuid)
+    {
+        $response = Http::withBasicAuth($this->clientId, $this->clientSecret)
+            ->get("{$this->endpoint}/api-payment/V4/Transaction/Get/{$transactionUuid}");
+
+        if ($response->successful()) {
+            $data = $response->json();
+            if ($data['status'] === 'SUCCESS') {
+                return $data['answer'];
+            }
+        }
+        
+        return null;
+    }
 }
