@@ -46,11 +46,11 @@ class OnlineOrderSeeder extends Seeder
 
         // Array fijo de ubigeos para evitar leer el JSON de 2MB en memoria y causar OOM
         $ubigeos = [
-            ['department' => 'Lima', 'province' => 'Lima', 'district' => 'Miraflores', 'ubigeo' => '150122'],
-            ['department' => 'Lima', 'province' => 'Lima', 'district' => 'San Isidro', 'ubigeo' => '150131'],
-            ['department' => 'Arequipa', 'province' => 'Arequipa', 'district' => 'Arequipa', 'ubigeo' => '040101'],
-            ['department' => 'Cusco', 'province' => 'Cusco', 'district' => 'Wanchaq', 'ubigeo' => '080108'],
-            ['department' => 'Piura', 'province' => 'Piura', 'district' => 'Piura', 'ubigeo' => '200101'],
+            ['department' => 'Lima', 'province' => 'Lima', 'district' => 'Miraflores', 'postal_code' => '150122'],
+            ['department' => 'Lima', 'province' => 'Lima', 'district' => 'San Isidro', 'postal_code' => '150131'],
+            ['department' => 'Arequipa', 'province' => 'Arequipa', 'district' => 'Arequipa', 'postal_code' => '040101'],
+            ['department' => 'Cusco', 'province' => 'Cusco', 'district' => 'Wanchaq', 'postal_code' => '080108'],
+            ['department' => 'Piura', 'province' => 'Piura', 'district' => 'Piura', 'postal_code' => '200101'],
         ];
 
         for ($i = 0; $i < 40; $i++) {
@@ -105,7 +105,7 @@ class OnlineOrderSeeder extends Seeder
                 'shipping_department' => $ubigeoData ? $ubigeoData['department'] : 'Lima',
                 'shipping_province' => $ubigeoData ? $ubigeoData['province'] : 'Lima',
                 'shipping_district' => $ubigeoData ? $ubigeoData['district'] : 'Lima',
-                'shipping_ubigeo' => $ubigeoData ? $ubigeoData['ubigeo'] : '150101',
+                'shipping_postal_code' => $ubigeoData ? $ubigeoData['postal_code'] : '150101',
                 'shipping_reference' => 'Cerca al parque',
                 'payment_method' => $paymentMethod,
                 'payment_status' => $paymentStatus,
