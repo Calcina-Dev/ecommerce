@@ -50,10 +50,11 @@ class OrdersTable
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Fecha')
-                    ->dateTime()
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 \Filament\Tables\Filters\SelectFilter::make('status')
                     ->label('Estado de Pedido')
