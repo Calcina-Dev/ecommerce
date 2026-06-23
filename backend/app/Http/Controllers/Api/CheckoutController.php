@@ -277,9 +277,9 @@ class CheckoutController extends Controller
             return response()->json(['error' => 'Transaction not found in Izipay'], 404);
         }
 
-        $orderStatus = $transaction['orderStatus'] ?? null;
+        $transactionStatus = $transaction['status'] ?? null;
         $orderId = $transaction['orderDetails']['orderId'] ?? null;
-        $orderTotalAmount = $transaction['orderDetails']['orderTotalAmount'] ?? 0;
+        $transactionAmount = $transaction['amount'] ?? 0;
 
         $order = Order::where('order_number', $orderId)->first();
 
@@ -292,11 +292,11 @@ class CheckoutController extends Controller
             return response()->json(['status' => 'OK']);
         }
 
-        if ($orderStatus === 'PAID') {
+        if ($transactionStatus === 'PAID' || $transactionStatus === 'AUTHORIZED') {
             // Verify amount (Izipay returns amount in cents)
             $expectedAmountInCents = (int) round($order->total_amount * 100);
-            if ((int)$orderTotalAmount !== $expectedAmountInCents) {
-                \Illuminate\Support\Facades\Log::warning("Izipay Amount mismatch on order {$orderId}. Expected: {$expectedAmountInCents}, Received: {$orderTotalAmount}");
+            if ((int)$transactionAmount !== $expectedAmountInCents) {
+                \Illuminate\Support\Facades\Log::warning("Izipay Amount mismatch on order {$orderId}. Expected: {$expectedAmountInCents}, Received: {$transactionAmount}");
                 return response()->json(['error' => 'Amount mismatch'], 400);
             }
 
@@ -315,11 +315,15 @@ class CheckoutController extends Controller
                     ->success()
                     ->sendToDatabase($admins);
             }
-        } elseif ($orderStatus === 'CANCELED' || $orderStatus === 'UNPAID') {
+        } elseif ($transactionStatus === 'CANCELED' || $transactionStatus === 'UNPAID' || $transactionStatus === 'REFUSED') {
             $order->update([
                 'status' => 'cancelled',
                 'payment_status' => 'failed',
             ]);
+        } else {
+            // If the status is running, created, or anything else not finalized, we return 400
+            // so the frontend knows the payment isn't fully approved yet and won't redirect to success.
+            return response()->json(['error' => 'Payment not finalized', 'status' => $transactionStatus], 400);
         }
 
         return response()->json(['status' => 'OK']);
