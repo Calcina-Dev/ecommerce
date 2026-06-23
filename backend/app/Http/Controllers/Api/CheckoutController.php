@@ -267,7 +267,8 @@ class CheckoutController extends Controller
 
     public function verifyIzipay(Request $request, \App\Services\IzipayService $izipayService)
     {
-        $postData = $request->all();
+        try {
+            $postData = $request->all();
 
         $answer = json_decode($postData['kr-answer'] ?? '{}', true);
         $transactionUuid = $answer['transactions'][0]['uuid'] ?? null;
@@ -353,6 +354,15 @@ class CheckoutController extends Controller
             return response()->json(['error' => 'Payment not finalized', 'status' => $transactionStatus], 400);
         }
 
-        return response()->json(['status' => 'OK']);
+            return response()->json(['status' => 'OK']);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Verify Izipay Fatal Error: " . $e->getMessage() . " on line " . $e->getLine());
+            return response()->json([
+                'error' => 'Fatal Error',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
+        }
     }
 }
