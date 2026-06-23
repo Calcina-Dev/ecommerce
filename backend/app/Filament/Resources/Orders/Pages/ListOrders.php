@@ -17,4 +17,15 @@ class ListOrders extends ListRecords
                 ->label('Crear Orden Manual'),
         ];
     }
+
+    public function getTabs(): array
+    {
+        return [
+            'Activas' => \Filament\Schemas\Components\Tabs\Tab::make()
+                ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', '!=', 'pending_payment')),
+            'Carritos Abandonados' => \Filament\Schemas\Components\Tabs\Tab::make()
+                ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', 'pending_payment')),
+            'Todas' => \Filament\Schemas\Components\Tabs\Tab::make(),
+        ];
+    }
 }

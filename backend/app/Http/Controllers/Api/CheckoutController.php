@@ -248,4 +248,34 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Error al procesar la orden: ' . $e->getMessage()], 422);
         }
     }
+
+    public function verifyIzipay(Request $request, \App\Services\IzipayService $izipayService)
+    {
+        $postData = $request->all();
+
+        // If local verification from frontend callback
+        // The signature validation is the same as webhook
+        if (!$izipayService->checkHash($postData)) {
+            return response()->json(['error' => 'Invalid signature'], 400);
+        }
+
+        $answer = json_decode($postData['kr-answer'] ?? '{}', true);
+        
+        $orderStatus = $answer['orderStatus'] ?? null;
+        $orderId = $answer['orderDetails']['orderId'] ?? null;
+
+        $order = Order::where('order_number', $orderId)->first();
+
+        if (!$order) {
+            return response()->json(['error' => 'Order not found'], 404);
+        }
+
+        if ($orderStatus === 'PAID') {
+            $order->update(['status' => 'paid']);
+        } elseif ($orderStatus === 'CANCELED' || $orderStatus === 'UNPAID') {
+            $order->update(['status' => 'cancelled']);
+        }
+
+        return response()->json(['status' => 'OK']);
+    }
 }

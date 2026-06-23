@@ -44,5 +44,6 @@ Route::prefix('catalog')->group(function () {
 
 Route::post('/checkout/validate-coupon', [CheckoutController::class, 'validateCoupon']);
 Route::post('/checkout', [CheckoutController::class, 'checkout']);
+Route::post('/checkout/verify-izipay', [CheckoutController::class, 'verifyIzipay']);
 Route::post('/webhooks/mercadopago', [MercadoPagoWebhookController::class, 'handleWebhook']);
 Route::post('/webhooks/izipay', [IzipayWebhookController::class, 'handleWebhook']);
