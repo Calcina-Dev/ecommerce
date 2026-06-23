@@ -14,6 +14,7 @@ function SuccessContent() {
     if (orderId) {
       clearCart();
       toast.success('¡Compra realizada con éxito!', {
+        id: 'success-toast',
         duration: 5000,
         position: 'top-center',
         icon: '🎉',
