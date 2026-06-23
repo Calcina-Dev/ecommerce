@@ -44,6 +44,11 @@ export default function MiCuentaPage() {
             "Authorization": `Bearer ${token}`
           }
         });
+        if (res.status === 401) {
+          useAuthStore.getState().logout();
+          router.push("/login");
+          return;
+        }
         if (res.ok) {
           const data = await res.json();
           // Filtrar órdenes abandonadas (pending_payment) para no llenar el historial
