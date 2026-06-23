@@ -58,7 +58,7 @@ export function CartSheet() {
                   <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-muted border flex-shrink-0">
                     <Image 
                       src={item.image_url 
-                        ? (item.image_url.startsWith('http') ? item.image_url : `http://localhost:8000/storage/${item.image_url}`)
+                        ? (item.image_url.startsWith('http') ? item.image_url : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/storage/${item.image_url}`)
                         : "https://images.unsplash.com/photo-1584308666744-24d5e47ac9db?q=80&w=600&auto=format&fit=crop"} 
                       alt={item.name} 
                       fill 

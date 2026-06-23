@@ -10,7 +10,7 @@ export interface StoreSettings {
 
 export async function getStoreSettings(): Promise<StoreSettings | null> {
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/storefront/settings", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/storefront/settings`, {
       cache: 'no-store' // Deshabilitamos caché para ver cambios instantáneos
     });
     if (!res.ok) {

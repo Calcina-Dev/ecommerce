@@ -16,7 +16,7 @@ export default function DynamicStorefrontPage() {
   useEffect(() => {
     if (!slug) return;
     
-    fetch(`http://localhost:8000/api/storefront/pages/${slug}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/storefront/pages/${slug}`)
       .then(res => {
         if (!res.ok) {
           setError(true);

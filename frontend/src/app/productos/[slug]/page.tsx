@@ -15,7 +15,7 @@ export default function ProductDetailPage() {
   const addItem = useCartStore((state) => state.addItem);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/catalog/products/${slug}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/products/${slug}`)
       .then(res => res.json())
       .then(data => {
         setProduct(data);
@@ -65,7 +65,7 @@ export default function ProductDetailPage() {
   }
 
   const images = product.images?.length > 0 
-    ? product.images.map((img: any) => img.image_url.startsWith('http') ? img.image_url : `http://localhost:8000/storage/${img.image_url}`)
+    ? product.images.map((img: any) => img.image_url.startsWith('http') ? img.image_url : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/storage/${img.image_url}`)
     : ["https://images.unsplash.com/photo-1584308666744-24d5e47ac9db?q=80&w=600&auto=format&fit=crop"];
 
   return (

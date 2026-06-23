@@ -15,7 +15,7 @@ export function Header() {
 
   const handleLogout = () => {
     // Aquí idealmente llamarías a la API de logout también
-    fetch("http://localhost:8000/api/auth/logout", {
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/auth/logout`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${useAuthStore.getState().token}`

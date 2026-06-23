@@ -39,7 +39,7 @@ export default function MiCuentaPage() {
 
     const fetchOrders = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/orders", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/orders`, {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -62,7 +62,7 @@ export default function MiCuentaPage() {
     e.preventDefault();
     setSavingProfile(true);
     try {
-      const res = await fetch("http://localhost:8000/api/user/profile", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/user/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

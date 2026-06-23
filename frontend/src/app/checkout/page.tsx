@@ -56,7 +56,7 @@ export default function CheckoutPage() {
     setCouponError("");
     
     try {
-      const res = await fetch("http://localhost:8000/api/checkout/validate-coupon", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/checkout/validate-coupon`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,7 +99,7 @@ export default function CheckoutPage() {
         coupon_code: appliedCoupon || null,
       };
 
-      const res = await fetch("http://localhost:8000/api/checkout", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -185,7 +185,7 @@ export default function CheckoutPage() {
                   <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-muted border flex-shrink-0">
                     <Image 
                       src={item.image_url 
-                        ? (item.image_url.startsWith('http') ? item.image_url : `http://localhost:8000/storage/${item.image_url}`)
+                        ? (item.image_url.startsWith('http') ? item.image_url : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/storage/${item.image_url}`)
                         : "https://images.unsplash.com/photo-1584308666744-24d5e47ac9db?q=80&w=600&auto=format&fit=crop"} 
                       alt={item.name} 
                       fill 

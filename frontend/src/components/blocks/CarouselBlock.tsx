@@ -25,7 +25,7 @@ export function CarouselBlock({ data }: { data: any }) {
       <div className="relative w-full h-[300px] md:h-[450px] rounded-3xl overflow-hidden group">
         {slides.map((slide: any, index: number) => {
           const isCurrent = index === currentIndex;
-          const imageUrl = slide.image.startsWith('http') ? slide.image : `http://localhost:8000/storage/${slide.image}`;
+          const imageUrl = slide.image.startsWith('http') ? slide.image : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/storage/${slide.image}`;
           
           return (
             <div 

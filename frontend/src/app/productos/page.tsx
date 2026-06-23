@@ -30,7 +30,7 @@ function CatalogContent() {
 
   // Cargar filtros disponibles
   useEffect(() => {
-    fetch('http://localhost:8000/api/catalog/filters')
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/filters`)
       .then(res => res.json())
       .then(data => setFilterData(data))
       .catch(console.error);
@@ -46,7 +46,7 @@ function CatalogContent() {
     if (filters.page) queryParams.append('page', filters.page.toString());
     if (filters.onSale) queryParams.append('on_sale', '1');
 
-    fetch(`http://localhost:8000/api/catalog/products?${queryParams.toString()}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/products?${queryParams.toString()}`)
       .then(res => res.json())
       .then(data => {
         setProducts(data.data || []);

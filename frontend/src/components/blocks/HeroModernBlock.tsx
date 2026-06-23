@@ -61,7 +61,7 @@ export function HeroModernBlock({ data }: { data: any }) {
             
             <img 
               src={data.hero_image 
-                ? (data.hero_image.startsWith('http') ? data.hero_image : `http://localhost:8000/storage/${data.hero_image}`)
+                ? (data.hero_image.startsWith('http') ? data.hero_image : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/storage/${data.hero_image}`)
                 : "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?q=80&w=800&auto=format&fit=crop"
               } 
               alt={data.title_line_1} 
