@@ -58,7 +58,11 @@ class OrderObserver
                 $this->deductStock($order);
                 
                 if ($order->status === 'shipped' && $order->shipping_email) {
-                    \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderShipped($order));
+                    try {
+                        \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderShipped($order));
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error("Failed to send shipped email: " . $e->getMessage());
+                    }
                 }
             } elseif ($order->status === 'cancelled' && in_array($order->getOriginal('status'), ['shipped', 'delivered'])) {
                 $this->restoreStock($order);
@@ -74,7 +78,11 @@ class OrderObserver
             ]);
 
             if ($order->payment_status === 'paid' && $order->shipping_email) {
-                \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderPaid($order));
+                try {
+                    \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderPaid($order));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error("Failed to send paid email: " . $e->getMessage());
+                }
             }
         }
     }

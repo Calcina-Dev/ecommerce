@@ -34,7 +34,11 @@ class OrderNotesList extends Component
         ]);
 
         if ($this->type === 'customer' && $this->order->shipping_email) {
-            Mail::to($this->order->shipping_email)->send(new CustomerNoteMail($note));
+            try {
+                Mail::to($this->order->shipping_email)->send(new CustomerNoteMail($note));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send customer note email: " . $e->getMessage());
+            }
         }
 
         $this->content = '';
