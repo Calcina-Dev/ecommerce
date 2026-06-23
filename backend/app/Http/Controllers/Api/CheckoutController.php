@@ -277,15 +277,18 @@ class CheckoutController extends Controller
             return response()->json(['error' => 'No transaction UUID found'], 400);
         }
 
-        $transactionResp = $izipayService->getTransaction($transactionUuid);
-
-        if (!$transactionResp || !isset($transactionResp['answer'])) {
-            return response()->json(['error' => 'Transaction not found in Izipay'], 404);
+        if (!$izipayService->checkHash($postData)) {
+            return response()->json(['error' => 'Invalid signature (kr-hash mismatch)'], 400);
         }
 
-        $transaction = $transactionResp['answer'];
+        // Si la firma es correcta, podemos confiar en el payload de kr-answer
+        $transaction = $answer['transactions'][0] ?? null;
+        if (!$transaction) {
+            return response()->json(['error' => 'No transaction details in payload'], 400);
+        }
+
         $transactionStatus = $transaction['status'] ?? null;
-        $orderId = $transaction['orderDetails']['orderId'] ?? null;
+        $orderId = $answer['orderDetails']['orderId'] ?? null;
         $transactionAmount = $transaction['amount'] ?? 0;
 
         $order = Order::where('order_number', $orderId)->first();
