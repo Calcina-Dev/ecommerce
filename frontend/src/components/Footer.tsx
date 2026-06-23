@@ -1,6 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { Phone, Mail, MapPin } from 'lucide-react';
 import { StoreSettings } from '@/services/settings';
+import { Phone, ArrowUp, Plus, Minus, Mail, MapPin } from 'lucide-react';
 
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -20,174 +23,251 @@ const TikTokIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const YoutubeIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+  </svg>
+);
+
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.052 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+  </svg>
+);
+
+const HeadsetIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+  </svg>
+);
+
 export function Footer({ settings }: { settings?: StoreSettings | null }) {
   const storeName = settings?.store_name || "Compra Saludable";
   const isDark = settings?.footer_theme === 'dark';
   
-  const bgClass = isDark ? 'bg-slate-950 text-slate-400' : 'bg-white text-gray-600';
-  const borderClass = isDark ? 'border-slate-800' : 'border-gray-100';
+  const bgClass = isDark ? 'bg-[#0d1b2a] text-slate-300' : 'bg-white text-gray-600';
+  const borderClass = isDark ? 'border-slate-800' : 'border-gray-200';
   const headingClass = isDark ? 'text-white' : 'text-gray-900';
-  const iconBgClass = isDark ? 'bg-slate-800' : 'bg-gray-50';
-  const iconBorderClass = isDark ? 'border-slate-700' : 'border-gray-200';
-  const dotClass = isDark ? 'bg-white' : 'bg-gray-900';
+  const iconBgClass = isDark ? 'bg-slate-800' : 'bg-gray-100';
+  const iconBorderClass = isDark ? 'border-transparent' : 'border-gray-200';
+
+  // State for mobile accordions
+  const [openSection, setOpenSection] = useState<number | null>(null);
+  const [newsletterOpen, setNewsletterOpen] = useState(false);
+
+  const toggleSection = (index: number) => {
+    setOpenSection(openSection === index ? null : index);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
-    <footer className={`${bgClass} border-t ${borderClass} mt-auto transition-colors duration-300`}>
-      {/* Top Footer with Trust Badges */}
-      <div className={`max-w-7xl mx-auto px-6 py-12 border-b ${borderClass}`}>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mb-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path></svg>
-            </div>
-            <h4 className={`font-bold ${headingClass} text-[13px]`}>Packs y Ofertas Exclusivas</h4>
-            <p className="text-xs opacity-80">Ahorra comprando en combo</p>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-            </div>
-            <h4 className={`font-bold ${headingClass} text-[13px]`}>Suplementos Naturales</h4>
-            <p className="text-xs opacity-80">Calidad certificada y comprobada</p>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center mb-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-            </div>
-            <h4 className={`font-bold ${headingClass} text-[13px]`}>Compra 100% segura</h4>
-            <p className="text-xs opacity-80">Pagos con Yape, Plin, Tarjetas</p>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            </div>
-            <h4 className={`font-bold ${headingClass} text-[13px]`}>Asesoría personalizada</h4>
-            <p className="text-xs opacity-80">Escríbenos al WhatsApp</p>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center mb-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-            </div>
-            <h4 className={`font-bold ${headingClass} text-[13px]`}>Envío gratis desde S/100</h4>
-            <p className="text-xs opacity-80">A todo el Perú, rápido y seguro</p>
+    <footer className={`${bgClass} mt-auto transition-colors duration-300`}>
+      {/* Top Header - Phone */}
+      <div className={`border-b ${borderClass}`}>
+        <div className="max-w-7xl mx-auto px-6 py-6 flex items-center gap-4">
+          <HeadsetIcon className="w-8 h-8 text-orange-500" />
+          <div>
+            <h2 className="text-orange-500 text-2xl md:text-3xl font-bold leading-none">
+              {settings?.whatsapp_number || "+51 928 586 883"}
+            </h2>
+            <p className="text-orange-500 text-sm font-medium mt-1">Atención al Cliente</p>
           </div>
         </div>
       </div>
 
-      {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-8 justify-between">
           
-          {/* Column 1: Info */}
-          <div className="space-y-6">
-            <h3 className={`text-xl font-black tracking-tight ${headingClass}`}>{storeName}</h3>
-            <div className="space-y-4 text-[13px] opacity-80">
-              <div>
-                <p className={`font-semibold ${headingClass} mb-1 flex items-center gap-2`}><Phone className="w-3 h-3" /> Atención al cliente</p>
-                <p>{settings?.whatsapp_number || "+51 928 586 883"}</p>
-                <p>{settings?.contact_email || "ventas@comprasaludable.com"}</p>
-                <p className="opacity-60">Lun–Sáb 9:00–19:00</p>
-              </div>
-              <div>
-                <p className={`font-semibold ${headingClass} mb-1 flex items-center gap-2`}><MapPin className="w-3 h-3" /> Dirección</p>
-                <p>{settings?.store_address || "Av. Tomás Valle 917, SMP – Lima, Perú"}</p>
-              </div>
+          {/* Column 1: Info & Socials */}
+          <div className="w-full lg:w-1/4 space-y-6">
+            <div>
+              <h3 className={`text-lg font-bold ${headingClass} mb-1`}>
+                {settings?.store_address || "Lima, Perú"}
+              </h3>
+              <p className={`font-semibold ${headingClass}`}>Correo de Ayuda</p>
+              <p className="mt-2 text-[15px] opacity-90">
+                {settings?.contact_email || "hola@comprasaludable.com"}
+              </p>
             </div>
             
             <div className="flex gap-3">
               {settings?.facebook_url && (
-                <Link href={settings.facebook_url} target="_blank" className={`w-8 h-8 rounded-full border ${iconBorderClass} flex items-center justify-center hover:text-accent hover:border-accent transition-colors`}><FacebookIcon className="w-4 h-4" /></Link>
+                <Link href={settings.facebook_url} target="_blank" className={`w-10 h-10 rounded-full ${iconBgClass} border ${iconBorderClass} flex items-center justify-center hover:bg-orange-500 hover:text-white transition-colors`}><FacebookIcon className="w-4 h-4" /></Link>
               )}
               {settings?.instagram_url && (
-                <Link href={settings.instagram_url} target="_blank" className={`w-8 h-8 rounded-full border ${iconBorderClass} flex items-center justify-center hover:text-accent hover:border-accent transition-colors`}><InstagramIcon className="w-4 h-4" /></Link>
+                <Link href={settings.instagram_url} target="_blank" className={`w-10 h-10 rounded-full ${iconBgClass} border ${iconBorderClass} flex items-center justify-center hover:bg-orange-500 hover:text-white transition-colors`}><InstagramIcon className="w-4 h-4" /></Link>
               )}
+              <Link href="#" className={`w-10 h-10 rounded-full ${iconBgClass} border ${iconBorderClass} flex items-center justify-center hover:bg-orange-500 hover:text-white transition-colors`}><YoutubeIcon className="w-4 h-4" /></Link>
               {settings?.tiktok_url && (
-                <Link href={settings.tiktok_url} target="_blank" className={`w-8 h-8 rounded-full border ${iconBorderClass} flex items-center justify-center hover:text-accent hover:border-accent transition-colors`}><TikTokIcon className="w-4 h-4" /></Link>
+                <Link href={settings.tiktok_url} target="_blank" className={`w-10 h-10 rounded-full ${iconBgClass} border ${iconBorderClass} flex items-center justify-center hover:bg-orange-500 hover:text-white transition-colors`}><TikTokIcon className="w-4 h-4" /></Link>
               )}
-            </div>
-            
-            <div className="flex gap-2 flex-wrap text-[10px] font-bold opacity-70 uppercase">
-              <span className={`px-2 py-1 rounded border ${iconBorderClass} ${iconBgClass}`}>Pago Seguro</span>
-              <span className={`px-2 py-1 rounded border ${iconBorderClass} ${iconBgClass}`}>Yape</span>
-              <span className={`px-2 py-1 rounded border ${iconBorderClass} ${iconBgClass}`}>Plin</span>
-              <span className={`px-2 py-1 rounded border ${iconBorderClass} ${iconBgClass}`}>Izipay</span>
-              <span className={`px-2 py-1 rounded border ${iconBorderClass} ${iconBgClass}`}>Visa • Mastercard</span>
+              <Link href={`https://wa.me/${(settings?.whatsapp_number || '').replace(/\D/g, '')}`} target="_blank" className={`w-10 h-10 rounded-full ${iconBgClass} border ${iconBorderClass} flex items-center justify-center hover:bg-orange-500 hover:text-white transition-colors`}><WhatsAppIcon className="w-5 h-5" /></Link>
             </div>
           </div>
 
-          {/* Dynamic Footer Columns */}
-          {settings?.footer_columns && settings.footer_columns.length > 0 ? (
-            settings.footer_columns.map((col, idx) => (
-              <div key={idx}>
-                <h3 className={`font-bold ${headingClass} mb-6 flex items-center gap-2`}>
-                  <span className={`w-1.5 h-1.5 ${dotClass} rounded-full`}></span>
-                  {col.title}
-                </h3>
-                <ul className="space-y-4 text-[13px] opacity-80">
-                  {col.links?.map((link, lidx) => (
-                    <li key={lidx}>
-                      <Link href={link.url} className="hover:text-accent transition-colors">{link.label}</Link>
-                    </li>
-                  ))}
-                </ul>
+          {/* Columns 2 & 3: Dynamic Links */}
+          <div className="w-full lg:w-2/4 grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-8">
+            {settings?.footer_columns && settings.footer_columns.length > 0 ? (
+              settings.footer_columns.map((col, idx) => (
+                <div key={idx} className={`border-b md:border-none ${borderClass} py-4 md:py-0`}>
+                  {/* Mobile Accordion Header */}
+                  <button 
+                    onClick={() => toggleSection(idx)}
+                    className="w-full flex items-center justify-between md:cursor-default md:pointer-events-none"
+                  >
+                    <h3 className={`text-lg font-semibold ${headingClass}`}>
+                      {col.title}
+                    </h3>
+                    <div className="md:hidden">
+                      {openSection === idx ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                    </div>
+                  </button>
+                  
+                  {/* Links List */}
+                  <ul className={`mt-4 space-y-4 text-[15px] ${openSection === idx ? 'block' : 'hidden md:block'} opacity-90`}>
+                    {col.links?.map((link, lidx) => (
+                      <li key={lidx}>
+                        <Link href={link.url} className="hover:text-orange-500 transition-colors">{link.label}</Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            ) : (
+              // Fallback
+              <>
+                <div className={`border-b md:border-none ${borderClass} py-4 md:py-0`}>
+                  <button onClick={() => toggleSection(0)} className="w-full flex items-center justify-between md:cursor-default md:pointer-events-none">
+                    <h3 className={`text-lg font-semibold ${headingClass}`}>Nosotros</h3>
+                    <div className="md:hidden">{openSection === 0 ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}</div>
+                  </button>
+                  <ul className={`mt-4 space-y-4 text-[15px] ${openSection === 0 ? 'block' : 'hidden md:block'} opacity-90`}>
+                    <li><Link href="/about-us" className="hover:text-orange-500 transition-colors">¿Quiénes somos?</Link></li>
+                    <li><Link href="/contactanos" className="hover:text-orange-500 transition-colors">Contáctanos</Link></li>
+                  </ul>
+                </div>
+                <div className={`border-b md:border-none ${borderClass} py-4 md:py-0`}>
+                  <button onClick={() => toggleSection(1)} className="w-full flex items-center justify-between md:cursor-default md:pointer-events-none">
+                    <h3 className={`text-lg font-semibold ${headingClass}`}>Ayuda</h3>
+                    <div className="md:hidden">{openSection === 1 ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}</div>
+                  </button>
+                  <ul className={`mt-4 space-y-4 text-[15px] ${openSection === 1 ? 'block' : 'hidden md:block'} opacity-90`}>
+                    <li><Link href="/preguntas-frecuentes" className="hover:text-orange-500 transition-colors">Preguntas frecuentes</Link></li>
+                    <li><Link href="/envios-y-entregas" className="hover:text-orange-500 transition-colors">Envíos y entregas</Link></li>
+                    <li><Link href="/devoluciones-y-reembolsos" className="hover:text-orange-500 transition-colors">Devoluciones y reembolsos</Link></li>
+                  </ul>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Column 4: Newsletter */}
+          <div className={`w-full lg:w-1/4 border-b md:border-none ${borderClass} py-4 md:py-0`}>
+            <button 
+              onClick={() => setNewsletterOpen(!newsletterOpen)}
+              className="w-full flex items-center justify-between md:cursor-default md:pointer-events-none mb-4"
+            >
+              <h3 className={`text-lg font-semibold ${headingClass}`}>
+                Suscríbete a nuestro Newsletter
+              </h3>
+              <div className="md:hidden">
+                {newsletterOpen ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
               </div>
-            ))
-          ) : (
-            // Fallback content if no columns are defined
-            <>
-              <div>
-                <h3 className={`font-bold ${headingClass} mb-6 flex items-center gap-2`}>
-                  <span className={`w-1.5 h-1.5 ${dotClass} rounded-full`}></span>
-                  Empresa
-                </h3>
-                <ul className="space-y-4 text-[13px] opacity-80">
-                  <li><Link href="/about-us" className="hover:text-accent transition-colors">Sobre Nosotros</Link></li>
-                  <li><Link href="/contactanos" className="hover:text-accent transition-colors">Contáctanos</Link></li>
-                  <li><Link href="/consejos-de-salud" className="hover:text-accent transition-colors">Consejos de Salud</Link></li>
-                  <li><Link href="/testimonios" className="hover:text-accent transition-colors">Testimonios</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className={`font-bold ${headingClass} mb-6 flex items-center gap-2`}>
-                  <span className={`w-1.5 h-1.5 ${dotClass} rounded-full`}></span>
-                  Ayuda al cliente
-                </h3>
-                <ul className="space-y-4 text-[13px] opacity-80">
-                  <li><Link href="/preguntas-frecuentes" className="hover:text-accent transition-colors">Preguntas frecuentes</Link></li>
-                  <li><Link href="/envios-y-entregas" className="hover:text-accent transition-colors">Envíos y entregas</Link></li>
-                  <li><Link href="/devoluciones-y-reembolsos" className="hover:text-accent transition-colors">Devoluciones y reembolsos</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className={`font-bold ${headingClass} mb-6 flex items-center gap-2`}>
-                  <span className={`w-1.5 h-1.5 ${dotClass} rounded-full`}></span>
-                  Tienda & Legal
-                </h3>
-                <ul className="space-y-4 text-[13px] opacity-80">
-                  <li><Link href="/terms-and-conditions" className="hover:text-accent transition-colors">Términos y condiciones</Link></li>
-                  <li><Link href="/politica-de-privacidad" className="hover:text-accent transition-colors">Política de privacidad</Link></li>
-                </ul>
-              </div>
-            </>
-          )}
+            </button>
+            
+            <div className={`${newsletterOpen ? 'block' : 'hidden md:block'}`}>
+              <p className="text-[14px] opacity-90 mb-4 leading-relaxed">
+                Entérate de los nuevos productos, e información de valor de nuestras principales categorías.
+              </p>
+              <form className="relative flex items-center" onSubmit={(e) => e.preventDefault()}>
+                <input 
+                  type="email" 
+                  placeholder="Introduce tu dirección de correo electrónico" 
+                  className="w-full py-3.5 pl-4 pr-24 rounded-full text-gray-900 text-sm focus:outline-none border border-gray-200"
+                  required
+                />
+                <button 
+                  type="submit" 
+                  className="absolute right-2 font-bold text-sm text-gray-900 hover:text-orange-500 transition-colors px-2"
+                >
+                  Suscribir
+                </button>
+              </form>
+            </div>
+          </div>
 
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className={`${isDark ? 'bg-slate-900' : 'bg-gray-50'} border-t ${borderClass}`}>
-        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs opacity-60">
-            © {new Date().getFullYear()} {storeName}. Todos los derechos reservados.
+      {/* Bottom Bar & Payment Methods */}
+      <div className="max-w-7xl mx-auto px-6 pb-12 pt-6">
+        <div className={`border-t ${borderClass} pt-8 flex flex-col-reverse md:flex-row items-center justify-between gap-6`}>
+          <p className="text-sm opacity-80 text-center md:text-left w-full md:w-auto">
+            © {new Date().getFullYear()} {storeName} Perú. Todos los Derechos Reservados.
           </p>
-          <div className="flex gap-4 text-xs opacity-60">
-            <Link href="/libro-de-reclamaciones" className={`hover:${headingClass}`}>Libro de Reclamaciones</Link>
-            <span>·</span>
-            <Link href="/politica-de-privacidad" className={`hover:${headingClass}`}>Privacidad</Link>
-            <span>·</span>
-            <Link href="/terms-and-conditions" className={`hover:${headingClass}`}>Términos</Link>
+          
+          <div className="flex flex-wrap justify-center md:justify-end gap-2 items-center max-w-full">
+            {/* Mercado Pago */}
+            <div className="h-8 w-12 bg-yellow-400 rounded flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="h-6 w-8 text-blue-600" fill="currentColor"><path d="M11 12.5c-.3.2-.8.2-1.1 0l-2.4-1.4c-1.3-.8-1.7-2.5-1-3.8.8-1.3 2.5-1.7 3.8-1l2.4 1.4c1.3.8 1.7 2.5 1 3.8-.8 1.3-2.4 1.7-3.7 1zM7 11.5l1.5.9c.7.4 1.6.2 2-.5.4-.7.2-1.6-.5-2l-1.5-.9c-.7-.4-1.6-.2-2 .5-.4.7-.2 1.6.5 2z"/></svg>
+            </div>
+            {/* VISA */}
+            <div className="h-8 w-12 bg-blue-600 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-[13px] tracking-wider italic">VISA</span>
+            </div>
+            {/* Mastercard */}
+            <div className="h-8 w-12 bg-[#1a1f26] rounded flex items-center justify-center overflow-hidden">
+              <div className="relative flex items-center justify-center w-full">
+                <div className="w-5 h-5 rounded-full bg-red-500 absolute -ml-3 opacity-90 mix-blend-screen"></div>
+                <div className="w-5 h-5 rounded-full bg-yellow-500 absolute ml-3 opacity-90 mix-blend-screen"></div>
+              </div>
+            </div>
+            {/* AMEX */}
+            <div className="h-8 w-12 bg-blue-500 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-[10px] leading-tight text-center">AM<br/>EX</span>
+            </div>
+            {/* Diners */}
+            <div className="h-8 w-12 bg-white rounded flex items-center justify-center">
+              <span className="text-[#004b8d] font-serif font-bold text-lg">D</span>
+            </div>
+            {/* Yape */}
+            <div className="h-8 w-12 bg-purple-600 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-xs">yape</span>
+            </div>
+            {/* PagoEfectivo */}
+            <div className="h-8 w-12 bg-yellow-400 rounded flex items-center justify-center">
+              <span className="text-black font-bold italic text-lg leading-none pr-1">P</span>
+            </div>
+            {/* Apple Pay */}
+            <div className="h-8 w-16 bg-white rounded flex items-center justify-center gap-1">
+              <svg viewBox="0 0 24 24" className="w-3 h-4" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.05 2.53.8 3.26.8s2.1-.85 3.65-.72c1.41.13 2.73.71 3.65 1.69-2.85 1.57-2.38 5.48.55 6.7-1.04 2.22-2.18 3.55-3.11 4.5zm-3.28-14.8c-.36 1.83-2.16 3.19-3.9 3.03-.43-1.84 1.34-3.4 3.17-3.79.13-.03.26-.04.38-.04.13.01.24.41.35.8z"/></svg>
+              <span className="font-bold text-[11px]">Pay</span>
+            </div>
+            {/* Google Pay */}
+            <div className="h-8 w-16 bg-white rounded flex items-center justify-center gap-1">
+              <span className="font-bold text-[13px] text-gray-500"><span className="text-red-500">G</span> Pay</span>
+            </div>
+            {/* Shop */}
+            <div className="h-8 w-14 bg-purple-600 rounded flex items-center justify-center">
+              <span className="text-white font-bold text-[13px]">shop</span>
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Floating Buttons */}
+      <div className="fixed bottom-24 right-6 flex flex-col gap-3 z-50">
+        <button 
+          onClick={scrollToTop}
+          className="w-12 h-12 bg-white text-gray-900 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
+          aria-label="Volver arriba"
+        >
+          <ArrowUp className="w-6 h-6" />
+        </button>
       </div>
     </footer>
   );
