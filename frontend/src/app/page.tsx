@@ -5,6 +5,7 @@ import { CategoryGridBlock } from "@/components/blocks/CategoryGridBlock";
 import { FeaturedProductsBlock } from "@/components/blocks/FeaturedProductsBlock";
 import { CarouselBlock } from "@/components/blocks/CarouselBlock";
 import { ValuePropBlock } from "@/components/blocks/ValuePropBlock";
+import { CustomHtmlBlock } from "@/components/blocks/CustomHtmlBlock";
 
 export default function Home() {
   const [pageData, setPageData] = useState<any>(null);
@@ -63,6 +64,8 @@ export default function Home() {
             return <CarouselBlock key={index} data={block.data} />;
           case 'value_proposition':
             return <ValuePropBlock key={index} data={block.data} />;
+          case 'custom_html':
+            return <CustomHtmlBlock key={index} data={block.data} />;
           default:
             return <div key={index} className="p-4 border border-red-200 text-red-500 text-sm">Bloque no soportado: {block.type}</div>;
         }

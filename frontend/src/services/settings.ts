@@ -6,6 +6,8 @@ export interface StoreSettings {
   tiktok_url: string;
   contact_email: string;
   store_address: string;
+  footer_theme?: string;
+  footer_columns?: { title: string; links: { label: string; url: string; }[] }[];
 }
 
 export async function getStoreSettings(): Promise<StoreSettings | null> {
