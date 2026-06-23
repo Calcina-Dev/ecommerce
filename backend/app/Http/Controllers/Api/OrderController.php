@@ -18,4 +18,19 @@ class OrderController extends Controller
 
         return response()->json($orders);
     }
+
+    public function tracking($order_number)
+    {
+        $order = Order::with(['items.product', 'notes' => function ($query) {
+            $query->where('type', 'customer')->orderBy('created_at', 'desc');
+        }, 'shippingMethod'])
+        ->where('order_number', $order_number)
+        ->first();
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        return response()->json($order);
+    }
 }

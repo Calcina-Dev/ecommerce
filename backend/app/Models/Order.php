@@ -22,6 +22,10 @@ class Order extends Model
         'shipping_phone',
         'shipping_address',
         'shipping_city',
+        'shipping_department',
+        'shipping_province',
+        'shipping_district',
+        'shipping_postal_code',
         'payment_method',
         'payment_status',
         'document_type',
@@ -69,5 +73,10 @@ class Order extends Model
     public function shippingMethod(): BelongsTo
     {
         return $this->belongsTo(ShippingMethod::class);
+    }
+
+    public function notes()
+    {
+        return $this->hasMany(OrderNote::class)->orderBy('created_at', 'desc');
     }
 }

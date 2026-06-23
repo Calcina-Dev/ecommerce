@@ -70,6 +70,12 @@ class IzipayWebhookController extends Controller
                 'is_foreign_card' => $isForeignCard,
                 'gateway_transaction_id' => $transactionUuid,
             ]);
+
+            \App\Models\OrderNote::create([
+                'order_id' => $order->id,
+                'content' => "Respuesta Webhook Izipay recibida (Transacción: {$transactionUuid}). Tarjeta: {$cardBrand} terminada en {$cardLastDigits}. País: {$cardCountry}.",
+                'type' => 'system',
+            ]);
             
             $admins = \App\Models\User::whereIn('role', ['admin', 'employee'])->get();
             if ($admins->count() > 0) {

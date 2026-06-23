@@ -71,9 +71,12 @@ class CheckoutController extends Controller
         $request->validate([
             'shipping_name' => 'required|string|max:255',
             'shipping_email' => 'required|email|max:255',
-            'shipping_phone' => 'required|string|max:20',
+            'shipping_phone' => 'required|string|digits:9',
             'shipping_address' => 'required|string|max:255',
-            'shipping_city' => 'required|string|max:255',
+            'shipping_department' => 'required|string|max:255',
+            'shipping_province' => 'required|string|max:255',
+            'shipping_district' => 'required|string|max:255',
+            'shipping_postal_code' => 'required|string|max:20',
             'items' => 'required|array|min:1',
             'items.*.id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -155,7 +158,10 @@ class CheckoutController extends Controller
                 'shipping_email' => $request->shipping_email,
                 'shipping_phone' => $request->shipping_phone,
                 'shipping_address' => $request->shipping_address,
-                'shipping_city' => $request->shipping_city,
+                'shipping_department' => $request->shipping_department,
+                'shipping_province' => $request->shipping_province,
+                'shipping_district' => $request->shipping_district,
+                'shipping_postal_code' => $request->shipping_postal_code,
                 'coupon_id' => $couponId,
                 'discount_amount' => $discountAmount,
             ]);
@@ -321,6 +327,11 @@ class CheckoutController extends Controller
                 'gateway_transaction_id' => $transactionUuid,
             ]);
 
+            \App\Models\OrderNote::create([
+                'order_id' => $order->id,
+                'content' => "Pago completado por Izipay (Frontend). Transacción: {$transactionUuid}. Tarjeta: {$cardBrand} terminada en {$cardLastDigits}. País: {$cardCountry}.",
+                'type' => 'system',
+            ]);
             $admins = \App\Models\User::whereIn('role', ['admin', 'employee'])->get();
             if ($admins->count() > 0) {
                 \Filament\Notifications\Notification::make()

@@ -17,6 +17,8 @@ class OrderForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $ubigeos = json_decode(file_get_contents(storage_path('app/ubigeos_peru.json')), true);
+
         return $schema
             ->components([
                 \Filament\Forms\Components\ViewField::make('timeline')
@@ -127,8 +129,69 @@ class OrderForm
                                         \Filament\Forms\Components\TextInput::make('shipping_name')->label('Nombre')->required(),
                                         \Filament\Forms\Components\TextInput::make('shipping_email')->label('Email')->email()->required(),
                                         \Filament\Forms\Components\TextInput::make('shipping_phone')->label('Teléfono')->required(),
-                                        \Filament\Forms\Components\TextInput::make('shipping_city')->label('Ciudad')->required(),
                                         \Filament\Forms\Components\TextInput::make('shipping_address')->label('Dirección')->columnSpanFull()->required(),
+                                        \Filament\Forms\Components\Select::make('shipping_department')
+                                            ->label('Departamento')
+                                            ->options(function () use ($ubigeos) {
+                                                $deps = array_unique(array_column($ubigeos, 'department'));
+                                                sort($deps);
+                                                return array_combine($deps, $deps);
+                                            })
+                                            ->reactive()
+                                            ->afterStateUpdated(fn (callable $set) => $set('shipping_province', null) ?? $set('shipping_district', null) ?? $set('shipping_postal_code', null))
+                                            ->searchable()
+                                            ->required(),
+                                        \Filament\Forms\Components\Select::make('shipping_province')
+                                            ->label('Provincia')
+                                            ->options(function (callable $get) use ($ubigeos) {
+                                                $dep = $get('shipping_department');
+                                                if (!$dep) return [];
+                                                $provs = array_unique(array_column(array_filter($ubigeos, fn($u) => $u['department'] === $dep), 'province'));
+                                                sort($provs);
+                                                return array_combine($provs, $provs);
+                                            })
+                                            ->reactive()
+                                            ->afterStateUpdated(fn (callable $set) => $set('shipping_district', null) ?? $set('shipping_postal_code', null))
+                                            ->searchable()
+                                            ->required(),
+                                        \Filament\Forms\Components\Select::make('shipping_district')
+                                            ->label('Distrito')
+                                            ->options(function (callable $get) use ($ubigeos) {
+                                                $dep = $get('shipping_department');
+                                                $prov = $get('shipping_province');
+                                                if (!$dep || !$prov) return [];
+                                                $dists = array_unique(array_column(array_filter($ubigeos, fn($u) => $u['department'] === $dep && $u['province'] === $prov), 'district'));
+                                                sort($dists);
+                                                return array_combine($dists, $dists);
+                                            })
+                                            ->reactive()
+                                            ->afterStateUpdated(function (callable $set, callable $get, $state) use ($ubigeos) {
+                                                $dep = $get('shipping_department');
+                                                $prov = $get('shipping_province');
+                                                if ($dep && $prov && $state) {
+                                                    $match = collect($ubigeos)->first(fn($u) => $u['department'] === $dep && $u['province'] === $prov && $u['district'] === $state);
+                                                    if ($match) {
+                                                        $set('shipping_postal_code', $match['postal_code']);
+                                                    }
+                                                }
+                                            })
+                                            ->searchable()
+                                            ->required(),
+                                        \Filament\Forms\Components\TextInput::make('shipping_postal_code')
+                                            ->label('Código Postal (Ubigeo)')
+                                            ->maxLength(6)
+                                            ->reactive()
+                                            ->afterStateUpdated(function (callable $set, $state) use ($ubigeos) {
+                                                if (strlen($state) === 6) {
+                                                    $match = collect($ubigeos)->first(fn($u) => $u['postal_code'] === $state);
+                                                    if ($match) {
+                                                        $set('shipping_department', $match['department']);
+                                                        $set('shipping_province', $match['province']);
+                                                        $set('shipping_district', $match['district']);
+                                                    }
+                                                }
+                                            })
+                                            ->required(),
                                         \Filament\Forms\Components\Select::make('shipping_method_id')
                                             ->label('Empresa de Envío')
                                             ->relationship('shippingMethod', 'name')
@@ -141,9 +204,20 @@ class OrderForm
                                             ->numeric()
                                             ->prefix('S/')
                                             ->default(0),
+
+                                        \Filament\Schemas\Components\Actions::make([
+                                            \Filament\Actions\Action::make('save')
+                                                ->label('Guardar cambios')
+                                                ->submit('save')
+                                                ->color('primary'),
+                                            \Filament\Actions\Action::make('cancel')
+                                                ->label('Cancelar')
+                                                ->url(fn($livewire) => method_exists($livewire, 'getResource') ? $livewire->getResource()::getUrl('index') : '#')
+                                                ->color('gray'),
+                                        ])->columnSpanFull()->alignCenter(),
                                     ])->columns(2)
                                     ->disabled(fn (string $operation, ?\App\Models\Order $record) => 
-                                        $operation === 'edit' && $record && ($record->getOriginal('status') !== 'pending' || $record->getOriginal('payment_status') === 'paid')
+                                        $operation === 'edit' && $record && in_array($record->getOriginal('status'), ['shipped', 'delivered', 'cancelled'])
                                     ),
                             ]),
 
@@ -184,13 +258,30 @@ class OrderForm
                                                 !($operation === 'edit' && $record && ($record->getOriginal('status') !== 'pending' || $record->getOriginal('payment_status') === 'paid'))
                                             ),
                                     ]),
+                                \Filament\Schemas\Components\Section::make('Historial y Notas')
+                                    ->schema([
+                                        \Filament\Forms\Components\ViewField::make('order_notes_wrapper')
+                                            ->view('filament.components.order-notes-wrapper')
+                                            ->hiddenLabel()
+                                            ->columnSpanFull()
+                                            ->hiddenOn('create'),
+                                    ])
+                                    ->collapsible()
+                                    ->hiddenOn('create'),
+
+                                \Filament\Schemas\Components\Section::make('Trazabilidad del Pedido')
+                                    ->description('Flujo de vida del documento (Puedes arrastrar los nodos)')
+                                    ->schema([
+                                        \Filament\Forms\Components\ViewField::make('traceability')
+                                            ->view('filament.components.traceability-map')
+                                            ->columnSpanFull()
+                                            ->hiddenLabel()
+                                            ->hiddenOn('create'),
+                                    ])
+                                    ->collapsible()
+                                    ->hiddenOn('create'),
                             ]),
                     ]),
-                \Filament\Forms\Components\ViewField::make('traceability')
-                    ->view('filament.components.traceability-map')
-                    ->columnSpanFull()
-                    ->hiddenLabel()
-                    ->hiddenOn('create'),
             ]);
     }
 }

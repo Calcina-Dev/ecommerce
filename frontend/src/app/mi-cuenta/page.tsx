@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/store/useAuthStore";
+import { CheckCircle2, Package, Truck, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function MiCuentaPage() {
   const router = useRouter();
@@ -129,7 +131,15 @@ export default function MiCuentaPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Teléfono</label>
-                  <input value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="w-full px-4 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary" />
+                  <input 
+                    type="tel" 
+                    pattern="[0-9]{9}" 
+                    maxLength={9} 
+                    title="El número debe tener exactamente 9 dígitos"
+                    value={editForm.phone} 
+                    onChange={e => setEditForm({...editForm, phone: e.target.value.replace(/\D/g, '')})} 
+                    className="w-full px-4 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-primary" 
+                  />
                 </div>
               </div>
               <div className="flex gap-4 mt-6">
@@ -180,7 +190,13 @@ export default function MiCuentaPage() {
                       order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                       'bg-amber-100 text-amber-700'
                     }`}>
-                      {order.status}
+                      {{
+                        pending: 'Pendiente',
+                        processing: 'Procesando',
+                        shipped: 'Enviado',
+                        delivered: 'Entregado',
+                        cancelled: 'Cancelado'
+                      }[order.status as string] || order.status}
                     </div>
 
                     <div className="text-muted-foreground">
@@ -192,8 +208,16 @@ export default function MiCuentaPage() {
                 </div>
 
                 {/* Acordeón de detalles */}
+                <AnimatePresence>
                 {expandedOrder === order.id && (
-                  <div className="border-t bg-muted/10 p-6">
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="border-t bg-muted/10 p-0 sm:p-6 overflow-hidden"
+                  >
+                    <div className="p-6 sm:p-0">
                     
                     {/* INICIO TIMELINE */}
                     <div className="mb-8 p-6 bg-background rounded-3xl border shadow-sm">
@@ -212,115 +236,143 @@ export default function MiCuentaPage() {
                           </div>
                         </div>
                       ) : (
-                        <div className="relative flex justify-between items-start w-full max-w-4xl mx-auto mt-4">
-                          {/* Línea conectora de fondo */}
-                          <div className="absolute top-6 left-[12.5%] right-[12.5%] h-1 bg-muted rounded-full"></div>
-                          
-                          {/* Línea conectora de progreso */}
-                          <div 
-                            className="absolute top-6 left-[12.5%] h-1 bg-primary rounded-full transition-all duration-700 ease-in-out"
-                            style={{ width: 
-                              order.status === 'delivered' ? '75%' : 
-                              order.status === 'shipped' ? '50%' : 
-                              order.status === 'processing' ? '25%' : '0%' 
-                            }}
-                          ></div>
-
+                        <div className="relative mb-12 mt-4 hidden sm:block">
+                          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                            <motion.div 
+                              initial={{ width: 0 }} 
+                              animate={{ width: "100%" }} 
+                              transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                              className="w-full border-t-2 border-gray-200"
+                            ></motion.div>
+                          </div>
+                          <div className="relative flex justify-between">
                           {[
-                            { status: 'pending', label: 'Pendiente', date: order.created_at, icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-                            { status: 'processing', label: 'Procesando', date: order.processing_at, icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
-                            { status: 'shipped', label: 'Enviado', date: order.shipped_at, icon: 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4' },
-                            { status: 'delivered', label: 'Entregado', date: order.delivered_at, icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
-                          ].map((step) => {
-                            const isPastOrCurrent = 
-                              step.status === 'pending' || 
-                              (step.status === 'processing' && ['processing', 'shipped', 'delivered'].includes(order.status)) ||
-                              (step.status === 'shipped' && ['shipped', 'delivered'].includes(order.status)) ||
-                              (step.status === 'delivered' && order.status === 'delivered');
-
+                            { status: 'pending', label: 'Recibido', date: order.created_at, icon: CheckCircle2, stepNum: 1 },
+                            { status: 'processing', label: 'Procesando', date: order.processing_at, icon: Package, stepNum: 2 },
+                            { status: 'shipped', label: 'Enviado', date: order.shipped_at, icon: Truck, stepNum: 3 },
+                            { status: 'delivered', label: 'Entregado', date: order.delivered_at, icon: Home, stepNum: 4 },
+                          ].map((step, index) => {
+                            const currentStepNum = 
+                              order.status === 'delivered' ? 4 : 
+                              order.status === 'shipped' ? 3 : 
+                              order.status === 'processing' ? 2 : 1;
+                              
+                            const isPastOrCurrent = step.stepNum <= currentStepNum;
                             const displayDate = step.date || (isPastOrCurrent ? order.updated_at : null);
+                            const IconComponent = step.icon;
 
                             return (
-                              <div key={step.status} className="relative z-10 flex flex-col items-center w-1/4">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-background transition-colors duration-500 shadow-sm ${isPastOrCurrent ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={step.icon} />
-                                  </svg>
+                              <motion.div 
+                                key={step.status} 
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 20, delay: index * 0.15 }}
+                                className="flex items-center flex-col relative"
+                              >
+                                <div className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors duration-500 relative z-10 ${isPastOrCurrent ? 'bg-green-600 text-white ring-4 ring-white shadow-md shadow-green-600/30' : 'bg-gray-200 text-gray-400 ring-4 ring-white'}`}>
+                                  <IconComponent className="w-5 h-5" />
                                 </div>
-                                <p className={`mt-3 text-[11px] sm:text-sm font-bold tracking-tight ${isPastOrCurrent ? 'text-foreground' : 'text-muted-foreground'}`}>{step.label}</p>
+                                <div className={`absolute top-12 text-xs font-semibold ${isPastOrCurrent ? 'text-gray-900' : 'text-gray-400'}`}>
+                                  {step.label}
+                                </div>
                                 {isPastOrCurrent ? (
-                                  <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-1 text-center px-1 font-medium bg-muted/30 py-1 px-2 rounded-lg leading-tight">
-                                    {new Date(displayDate).toLocaleDateString('es-PE', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}
+                                  <p className="absolute top-16 mt-1 text-[10px] text-muted-foreground whitespace-nowrap bg-muted/30 py-0.5 px-1.5 rounded-md">
+                                    {new Date(displayDate).toLocaleDateString('es-PE', { month: 'short', day: 'numeric' })}
                                   </p>
                                 ) : (
-                                  <p className="text-[10px] sm:text-[11px] text-transparent mt-1 text-center px-1 font-medium bg-transparent py-1 px-2 rounded-lg leading-tight select-none">
+                                  <p className="absolute top-16 mt-1 text-[10px] text-transparent whitespace-nowrap select-none">
                                     --/--
                                   </p>
                                 )}
-                              </div>
+                              </motion.div>
                             );
                           })}
+                          </div>
                         </div>
                       )}
                     </div>
                     {/* FIN TIMELINE */}
-
-                    <h4 className="text-sm font-bold mb-4 text-muted-foreground uppercase tracking-wider">Productos comprados</h4>
-                    <div className="space-y-4">
-                      {order.items.map((item: any) => (
-                        <div key={item.id} className="flex gap-4 items-center">
-                          <div className="w-12 h-12 bg-muted rounded-lg border flex items-center justify-center text-xs text-muted-foreground font-bold">
-                            {item.quantity}x
-                          </div>
-                          <div className="flex-1">
-                            {item.product && item.product.slug ? (
-                              <Link href={`/productos/${item.product.slug}`} className="font-medium text-sm hover:text-accent hover:underline transition-all">
-                                {item.product_name}
-                              </Link>
-                            ) : (
-                              <p className="font-medium text-sm">{item.product_name}</p>
-                            )}
-                            <p className="text-xs text-muted-foreground">S/ {parseFloat(item.price).toFixed(2)} c/u</p>
-                          </div>
-                          <div className="font-bold text-sm">
-                            S/ {parseFloat(item.subtotal).toFixed(2)}
-                          </div>
+                    {/* Tracking Info (Blue Box) */}
+                    {order.tracking_code && (
+                      <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 mb-8 flex items-start gap-4 transition-all hover:shadow-sm">
+                        <div className="bg-blue-100 text-blue-600 p-2 rounded-lg">
+                          <Truck className="w-6 h-6 animate-pulse" />
                         </div>
-                      ))}
-                    </div>
-                    
-                    {order.discount_amount > 0 && order.coupon && (
-                      <div className="mt-4 pt-4 border-t flex justify-between text-sm font-medium text-green-600">
-                        <span>Descuento aplicado ({order.coupon.code})</span>
-                        <span>- S/ {parseFloat(order.discount_amount).toFixed(2)}</span>
+                        <div>
+                          <h4 className="text-sm font-semibold text-blue-900">Información de Envío</h4>
+                          <p className="text-sm text-blue-800 mt-1">Empresa: <strong>{order.shipping_method?.name || "Courier"}</strong></p>
+                          <p className="text-sm text-blue-800">Código de Rastreo: <strong className="font-mono bg-blue-100 px-2 py-0.5 rounded ml-1">{order.tracking_code}</strong></p>
+                        </div>
                       </div>
                     )}
-                    
-                    <div className="mt-6 pt-6 border-t grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-                      <div>
-                        <span className="block font-semibold mb-1 text-muted-foreground">Enviado a:</span>
-                        <p>{order.shipping_name}</p>
-                        <p>{order.shipping_address}, {order.shipping_city}</p>
-                        <p>{order.shipping_phone}</p>
-                        {order.shipping_method && (
-                          <p className="mt-2 text-primary font-medium text-xs border border-primary/20 bg-primary/5 inline-block px-2 py-1 rounded">
-                            {order.shipping_method.name}
-                          </p>
-                        )}
-                        {order.tracking_code && (
-                          <p className="mt-2 font-medium">Tracking: <span className="bg-muted px-2 py-1 rounded font-mono text-xs">{order.tracking_code}</span></p>
-                        )}
+
+                    <div className="border-t border-gray-100 pt-8 mt-8">
+                      <h4 className="text-lg font-bold text-gray-900 mb-4">Resumen del Pedido</h4>
+                      <div className="space-y-3 mb-6">
+                        {order.items.map((item: any, i: number) => (
+                          <div key={item.id} className="flex justify-between items-center group hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors">
+                            <div className="flex-1">
+                              {item.product && item.product.slug ? (
+                                <Link href={`/productos/${item.product.slug}`} className="text-sm font-medium text-gray-900 group-hover:text-green-700 transition-colors">
+                                  {item.product_name}
+                                </Link>
+                              ) : (
+                                <p className="text-sm font-medium text-gray-900">{item.product_name}</p>
+                              )}
+                              <p className="text-xs text-gray-500">Cant: {item.quantity} (S/ {parseFloat(item.price).toFixed(2)} c/u)</p>
+                            </div>
+                            <span className="text-sm font-semibold text-gray-900">
+                              S/ {parseFloat(item.subtotal).toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                      <div>
-                        <span className="block font-semibold mb-1 text-muted-foreground">Método de Pago:</span>
-                        <p className="capitalize">{order.payment_method || 'Pendiente'}</p>
-                        <p className={`mt-1 font-medium ${order.payment_status === 'paid' ? 'text-green-600' : 'text-amber-600'}`}>
-                          {order.payment_status === 'paid' ? 'Pagado' : 'Pendiente de confirmación'}
-                        </p>
+
+                      <div className="bg-gray-50 p-5 rounded-xl space-y-2 border border-gray-100 mb-6">
+                        <div className="flex justify-between text-sm text-gray-600">
+                          <span>Subtotal</span>
+                          <span>S/ {order.items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0).toFixed(2)}</span>
+                        </div>
+                        {parseFloat(order.discount_amount) > 0 && (
+                          <div className="flex justify-between text-sm text-red-600">
+                            <span>Descuento {order.coupon ? `(${order.coupon.code})` : ''}</span>
+                            <span>- S/ {parseFloat(order.discount_amount).toFixed(2)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between text-sm text-gray-600">
+                          <span>Envío</span>
+                          <span>S/ {parseFloat(order.shipping_cost || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-base font-bold text-gray-900 pt-3 border-t border-gray-200 mt-3">
+                          <span>Total</span>
+                          <span className="text-green-600 text-lg">
+                            S/ {parseFloat(order.total_amount || 0).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm bg-muted/10 p-5 rounded-xl border border-gray-100">
+                        <div>
+                          <p className="text-muted-foreground font-semibold mb-2 uppercase tracking-wider text-xs">Datos de Envío</p>
+                          <p className="font-medium text-gray-900">{order.shipping_name}</p>
+                          <p className="text-gray-600">{order.shipping_address}</p>
+                          <p className="text-gray-600">{order.shipping_district ? `${order.shipping_district}, ${order.shipping_province}, ${order.shipping_department}` : order.shipping_city}</p>
+                          <p className="text-gray-600">CP: {order.shipping_postal_code}</p>
+                          <p className="text-gray-600">Telf: {order.shipping_phone}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground font-semibold mb-2 uppercase tracking-wider text-xs">Datos de Pago</p>
+                          <p className="font-medium text-gray-900 capitalize">{order.payment_method || 'N/A'}</p>
+                          <p className={`font-bold mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs ${order.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                            {order.payment_status === 'paid' ? 'Pagado' : order.payment_status === 'pending' ? 'Pendiente' : 'Fallido'}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                    </div>
+                  </motion.div>
                 )}
+                </AnimatePresence>
               </div>
             ))}
           </div>

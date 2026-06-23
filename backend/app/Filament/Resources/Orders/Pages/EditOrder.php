@@ -12,6 +12,11 @@ class EditOrder extends EditRecord
 {
     protected static string $resource = OrderResource::class;
 
+    protected function getFormActions(): array
+    {
+        return [];
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -45,13 +50,20 @@ class EditOrder extends EditRecord
                         ->label('Código de Seguimiento (Tracking)')
                         ->required()
                         ->default(fn () => $this->record->tracking_code),
+                    \Filament\Forms\Components\TextInput::make('shipping_cost')
+                        ->label('Costo de Envío (Asumido por Empresa)')
+                        ->numeric()
+                        ->prefix('S/')
+                        ->default(fn () => $this->record->shipping_cost ?? 0)
+                        ->required(),
                 ])
                 ->action(function (array $data) {
                     $this->record->shipping_method_id = $data['shipping_method_id'];
                     $this->record->tracking_code = $data['tracking_code'];
+                    $this->record->shipping_cost = $data['shipping_cost'];
                     $this->record->status = 'shipped';
                     $this->record->save(); // Save triggers the observer
-                    $this->refreshFormData(['status', 'shipping_method_id', 'tracking_code']);
+                    $this->refreshFormData(['status', 'shipping_method_id', 'tracking_code', 'shipping_cost']);
                 }),
 
             Action::make('markAsDelivered')
@@ -69,7 +81,7 @@ class EditOrder extends EditRecord
                 ->label('Cancelar Pedido')
                 ->color('danger')
                 ->icon('heroicon-o-x-circle')
-                ->visible(fn () => !in_array($this->record->status, ['delivered', 'cancelled']))
+                ->visible(fn () => !in_array($this->record->status, ['shipped', 'delivered', 'cancelled']))
                 ->requiresConfirmation()
                 ->modalHeading('¿Cancelar Pedido?')
                 ->modalDescription(fn () => $this->record->payment_status === 'paid' ? 'Este pedido ya está PAGADO. Al cancelar, el sistema automáticamente reembolsará el dinero al cliente mediante la pasarela de pagos, y devolverá el stock. ¿Proceder?' : 'El pedido no está pagado. El stock será restaurado. ¿Proceder?')
@@ -100,12 +112,4 @@ class EditOrder extends EditRecord
         ];
     }
 
-    protected function getFormActions(): array
-    {
-        if ($this->record->status !== 'pending' || $this->record->payment_status === 'paid') {
-            return [];
-        }
-
-        return parent::getFormActions();
-    }
 }

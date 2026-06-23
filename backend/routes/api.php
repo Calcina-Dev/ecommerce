@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\StoreSettingController;
 
 Route::get('/storefront/settings', [StoreSettingController::class, 'index']);
 Route::get('/storefront/pages/{slug}', [StorefrontPageController::class, 'show']);
+Route::get('/orders/tracking/{order_number}', [OrderController::class, 'tracking']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();

@@ -156,6 +156,21 @@ class OnlineOrderSeeder extends Seeder
                 
                 $order->status = $targetStatus;
                 $order->save();
+
+                // Simulamos log de pago en la pasarela si el estado de pago es 'paid'
+                if ($order->payment_status === 'paid' && in_array($order->payment_method, ['izipay', 'mercadopago'])) {
+                    $brand = ['VISA', 'MASTERCARD', 'AMEX'][array_rand(['VISA', 'MASTERCARD', 'AMEX'])];
+                    $lastDigits = rand(1000, 9999);
+                    $txId = 'TX-' . strtoupper(Str::random(10));
+                    \App\Models\OrderNote::create([
+                        'order_id' => $order->id,
+                        'user_id' => null,
+                        'content' => "Pago completado por {$order->payment_method} (Simulado). Transacción: {$txId}. Tarjeta: {$brand} terminada en {$lastDigits}. País: PE.",
+                        'type' => 'system',
+                        'created_at' => $orderDate,
+                        'updated_at' => $orderDate,
+                    ]);
+                }
                 
                 // Update dates for stock movements to reflect past dates
                 \Illuminate\Support\Facades\DB::table('stock_movements')

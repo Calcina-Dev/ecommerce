@@ -58,6 +58,7 @@ export function Header() {
           <nav className="hidden lg:flex gap-6 text-sm font-semibold text-gray-600">
             <Link href="/productos" className="hover:text-accent transition-colors active:scale-95 duration-200 ease-[var(--spring-easing)] inline-block">Categorías</Link>
             <Link href="/productos?ofertas=true" className="hover:text-accent text-red-500 transition-colors active:scale-95 duration-200 ease-[var(--spring-easing)] inline-block">Ofertas</Link>
+            <Link href="/rastrear-pedido" className="hover:text-accent transition-colors active:scale-95 duration-200 ease-[var(--spring-easing)] inline-block">Rastrear Pedido</Link>
           </nav>
 
           <div className="flex items-center gap-3 border-l pl-6">

@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import KRGlue from "@lyracom/embedded-form-glue";
 import { toast } from "sonner";
+import ubigeosData from "@/data/ubigeos_peru.json";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -20,8 +21,20 @@ export default function CheckoutPage() {
     shipping_email: "",
     shipping_phone: "",
     shipping_address: "",
-    shipping_city: "",
+    shipping_department: "",
+    shipping_province: "",
+    shipping_district: "",
+    shipping_postal_code: "",
   });
+
+  // Autocomplete lists
+  const departments = Array.from(new Set(ubigeosData.map(u => u.department))).sort();
+  const provinces = formData.shipping_department 
+    ? Array.from(new Set(ubigeosData.filter(u => u.department === formData.shipping_department).map(u => u.province))).sort()
+    : [];
+  const districts = formData.shipping_province
+    ? Array.from(new Set(ubigeosData.filter(u => u.department === formData.shipping_department && u.province === formData.shipping_province).map(u => u.district))).sort()
+    : [];
 
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState("");
@@ -53,8 +66,44 @@ export default function CheckoutPage() {
     }
   }, [items, router]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, '');
+    setFormData({ ...formData, shipping_phone: val });
+  };
+
+  const handlePostalCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const code = e.target.value.replace(/\D/g, '').substring(0, 6);
+    setFormData(prev => ({ ...prev, shipping_postal_code: code }));
+    
+    if (code.length === 6) {
+      const match = ubigeosData.find(u => u.postal_code === code);
+      if (match) {
+        setFormData(prev => ({
+          ...prev,
+          shipping_department: match.department,
+          shipping_province: match.province,
+          shipping_district: match.district,
+        }));
+      }
+    }
+  };
+
+  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const district = e.target.value;
+    const match = ubigeosData.find(u => 
+      u.department === formData.shipping_department &&
+      u.province === formData.shipping_province &&
+      u.district === district
+    );
+    setFormData(prev => ({
+      ...prev,
+      shipping_district: district,
+      shipping_postal_code: match ? match.postal_code : prev.shipping_postal_code
+    }));
   };
 
   const handleApplyCoupon = async () => {
@@ -286,16 +335,55 @@ export default function CheckoutPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Teléfono</label>
-                <input required type="tel" name="shipping_phone" value={formData.shipping_phone} onChange={handleChange} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
+                <label className="block text-sm font-medium mb-2">Teléfono / Celular</label>
+                <input 
+                  required 
+                  type="tel" 
+                  pattern="[0-9]{9}" 
+                  maxLength={9}
+                  title="El número debe tener exactamente 9 dígitos"
+                  name="shipping_phone" 
+                  value={formData.shipping_phone} 
+                  onChange={handlePhoneChange} 
+                  className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" 
+                  placeholder="Ej: 987654321"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Dirección de entrega</label>
                 <input required name="shipping_address" value={formData.shipping_address} onChange={handleChange} placeholder="Calle, Número, Depto" className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Ciudad / Distrito</label>
-                <input required name="shipping_city" value={formData.shipping_city} onChange={handleChange} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Código Postal (Ubigeo)</label>
+                  <input required name="shipping_postal_code" maxLength={6} value={formData.shipping_postal_code} onChange={handlePostalCodeChange} placeholder="Ej: 130101" className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
+                  <p className="text-xs text-muted-foreground mt-1">Escribe tu Ubigeo para autocompletar</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Departamento</label>
+                  <select required name="shipping_department" value={formData.shipping_department} onChange={(e) => { handleChange(e); setFormData(p => ({...p, shipping_province: "", shipping_district: ""})) }} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white">
+                    <option value="">Seleccione...</option>
+                    {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Provincia</label>
+                  <select required name="shipping_province" value={formData.shipping_province} onChange={(e) => { handleChange(e); setFormData(p => ({...p, shipping_district: ""})) }} disabled={!formData.shipping_department} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white disabled:bg-muted/50">
+                    <option value="">Seleccione...</option>
+                    {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Distrito</label>
+                  <select required name="shipping_district" value={formData.shipping_district} onChange={handleDistrictChange} disabled={!formData.shipping_province} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white disabled:bg-muted/50">
+                    <option value="">Seleccione...</option>
+                    {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
               </div>
             </form>
           </div>
@@ -424,7 +512,10 @@ export default function CheckoutPage() {
                     !formData.shipping_email.trim() || 
                     !formData.shipping_phone.trim() || 
                     !formData.shipping_address.trim() || 
-                    !formData.shipping_city.trim()
+                    !formData.shipping_department.trim() ||
+                    !formData.shipping_province.trim() ||
+                    !formData.shipping_district.trim() ||
+                    !formData.shipping_postal_code.trim()
                   }
                 >
                   {loading ? "Procesando de forma segura..." : "Completar Pedido"}

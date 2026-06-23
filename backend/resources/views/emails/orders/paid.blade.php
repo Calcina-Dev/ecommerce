@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>¡Tu pedido #{{ $order->order_number }} está en camino!</title>
+    <title>¡Pago confirmado para tu pedido #{{ $order->order_number }}!</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f4f6; padding: 40px 20px;">
@@ -22,28 +22,17 @@
                     <!-- MAIN MESSAGE -->
                     <tr>
                         <td style="padding: 40px;">
-                            <h2 style="color: #16a34a; margin: 0 0 20px 0; font-size: 24px; font-weight: 700; text-align: center;">¡Buenas noticias, {{ $order->shipping_name ?? ($order->user ? $order->user->name : 'Cliente') }}!</h2>
+                            <h2 style="color: #16a34a; margin: 0 0 20px 0; font-size: 24px; font-weight: 700; text-align: center;">¡Hemos recibido tu pago, {{ $order->shipping_name ?? ($order->user ? $order->user->name : 'Cliente') }}!</h2>
                             <p style="margin: 0 0 20px; font-size: 16px; line-height: 24px; color: #4b5563; text-align: center;">
-                                Tu pedido <strong style="color: #111827;">#{{ $order->order_number }}</strong> ha sido marcado como enviado y está en camino hacia ti.
+                                El pago de tu pedido <strong style="color: #111827;">#{{ $order->order_number }}</strong> se ha confirmado exitosamente. Ya estamos preparando tus productos.
                             </p>
                             
-                            <!-- NOTE BLOCK / SHIPPING DETAILS -->
-                            <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 24px; margin-bottom: 32px;">
-                                <h3 style="color: #16a34a; margin: 0 0 16px; font-size: 16px; font-weight: 700;">Detalles de Envío</h3>
-                                <p style="margin: 0 0 12px; font-size: 15px; color: #1f2937;">
-                                    <strong>Dirección:</strong> {{ $order->shipping_address }}, {{ $order->shipping_city }}
+                            <!-- NOTE BLOCK / PAYMENT DETAILS -->
+                            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin-bottom: 32px; text-align: center;">
+                                <h3 style="color: #3b82f6; margin: 0 0 12px; font-size: 18px; font-weight: 700;">Monto Pagado: S/ {{ number_format($order->total_amount, 2) }}</h3>
+                                <p style="margin: 0; font-size: 15px; color: #64748b;">
+                                    <strong>Método:</strong> {{ ucfirst($order->payment_method ?? 'Tarjeta') }}
                                 </p>
-                                @if($order->shippingMethod)
-                                <p style="margin: 0 0 12px; font-size: 15px; color: #1f2937;">
-                                    <strong>Método de Envío:</strong> {{ $order->shippingMethod->name }}
-                                </p>
-                                @endif
-                                @if($order->tracking_code)
-                                <p style="margin: 0; font-size: 15px; color: #1f2937;">
-                                    <strong>Código de Seguimiento (Tracking):</strong> <br>
-                                    <span style="display: inline-block; background: #dcfce7; color: #166534; padding: 6px 12px; border-radius: 6px; font-weight: 700; letter-spacing: 1px; margin-top: 8px;">{{ $order->tracking_code }}</span>
-                                </p>
-                                @endif
                             </div>
                             
                             <!-- BOTÓN RASTREAR -->
@@ -51,7 +40,7 @@
                                 <tr>
                                     <td align="center">
                                         <a href="{{ env('FRONTEND_URL', 'http://localhost:3000') }}/rastrear-pedido?order_id={{ $order->order_number }}" style="display: inline-block; background-color: #111827; color: #ffffff; padding: 14px 32px; text-decoration: none; font-weight: 600; border-radius: 8px; font-size: 16px; transition: background-color 0.2s;">
-                                            Rastrear mi pedido
+                                            Ver Estado del Pedido
                                         </a>
                                     </td>
                                 </tr>
@@ -100,7 +89,7 @@
                                                 <td align="right" style="padding: 8px 0; font-size: 14px; color: #111827; font-weight: 500;">S/ {{ number_format($order->shipping_cost ?? 0, 2) }}</td>
                                             </tr>
                                             <tr>
-                                                <td align="left" style="padding: 16px 0 0; font-size: 16px; color: #111827; font-weight: 700; border-top: 1px solid #e5e7eb; margin-top: 8px;">Total</td>
+                                                <td align="left" style="padding: 16px 0 0; font-size: 16px; color: #111827; font-weight: 700; border-top: 1px solid #e5e7eb; margin-top: 8px;">Total Pagado</td>
                                                 <td align="right" style="padding: 16px 0 0; font-size: 18px; color: #3b82f6; font-weight: 800; border-top: 1px solid #e5e7eb; margin-top: 8px;">S/ {{ number_format($order->total_amount ?? 0, 2) }}</td>
                                             </tr>
                                         </table>
@@ -122,10 +111,9 @@
                                         </p>
                                     </td>
                                     <td width="50%" valign="top" style="padding-left: 16px; border-left: 1px solid #e5e7eb;">
-                                        <h4 style="margin: 0 0 12px; font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Información</h4>
+                                        <h4 style="margin: 0 0 12px; font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Contacto</h4>
                                         <p style="margin: 0; font-size: 14px; line-height: 20px; color: #1f2937;">
-                                            <strong>Teléfono:</strong><br>{{ $order->shipping_phone }}<br><br>
-                                            <strong>Método de pago:</strong><br>{{ ucfirst($order->payment_method ?? 'Tarjeta') }}
+                                            <strong>Teléfono:</strong><br>{{ $order->shipping_phone }}
                                         </p>
                                     </td>
                                 </tr>

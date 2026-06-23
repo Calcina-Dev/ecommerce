@@ -28,6 +28,13 @@ class OrderObserver
      */
     public function created(Order $order): void
     {
+        \App\Models\OrderNote::create([
+            'order_id' => $order->id,
+            'user_id' => auth()->id(),
+            'content' => "Pedido creado con estado '{$order->status}'.",
+            'type' => 'system',
+        ]);
+
         if (in_array($order->status, ['shipped', 'delivered'])) {
             $this->deductStock($order);
         }
@@ -39,6 +46,13 @@ class OrderObserver
     public function updated(Order $order): void
     {
         if ($order->isDirty('status')) {
+            \App\Models\OrderNote::create([
+                'order_id' => $order->id,
+                'user_id' => auth()->id(),
+                'content' => "El estado del pedido cambió de '" . ($order->getOriginal('status') ?? 'nuevo') . "' a '{$order->status}'.",
+                'type' => 'system',
+            ]);
+
             if (in_array($order->status, ['shipped', 'delivered']) && !in_array($order->getOriginal('status'), ['shipped', 'delivered'])) {
                 $this->assignDocumentNumber($order);
                 $this->deductStock($order);
@@ -48,6 +62,19 @@ class OrderObserver
                 }
             } elseif ($order->status === 'cancelled' && in_array($order->getOriginal('status'), ['shipped', 'delivered'])) {
                 $this->restoreStock($order);
+            }
+        }
+
+        if ($order->isDirty('payment_status')) {
+            \App\Models\OrderNote::create([
+                'order_id' => $order->id,
+                'user_id' => auth()->id(),
+                'content' => "El estado de pago cambió de '" . ($order->getOriginal('payment_status') ?? 'pendiente') . "' a '{$order->payment_status}'.",
+                'type' => 'system',
+            ]);
+
+            if ($order->payment_status === 'paid' && $order->shipping_email) {
+                \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderPaid($order));
             }
         }
     }
@@ -63,10 +90,18 @@ class OrderObserver
 
             if ($series) {
                 $series->increment('current_number');
+                $docNumber = str_pad($series->current_number, 6, '0', STR_PAD_LEFT);
                 $order->updateQuietly([
                     'document_type' => strtoupper($docType),
                     'document_series' => $series->series,
-                    'document_number' => str_pad($series->current_number, 6, '0', STR_PAD_LEFT)
+                    'document_number' => $docNumber
+                ]);
+
+                \App\Models\OrderNote::create([
+                    'order_id' => $order->id,
+                    'user_id' => auth()->id(),
+                    'content' => "Documento " . strtoupper($docType) . " {$series->series}-{$docNumber} generado exitosamente.",
+                    'type' => 'system',
                 ]);
             }
         }
