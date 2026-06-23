@@ -6,7 +6,7 @@ export function ValuePropBlock({ data }: { data: any }) {
       <div className="max-w-7xl mx-auto px-6 text-center space-y-6">
         <h2 className="text-3xl md:text-5xl font-bold">{data.title || 'Propuesta de Valor'}</h2>
         {data.description && (
-          <p className="text-gray-400 max-w-2xl mx-auto text-lg">{data.description}</p>
+          <p className="text-gray-400 max-w-2xl mx-auto text-lg whitespace-pre-wrap">{data.description}</p>
         )}
         {data.button_text && data.button_link && (
           <div className="pt-8">

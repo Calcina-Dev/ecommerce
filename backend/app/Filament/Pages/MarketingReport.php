@@ -61,6 +61,7 @@ class MarketingReport extends BaseDashboard
             \App\Filament\Widgets\CustomerRetentionChart::class,
             \App\Filament\Widgets\ChannelEfficiencyChart::class,
             \App\Filament\Widgets\TopCategoriesChart::class,
+            \App\Filament\Widgets\CustomerLtvChart::class,
             \App\Filament\Widgets\CouponsUsageTable::class,
         ];
     }

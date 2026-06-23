@@ -115,10 +115,10 @@ export function Footer({ settings }: { settings?: StoreSettings | null }) {
               Empresa
             </h3>
             <ul className="space-y-4 text-[13px] text-gray-600">
-              <li><Link href="#" className="hover:text-accent transition-colors">Sobre Nosotros</Link></li>
-              <li><Link href="#" className="hover:text-accent transition-colors">Contáctanos</Link></li>
-              <li><Link href="#" className="hover:text-accent transition-colors">Consejos de Salud</Link></li>
-              <li><Link href="#" className="hover:text-accent transition-colors">Testimonios</Link></li>
+              <li><Link href="/about-us" className="hover:text-accent transition-colors">Sobre Nosotros</Link></li>
+              <li><Link href="/contactanos" className="hover:text-accent transition-colors">Contáctanos</Link></li>
+              <li><Link href="/consejos-de-salud" className="hover:text-accent transition-colors">Consejos de Salud</Link></li>
+              <li><Link href="/testimonios" className="hover:text-accent transition-colors">Testimonios</Link></li>
             </ul>
           </div>
 
@@ -129,11 +129,11 @@ export function Footer({ settings }: { settings?: StoreSettings | null }) {
               Ayuda al cliente
             </h3>
             <ul className="space-y-4 text-[13px] text-gray-600">
-              <li><Link href="#" className="hover:text-accent transition-colors">Preguntas frecuentes</Link></li>
-              <li><Link href="#" className="hover:text-accent transition-colors">Envíos y entregas</Link></li>
-              <li><Link href="#" className="hover:text-accent transition-colors">Devoluciones y reembolsos</Link></li>
-              <li><Link href="#" className="hover:text-accent transition-colors">Métodos de pago</Link></li>
-              <li><Link href="#" className="hover:text-accent transition-colors">Libro de Reclamaciones</Link></li>
+              <li><Link href="/preguntas-frecuentes" className="hover:text-accent transition-colors">Preguntas frecuentes</Link></li>
+              <li><Link href="/envios-y-entregas" className="hover:text-accent transition-colors">Envíos y entregas</Link></li>
+              <li><Link href="/devoluciones-y-reembolsos" className="hover:text-accent transition-colors">Devoluciones y reembolsos</Link></li>
+              <li><Link href="/metodos-de-pago" className="hover:text-accent transition-colors">Métodos de pago</Link></li>
+              <li><Link href="/libro-de-reclamaciones" className="hover:text-accent transition-colors">Libro de Reclamaciones</Link></li>
             </ul>
           </div>
 
@@ -150,10 +150,10 @@ export function Footer({ settings }: { settings?: StoreSettings | null }) {
               <li><Link href="#" className="hover:text-accent transition-colors">Marcas</Link></li>
             </ul>
             <ul className="space-y-4 text-[13px] text-gray-600">
-              <li><Link href="#" className="hover:text-accent transition-colors">Términos y condiciones</Link></li>
-              <li><Link href="#" className="hover:text-accent transition-colors">Política de privacidad</Link></li>
-              <li><Link href="#" className="hover:text-accent transition-colors">Política de cookies</Link></li>
-              <li><Link href="#" className="hover:text-accent transition-colors">Política de devoluciones</Link></li>
+              <li><Link href="/terms-and-conditions" className="hover:text-accent transition-colors">Términos y condiciones</Link></li>
+              <li><Link href="/politica-de-privacidad" className="hover:text-accent transition-colors">Política de privacidad</Link></li>
+              <li><Link href="/politica-de-cookies" className="hover:text-accent transition-colors">Política de cookies</Link></li>
+              <li><Link href="/politica-de-devoluciones" className="hover:text-accent transition-colors">Política de devoluciones</Link></li>
             </ul>
           </div>
 
@@ -167,11 +167,11 @@ export function Footer({ settings }: { settings?: StoreSettings | null }) {
             © 2026 CompraSaludable. Todos los derechos reservados.
           </p>
           <div className="flex gap-4 text-xs text-gray-500">
-            <Link href="#" className="hover:text-gray-900">Libro de Reclamaciones</Link>
+            <Link href="/libro-de-reclamaciones" className="hover:text-gray-900">Libro de Reclamaciones</Link>
             <span>·</span>
-            <Link href="#" className="hover:text-gray-900">Privacidad</Link>
+            <Link href="/politica-de-privacidad" className="hover:text-gray-900">Privacidad</Link>
             <span>·</span>
-            <Link href="#" className="hover:text-gray-900">Términos</Link>
+            <Link href="/terms-and-conditions" className="hover:text-gray-900">Términos</Link>
           </div>
         </div>
       </div>
