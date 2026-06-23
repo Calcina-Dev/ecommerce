@@ -52,8 +52,6 @@ class OnlineOrderSeeder extends Seeder
             // Si es pending_payment, el payment_status es pending. De lo contrario, paid.
             $paymentStatus = $targetStatus === 'pending_payment' ? 'pending' : 'paid';
 
-            $cities = ['Lima', 'Arequipa', 'Cusco', 'Piura', 'La Libertad', 'Lambayeque', 'Junin', 'Ica', 'Tacna', 'Puno', 'Cajamarca', 'Loreto', 'Moquegua', 'Ucayali', 'San Martin'];
-            
             $paymentMethod = $paymentMethods[array_rand($paymentMethods)];
             $cardBrand = null;
             $cardBin = null;
@@ -69,6 +67,22 @@ class OnlineOrderSeeder extends Seeder
                 $cardLastDigits = str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
                 $cardCountry = ['US', 'FR', 'GB', 'AR'][array_rand(['US', 'FR', 'GB', 'AR'])];
                 $isForeignCard = true;
+            } elseif ($paymentStatus === 'paid') {
+                $cardBrand = ['visa', 'mastercard', 'amex'][array_rand(['visa', 'mastercard', 'amex'])];
+                $cardBin = rand(400000, 599999);
+                $cardLastDigits = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+                $cardCountry = rand(1, 100) > 10 ? 'PE' : 'US';
+                $isForeignCard = $cardCountry !== 'PE';
+            }
+
+            // Cargar ubigeos y seleccionar uno al azar
+            $ubigeosPath = database_path('data/ubigeos_peru.json');
+            $ubigeoData = null;
+            if (file_exists($ubigeosPath)) {
+                $ubigeos = json_decode(file_get_contents($ubigeosPath), true);
+                if (!empty($ubigeos)) {
+                    $ubigeoData = $ubigeos[array_rand($ubigeos)];
+                }
             }
 
             $order = Order::create([
@@ -77,11 +91,17 @@ class OnlineOrderSeeder extends Seeder
                 'status' => 'pending', // Starts pending to allow observers to work if we jump to shipped
                 'total_amount' => 0,
                 'total_cost' => 0,
+                'shipping_cost' => 10.00,
                 'shipping_name' => $user->name,
                 'shipping_email' => $user->email,
                 'shipping_phone' => '9' . rand(10000000, 99999999),
                 'shipping_address' => 'Av. Falsa ' . rand(100, 999),
-                'shipping_city' => $cities[array_rand($cities)],
+                'shipping_city' => $ubigeoData ? $ubigeoData['department'] : 'Lima',
+                'shipping_department' => $ubigeoData ? $ubigeoData['department'] : 'Lima',
+                'shipping_province' => $ubigeoData ? $ubigeoData['province'] : 'Lima',
+                'shipping_district' => $ubigeoData ? $ubigeoData['district'] : 'Lima',
+                'shipping_ubigeo' => $ubigeoData ? $ubigeoData['ubigeo'] : '150101',
+                'shipping_reference' => 'Cerca al parque',
                 'payment_method' => $paymentMethod,
                 'payment_status' => $paymentStatus,
                 'card_brand' => $cardBrand,

@@ -17,7 +17,7 @@ class OrderForm
 {
     public static function configure(Schema $schema): Schema
     {
-        $ubigeos = json_decode(file_get_contents(storage_path('app/ubigeos_peru.json')), true);
+        $ubigeos = json_decode(file_get_contents(database_path('data/ubigeos_peru.json')), true);
 
         return $schema
             ->components([
