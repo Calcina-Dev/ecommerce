@@ -24,8 +24,9 @@ class IzipayWebhookController extends Controller
             return response()->json(['error' => 'Invalid payload'], 400);
         }
 
-        $orderStatus = $answer['orderStatus'];
-        $orderId = $answer['orderDetails']['orderId'];
+        $orderStatus = $answer['orderStatus'] ?? null;
+        $orderId = $answer['orderDetails']['orderId'] ?? null;
+        $orderTotalAmount = $answer['orderDetails']['orderTotalAmount'] ?? 0;
 
         $order = Order::where('order_number', $orderId)->first();
 
@@ -33,8 +34,20 @@ class IzipayWebhookController extends Controller
             return response()->json(['error' => 'Order not found'], 404);
         }
 
+        // Idempotency check
+        if ($order->payment_status === 'paid') {
+            return response()->json(['status' => 'OK']);
+        }
+
         // 3. Update order status based on Izipay status
         if ($orderStatus === 'PAID') {
+            // Verify amount (Izipay returns amount in cents)
+            $expectedAmountInCents = (int) round($order->total_amount * 100);
+            if ((int)$orderTotalAmount !== $expectedAmountInCents) {
+                \Illuminate\Support\Facades\Log::warning("Webhook Izipay Amount mismatch on order {$orderId}. Expected: {$expectedAmountInCents}, Received: {$orderTotalAmount}");
+                return response()->json(['error' => 'Amount mismatch'], 400);
+            }
+
             $order->update([
                 'status' => 'processing',
                 'payment_status' => 'paid',

@@ -31,6 +31,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("izipay");
   const [izipayFormToken, setIzipayFormToken] = useState("");
   const [showIzipayForm, setShowIzipayForm] = useState(false);
+  const [izipayLoading, setIzipayLoading] = useState(true);
   const [orderCreated, setOrderCreated] = useState<string | null>(null);
 
   // Prellenar si el usuario está logueado
@@ -180,6 +181,8 @@ export default function CheckoutPage() {
       // Show form in our custom modal
       await KR.attachForm("#izipay-form-container");
       await KR.showForm("#izipay-form-container");
+      setIzipayLoading(false);
+      
       
     } catch (error) {
       console.error("Izipay loading error", error);
@@ -215,15 +218,25 @@ export default function CheckoutPage() {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-300">
             <button 
-              onClick={() => setShowIzipayForm(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center transition-colors"
+              onClick={() => {
+                setShowIzipayForm(false);
+                clearCart();
+                router.push(`/checkout/success?order=${orderCreated}&status=pending`);
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center transition-colors z-50"
             >
               ✕
             </button>
             <h2 className="text-xl font-bold mb-6 text-center text-gray-800">Completa tu pago seguro</h2>
-            <div className="flex justify-center w-full">
-              <div id="izipay-form-container" className="w-full flex justify-center">
-                <div className="kr-embedded w-full"></div>
+            <div className="flex justify-center w-full min-h-[300px] relative">
+              {izipayLoading && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                  <div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-sm font-medium">Cargando pasarela segura...</p>
+                </div>
+              )}
+              <div id="izipay-form-container" className={`w-full flex justify-center relative z-10 transition-opacity duration-500 ${izipayLoading ? 'opacity-0' : 'opacity-100'}`}>
+                <div className="kr-embedded w-full bg-white"></div>
               </div>
             </div>
             <div className="mt-6 flex justify-center items-center gap-2 text-xs text-gray-500">
@@ -385,15 +398,23 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <Button 
-              type="submit" 
-              form="checkout-form"
-              disabled={loading} 
-              size="lg" 
-              className="w-full rounded-2xl h-14 text-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
-            >
-              {loading ? "Procesando..." : "Confirmar Pedido"}
-            </Button>
+            <div className="pt-6">
+                <Button 
+                  type="submit" 
+                  form="checkout-form"
+                  className="w-full h-14 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all" 
+                  disabled={
+                    loading || 
+                    !formData.shipping_name.trim() || 
+                    !formData.shipping_email.trim() || 
+                    !formData.shipping_phone.trim() || 
+                    !formData.shipping_address.trim() || 
+                    !formData.shipping_city.trim()
+                  }
+                >
+                  {loading ? "Procesando de forma segura..." : "Completar Pedido"}
+                </Button>
+              </div>
           </div>
         </div>
 

@@ -115,6 +115,16 @@ class CheckoutController extends Controller
             if ($request->coupon_code) {
                 $appliedCoupon = Coupon::where('code', strtoupper($request->coupon_code))->where('is_active', true)->first();
                 if ($appliedCoupon) {
+                    if ($appliedCoupon->valid_from && Carbon::now()->lt($appliedCoupon->valid_from)) {
+                        throw new \Exception("El cupón aún no es válido.");
+                    }
+                    if ($appliedCoupon->valid_until && Carbon::now()->gt($appliedCoupon->valid_until)) {
+                        throw new \Exception("El cupón ha expirado.");
+                    }
+                    if ($appliedCoupon->usage_limit !== null && $appliedCoupon->times_used >= $appliedCoupon->usage_limit) {
+                        throw new \Exception("El cupón ha alcanzado su límite de uso.");
+                    }
+
                     if ($appliedCoupon->type === 'percentage') {
                         $discountAmount = ($totalAmount * $appliedCoupon->value) / 100;
                     } elseif ($appliedCoupon->type === 'fixed') {
@@ -263,6 +273,7 @@ class CheckoutController extends Controller
         
         $orderStatus = $answer['orderStatus'] ?? null;
         $orderId = $answer['orderDetails']['orderId'] ?? null;
+        $orderTotalAmount = $answer['orderDetails']['orderTotalAmount'] ?? 0;
 
         $order = Order::where('order_number', $orderId)->first();
 
@@ -270,7 +281,19 @@ class CheckoutController extends Controller
             return response()->json(['error' => 'Order not found'], 404);
         }
 
+        // Idempotency: skip if already paid
+        if ($order->payment_status === 'paid') {
+            return response()->json(['status' => 'OK']);
+        }
+
         if ($orderStatus === 'PAID') {
+            // Verify amount (Izipay returns amount in cents)
+            $expectedAmountInCents = (int) round($order->total_amount * 100);
+            if ((int)$orderTotalAmount !== $expectedAmountInCents) {
+                \Illuminate\Support\Facades\Log::warning("Izipay Amount mismatch on order {$orderId}. Expected: {$expectedAmountInCents}, Received: {$orderTotalAmount}");
+                return response()->json(['error' => 'Amount mismatch'], 400);
+            }
+
             $order->update([
                 'status' => 'processing',
                 'payment_status' => 'paid',
