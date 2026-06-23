@@ -48,3 +48,13 @@ Route::post('/checkout', [CheckoutController::class, 'checkout']);
 Route::post('/checkout/verify-izipay', [CheckoutController::class, 'verifyIzipay']);
 Route::post('/webhooks/mercadopago', [MercadoPagoWebhookController::class, 'handleWebhook']);
 Route::post('/webhooks/izipay', [IzipayWebhookController::class, 'handleWebhook']);
+
+Route::get('/debug-logs', function () {
+    $path = storage_path('logs/laravel.log');
+    if (!file_exists($path)) return 'No log file';
+    
+    // Read last 100 lines
+    $lines = file($path);
+    $lastLines = array_slice($lines, -100);
+    return response(implode("", $lastLines))->header('Content-Type', 'text/plain');
+});

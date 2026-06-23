@@ -60,7 +60,7 @@ class OrderObserver
                 if ($order->status === 'shipped' && $order->shipping_email) {
                     try {
                         \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderShipped($order));
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         \Illuminate\Support\Facades\Log::error("Failed to send shipped email: " . $e->getMessage());
                     }
                 }
@@ -80,7 +80,7 @@ class OrderObserver
             if ($order->payment_status === 'paid' && $order->shipping_email) {
                 try {
                     \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderPaid($order));
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     \Illuminate\Support\Facades\Log::error("Failed to send paid email: " . $e->getMessage());
                 }
             }
