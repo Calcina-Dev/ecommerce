@@ -54,6 +54,23 @@ class OnlineOrderSeeder extends Seeder
 
             $cities = ['Lima', 'Arequipa', 'Cusco', 'Piura', 'La Libertad', 'Lambayeque', 'Junin', 'Ica', 'Tacna', 'Puno', 'Cajamarca', 'Loreto', 'Moquegua', 'Ucayali', 'San Martin'];
             
+            $paymentMethod = $paymentMethods[array_rand($paymentMethods)];
+            $cardBrand = null;
+            $cardBin = null;
+            $cardLastDigits = null;
+            $cardCountry = null;
+            $isForeignCard = false;
+
+            // Force some processing orders to be foreign izipay payments
+            if ($targetStatus === 'processing' && rand(1, 100) <= 50) {
+                $paymentMethod = 'izipay';
+                $cardBrand = ['VISA', 'MASTERCARD'][array_rand(['VISA', 'MASTERCARD'])];
+                $cardBin = str_pad(rand(400000, 599999), 6, '0', STR_PAD_LEFT);
+                $cardLastDigits = str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
+                $cardCountry = ['US', 'FR', 'GB', 'AR'][array_rand(['US', 'FR', 'GB', 'AR'])];
+                $isForeignCard = true;
+            }
+
             $order = Order::create([
                 'user_id' => $user->id,
                 'order_number' => 'WEB-' . strtoupper(Str::random(8)),
@@ -65,8 +82,13 @@ class OnlineOrderSeeder extends Seeder
                 'shipping_phone' => '9' . rand(10000000, 99999999),
                 'shipping_address' => 'Av. Falsa ' . rand(100, 999),
                 'shipping_city' => $cities[array_rand($cities)],
-                'payment_method' => $paymentMethods[array_rand($paymentMethods)],
+                'payment_method' => $paymentMethod,
                 'payment_status' => $paymentStatus,
+                'card_brand' => $cardBrand,
+                'card_bin' => $cardBin,
+                'card_last_digits' => $cardLastDigits,
+                'card_country' => $cardCountry,
+                'is_foreign_card' => $isForeignCard,
                 'created_at' => $orderDate,
                 'updated_at' => $orderDate,
             ]);

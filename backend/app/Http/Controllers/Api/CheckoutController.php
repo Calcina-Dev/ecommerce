@@ -300,10 +300,24 @@ class CheckoutController extends Controller
                 return response()->json(['error' => 'Amount mismatch'], 400);
             }
 
+            // Extract card details
+            $cardDetails = $transaction['transactionDetails']['cardDetails'] ?? [];
+            $cardBrand = $cardDetails['brand'] ?? $cardDetails['effectiveBrand'] ?? $cardDetails['scheme'] ?? 'Desconocida';
+            $pan = $cardDetails['pan'] ?? null;
+            $cardBin = $pan ? substr($pan, 0, 6) : null;
+            $cardLastDigits = $pan ? substr($pan, -4) : null;
+            $cardCountry = $cardDetails['country'] ?? null;
+            $isForeignCard = $cardCountry && strtoupper($cardCountry) !== 'PE';
+
             $order->update([
                 'status' => 'processing',
                 'payment_status' => 'paid',
                 'payment_method' => 'izipay',
+                'card_brand' => $cardBrand,
+                'card_bin' => $cardBin,
+                'card_last_digits' => $cardLastDigits,
+                'card_country' => $cardCountry,
+                'is_foreign_card' => $isForeignCard,
             ]);
 
             $admins = \App\Models\User::whereIn('role', ['admin', 'employee'])->get();
@@ -320,6 +334,7 @@ class CheckoutController extends Controller
                 'status' => 'cancelled',
                 'payment_status' => 'failed',
             ]);
+            return response()->json(['error' => 'Payment refused', 'status' => $transactionStatus], 400);
         } else {
             // If the status is running, created, or anything else not finalized, we return 400
             // so the frontend knows the payment isn't fully approved yet and won't redirect to success.

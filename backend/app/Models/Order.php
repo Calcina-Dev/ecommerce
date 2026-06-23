@@ -32,6 +32,11 @@ class Order extends Model
         'shipping_method_id',
         'tracking_code',
         'shipping_cost',
+        'card_brand',
+        'card_bin',
+        'card_last_digits',
+        'card_country',
+        'is_foreign_card',
     ];
 
     public function items(): HasMany

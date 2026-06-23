@@ -82,6 +82,46 @@ class OrderForm
                                             ->dehydrated(false),
                                     ])->columns(2),
 
+                                \Filament\Schemas\Components\Section::make('Detalles de Pago Seguro (Izipay)')
+                                    ->schema([
+                                        \Filament\Forms\Components\Placeholder::make('fraud_alert')
+                                            ->hiddenLabel()
+                                            ->content(fn (?\App\Models\Order $record) => new \Illuminate\Support\HtmlString('
+                                                <div class="flex items-center gap-2 p-3 rounded-lg bg-danger-50 text-danger-600 dark:bg-danger-500/10 dark:text-danger-400">
+                                                    <svg style="width: 24px; height: 24px; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                    <div>
+                                                        <strong>Alerta de Fraude:</strong> Esta orden fue pagada con una tarjeta emitida en el extranjero (País: ' . ($record->card_country ?? 'Desconocido') . '). Revise la orden cuidadosamente para evitar contracargos.
+                                                    </div>
+                                                </div>
+                                            '))
+                                            ->columnSpanFull()
+                                            ->visible(fn (?\App\Models\Order $record) => $record && $record->is_foreign_card),
+                                        \Filament\Forms\Components\TextInput::make('card_brand')
+                                            ->label('Marca de Tarjeta')
+                                            ->disabled()
+                                            ->dehydrated(false)
+                                            ->formatStateUsing(fn ($state) => strtoupper($state)),
+                                        \Filament\Forms\Components\TextInput::make('card_bin')
+                                            ->label('BIN (Primeros 6)')
+                                            ->disabled()
+                                            ->dehydrated(false)
+                                            ->formatStateUsing(fn ($state) => $state ? "{$state}******" : null),
+                                        \Filament\Forms\Components\TextInput::make('card_last_digits')
+                                            ->label('Últimos 4 Dígitos')
+                                            ->disabled()
+                                            ->dehydrated(false)
+                                            ->formatStateUsing(fn ($state) => $state ? "**** **** **** {$state}" : null),
+                                        \Filament\Forms\Components\TextInput::make('card_country')
+                                            ->label('País Emisor')
+                                            ->disabled()
+                                            ->dehydrated(false)
+                                            ->formatStateUsing(fn ($state) => strtoupper($state)),
+                                    ])
+                                    ->columns(4)
+                                    ->visible(fn (?\App\Models\Order $record) => $record && $record->payment_method === 'izipay' && $record->card_last_digits),
+
                                 \Filament\Schemas\Components\Section::make('Datos de Envío')
                                     ->schema([
                                         \Filament\Forms\Components\TextInput::make('shipping_name')->label('Nombre')->required(),

@@ -26,6 +26,13 @@ class OrdersTable
                         'Pendiente' => 'gray',
                         default => 'success',
                     }),
+                \Filament\Tables\Columns\IconColumn::make('is_foreign_card')
+                    ->label('Alerta')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-exclamation-triangle')
+                    ->falseIcon('')
+                    ->trueColor('danger')
+                    ->tooltip('Pago con tarjeta extranjera (Posible Fraude)'),
                 TextColumn::make('shipping_name')
                     ->label('Cliente')
                     ->searchable(),
@@ -65,6 +72,11 @@ class OrdersTable
                         'paid' => 'Pagado',
                         'failed' => 'Fallido',
                     ]),
+                \Filament\Tables\Filters\TernaryFilter::make('is_foreign_card')
+                    ->label('Alerta de Tarjeta')
+                    ->placeholder('Todas las órdenes')
+                    ->trueLabel('Con tarjeta extranjera')
+                    ->falseLabel('Con tarjeta local'),
                 \Filament\Tables\Filters\Filter::make('created_at')
                     ->form([
                         \Filament\Forms\Components\DatePicker::make('created_from')->label('Desde'),
