@@ -8,6 +8,22 @@ use App\Services\InventoryService;
 class OrderObserver
 {
     /**
+     * Handle the Order "saving" event.
+     */
+    public function saving(Order $order): void
+    {
+        if ($order->isDirty('status')) {
+            $status = $order->status;
+            if (in_array($status, ['processing', 'shipped', 'delivered', 'cancelled'])) {
+                $column = "{$status}_at";
+                if (!$order->{$column}) {
+                    $order->{$column} = now();
+                }
+            }
+        }
+    }
+
+    /**
      * Handle the Order "created" event.
      */
     public function created(Order $order): void

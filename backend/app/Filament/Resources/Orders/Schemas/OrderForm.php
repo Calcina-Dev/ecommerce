@@ -52,7 +52,7 @@ class OrderForm
                                             ])
                                             ->required()
                                             ->disabled(fn (string $operation, ?\App\Models\Order $record) => 
-                                                $operation === 'edit' && $record && in_array($record->getOriginal('status'), ['shipped', 'delivered'])
+                                                $operation === 'edit' && $record && ($record->getOriginal('status') !== 'pending' || $record->getOriginal('payment_status') === 'paid')
                                             ),
                                         \Filament\Forms\Components\Select::make('payment_method')
                                             ->label('Método de Pago')
@@ -67,7 +67,7 @@ class OrderForm
                                                     ->toArray(),
                                             ])
                                             ->disabled(fn (string $operation, ?\App\Models\Order $record) => 
-                                                $operation === 'edit' && $record && in_array($record->getOriginal('status'), ['shipped', 'delivered'])
+                                                $operation === 'edit' && $record && ($record->getOriginal('status') !== 'pending' || $record->getOriginal('payment_status') === 'paid')
                                             ),
                                         \Filament\Forms\Components\TextInput::make('discount_amount')
                                             ->label('Descuento (Cupón)')
@@ -143,7 +143,7 @@ class OrderForm
                                             ->default(0),
                                     ])->columns(2)
                                     ->disabled(fn (string $operation, ?\App\Models\Order $record) => 
-                                        $operation === 'edit' && $record && in_array($record->getOriginal('status'), ['shipped', 'delivered'])
+                                        $operation === 'edit' && $record && ($record->getOriginal('status') !== 'pending' || $record->getOriginal('payment_status') === 'paid')
                                     ),
                             ]),
 
@@ -175,13 +175,13 @@ class OrderForm
                                             ])
                                             ->columns(3)
                                             ->disabled(fn (string $operation, ?\App\Models\Order $record) => 
-                                                $operation === 'edit' && $record && in_array($record->getOriginal('status'), ['shipped', 'delivered'])
+                                                $operation === 'edit' && $record && ($record->getOriginal('status') !== 'pending' || $record->getOriginal('payment_status') === 'paid')
                                             )
                                             ->deletable(fn (string $operation, ?\App\Models\Order $record) => 
-                                                !($operation === 'edit' && $record && in_array($record->getOriginal('status'), ['shipped', 'delivered']))
+                                                !($operation === 'edit' && $record && ($record->getOriginal('status') !== 'pending' || $record->getOriginal('payment_status') === 'paid'))
                                             )
                                             ->addable(fn (string $operation, ?\App\Models\Order $record) => 
-                                                !($operation === 'edit' && $record && in_array($record->getOriginal('status'), ['shipped', 'delivered']))
+                                                !($operation === 'edit' && $record && ($record->getOriginal('status') !== 'pending' || $record->getOriginal('payment_status') === 'paid'))
                                             ),
                                     ]),
                             ]),

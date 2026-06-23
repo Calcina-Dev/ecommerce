@@ -40,6 +40,7 @@ class MercadoPagoWebhookController extends Controller
                                     'status' => 'processing',
                                     'payment_status' => 'paid',
                                     'payment_method' => 'mercadopago',
+                                    'gateway_transaction_id' => (string) $id,
                                 ]);
                             } elseif ($status === 'rejected' || $status === 'cancelled') {
                                 $order->update([

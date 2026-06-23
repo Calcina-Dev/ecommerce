@@ -90,4 +90,25 @@ class IzipayService
         
         return null;
     }
+
+    /**
+     * Cancels or refunds a transaction using the transaction UUID.
+     */
+    public function refundTransaction(string $transactionUuid)
+    {
+        $response = Http::withBasicAuth($this->clientId, $this->clientSecret)
+            ->post("{$this->endpoint}/api-payment/V4/Transaction/CancelOrRefund", [
+                'uuid' => $transactionUuid
+            ]);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            if ($data['status'] === 'SUCCESS') {
+                return true;
+            }
+            throw new \Exception('Izipay Refund Error: ' . ($data['answer']['errorMessage'] ?? json_encode($data)));
+        }
+
+        throw new \Exception('Failed to connect to Izipay API for refund: ' . $response->body());
+    }
 }

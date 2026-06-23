@@ -37,6 +37,18 @@ class Order extends Model
         'card_last_digits',
         'card_country',
         'is_foreign_card',
+        'gateway_transaction_id',
+        'processing_at',
+        'shipped_at',
+        'delivered_at',
+        'cancelled_at',
+    ];
+
+    protected $casts = [
+        'processing_at' => 'datetime',
+        'shipped_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     public function items(): HasMany

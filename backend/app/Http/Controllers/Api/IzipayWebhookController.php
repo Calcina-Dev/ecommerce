@@ -57,6 +57,7 @@ class IzipayWebhookController extends Controller
             $cardLastDigits = $pan ? substr($pan, -4) : null;
             $cardCountry = $cardDetails['country'] ?? null;
             $isForeignCard = $cardCountry && strtoupper($cardCountry) !== 'PE';
+            $transactionUuid = $transaction['uuid'] ?? null;
 
             $order->update([
                 'status' => 'processing',
@@ -67,6 +68,7 @@ class IzipayWebhookController extends Controller
                 'card_last_digits' => $cardLastDigits,
                 'card_country' => $cardCountry,
                 'is_foreign_card' => $isForeignCard,
+                'gateway_transaction_id' => $transactionUuid,
             ]);
             
             $admins = \App\Models\User::whereIn('role', ['admin', 'employee'])->get();

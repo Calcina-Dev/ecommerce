@@ -183,9 +183,16 @@ export default function CheckoutPage() {
             toast.error("Error de conexión al validar el pago.");
           }
         } else {
-           toast.error("El pago no fue procesado o fue denegado.");
+           const tx = paymentData?.clientAnswer?.transactions?.[0];
+           const errorMsg = tx?.detailedErrorMessage || paymentData?.clientAnswer?.errorMessage || "El pago no fue procesado o fue denegado.";
+           toast.error(`Pago rechazado: ${errorMsg}`, { duration: 6000 });
         }
         return false; 
+      });
+
+      KR.onError(async (errorData: any) => {
+        const errorMsg = errorData?.detailedErrorMessage || errorData?.errorMessage || "Revise los datos de su tarjeta e intente nuevamente.";
+        toast.error(`Error: ${errorMsg}`, { duration: 5000 });
       });
 
       // Show form in our custom modal

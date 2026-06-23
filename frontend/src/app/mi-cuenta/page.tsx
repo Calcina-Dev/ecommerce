@@ -194,6 +194,77 @@ export default function MiCuentaPage() {
                 {/* Acordeón de detalles */}
                 {expandedOrder === order.id && (
                   <div className="border-t bg-muted/10 p-6">
+                    
+                    {/* INICIO TIMELINE */}
+                    <div className="mb-8 p-6 bg-background rounded-3xl border shadow-sm">
+                      <h4 className="text-xs font-bold mb-8 text-muted-foreground uppercase tracking-wider text-center">Estado del Pedido</h4>
+                      
+                      {order.status === 'cancelled' ? (
+                        <div className="flex justify-center items-center gap-4 text-red-600">
+                          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="font-bold text-lg">Pedido Cancelado</p>
+                            {order.cancelled_at && <p className="text-sm text-red-500">{new Date(order.cancelled_at).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative flex justify-between items-start w-full max-w-4xl mx-auto mt-4">
+                          {/* Línea conectora de fondo */}
+                          <div className="absolute top-6 left-[12.5%] right-[12.5%] h-1 bg-muted rounded-full"></div>
+                          
+                          {/* Línea conectora de progreso */}
+                          <div 
+                            className="absolute top-6 left-[12.5%] h-1 bg-primary rounded-full transition-all duration-700 ease-in-out"
+                            style={{ width: 
+                              order.status === 'delivered' ? '75%' : 
+                              order.status === 'shipped' ? '50%' : 
+                              order.status === 'processing' ? '25%' : '0%' 
+                            }}
+                          ></div>
+
+                          {[
+                            { status: 'pending', label: 'Pendiente', date: order.created_at, icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+                            { status: 'processing', label: 'Procesando', date: order.processing_at, icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
+                            { status: 'shipped', label: 'Enviado', date: order.shipped_at, icon: 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4' },
+                            { status: 'delivered', label: 'Entregado', date: order.delivered_at, icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+                          ].map((step) => {
+                            const isPastOrCurrent = 
+                              step.status === 'pending' || 
+                              (step.status === 'processing' && ['processing', 'shipped', 'delivered'].includes(order.status)) ||
+                              (step.status === 'shipped' && ['shipped', 'delivered'].includes(order.status)) ||
+                              (step.status === 'delivered' && order.status === 'delivered');
+
+                            const displayDate = step.date || (isPastOrCurrent ? order.updated_at : null);
+
+                            return (
+                              <div key={step.status} className="relative z-10 flex flex-col items-center w-1/4">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-background transition-colors duration-500 shadow-sm ${isPastOrCurrent ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={step.icon} />
+                                  </svg>
+                                </div>
+                                <p className={`mt-3 text-[11px] sm:text-sm font-bold tracking-tight ${isPastOrCurrent ? 'text-foreground' : 'text-muted-foreground'}`}>{step.label}</p>
+                                {isPastOrCurrent ? (
+                                  <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-1 text-center px-1 font-medium bg-muted/30 py-1 px-2 rounded-lg leading-tight">
+                                    {new Date(displayDate).toLocaleDateString('es-PE', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}
+                                  </p>
+                                ) : (
+                                  <p className="text-[10px] sm:text-[11px] text-transparent mt-1 text-center px-1 font-medium bg-transparent py-1 px-2 rounded-lg leading-tight select-none">
+                                    --/--
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                    {/* FIN TIMELINE */}
+
                     <h4 className="text-sm font-bold mb-4 text-muted-foreground uppercase tracking-wider">Productos comprados</h4>
                     <div className="space-y-4">
                       {order.items.map((item: any) => (

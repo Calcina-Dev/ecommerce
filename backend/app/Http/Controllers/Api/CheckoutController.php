@@ -318,6 +318,7 @@ class CheckoutController extends Controller
                 'card_last_digits' => $cardLastDigits,
                 'card_country' => $cardCountry,
                 'is_foreign_card' => $isForeignCard,
+                'gateway_transaction_id' => $transactionUuid,
             ]);
 
             $admins = \App\Models\User::whereIn('role', ['admin', 'employee'])->get();
