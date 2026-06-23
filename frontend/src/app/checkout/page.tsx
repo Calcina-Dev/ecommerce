@@ -6,6 +6,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import KRGlue from "@lyracom/embedded-form-glue";
+import { toast } from "sonner";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -161,7 +162,7 @@ export default function CheckoutPage() {
         if (paymentData.clientAnswer.orderStatus === "PAID") {
           try {
             // Avisar al backend localmente para que marque como pagado
-            await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/checkout/verify-izipay`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/checkout/verify-izipay`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -169,11 +170,20 @@ export default function CheckoutPage() {
                 "kr-hash": paymentData.hash
               })
             });
+            
+            if (res.ok) {
+              router.push(`/checkout/success?order_id=${orderNumber}&status=approved`);
+            } else {
+              const errData = await res.json().catch(() => ({}));
+              console.error('Backend rejected payment verification:', errData);
+              toast.error("No se pudo validar el pago en el servidor.");
+            }
           } catch (e) {
             console.error('Error verifying locally', e);
+            toast.error("Error de conexión al validar el pago.");
           }
-          
-          router.push(`/checkout/success?order_id=${orderNumber}&status=approved`);
+        } else {
+           toast.error("El pago no fue procesado o fue denegado.");
         }
         return false; 
       });
@@ -220,8 +230,6 @@ export default function CheckoutPage() {
             <button 
               onClick={() => {
                 setShowIzipayForm(false);
-                clearCart();
-                router.push(`/checkout/success?order=${orderCreated}&status=pending`);
               }}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center transition-colors z-50"
             >

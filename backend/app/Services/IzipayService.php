@@ -77,7 +77,9 @@ class IzipayService
     public function getTransaction(string $transactionUuid)
     {
         $response = Http::withBasicAuth($this->clientId, $this->clientSecret)
-            ->get("{$this->endpoint}/api-payment/V4/Transaction/Get/{$transactionUuid}");
+            ->post("{$this->endpoint}/api-payment/V4/Transaction/Get", [
+                'uuid' => $transactionUuid
+            ]);
 
         if ($response->successful()) {
             $data = $response->json();
