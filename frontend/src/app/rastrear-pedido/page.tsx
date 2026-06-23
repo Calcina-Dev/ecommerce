@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2, Package, Truck, Home, Search, AlertCircle, Clock } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 
 // Framer Motion variants
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
@@ -19,12 +19,12 @@ const containerVariants = {
   }
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 15 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
 };
 
-const timelineVariants = {
+const timelineVariants: Variants = {
   hidden: { opacity: 0, scale: 0.9 },
   visible: (custom: number) => ({
     opacity: 1,
@@ -33,7 +33,7 @@ const timelineVariants = {
   })
 };
 
-export default function OrderTrackingPage() {
+function OrderTrackingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [orderIdInput, setOrderIdInput] = useState("");
@@ -344,7 +344,7 @@ export default function OrderTrackingPage() {
                                 <p className="text-xs text-gray-500">Cant: {item.quantity} (S/ {parseFloat(item.price).toFixed(2)} c/u)</p>
                               </div>
                               <span className="text-sm font-semibold text-gray-900">
-                                S/ {parseFloat(item.price * item.quantity).toFixed(2)}
+                                S/ {(parseFloat(item.price) * item.quantity).toFixed(2)}
                               </span>
                             </motion.div>
                           ))}
@@ -390,5 +390,17 @@ export default function OrderTrackingPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function OrderTrackingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-green-100 border-t-green-600 rounded-full animate-spin"></div>
+      </div>
+    }>
+      <OrderTrackingContent />
+    </Suspense>
   );
 }
