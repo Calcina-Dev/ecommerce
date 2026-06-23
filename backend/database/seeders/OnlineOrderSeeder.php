@@ -44,6 +44,13 @@ class OnlineOrderSeeder extends Seeder
             array_fill(0, 5, 'pending_payment')
         );
 
+        // Cargar ubigeos una sola vez para evitar Memory Limit (OOM)
+        $ubigeosPath = database_path('data/ubigeos_peru.json');
+        $ubigeos = [];
+        if (file_exists($ubigeosPath)) {
+            $ubigeos = json_decode(file_get_contents($ubigeosPath), true) ?? [];
+        }
+
         for ($i = 0; $i < 40; $i++) {
             $user = $users->random();
             $orderDate = Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 24));
@@ -75,14 +82,10 @@ class OnlineOrderSeeder extends Seeder
                 $isForeignCard = $cardCountry !== 'PE';
             }
 
-            // Cargar ubigeos y seleccionar uno al azar
-            $ubigeosPath = database_path('data/ubigeos_peru.json');
+            // Seleccionar ubigeo al azar
             $ubigeoData = null;
-            if (file_exists($ubigeosPath)) {
-                $ubigeos = json_decode(file_get_contents($ubigeosPath), true);
-                if (!empty($ubigeos)) {
-                    $ubigeoData = $ubigeos[array_rand($ubigeos)];
-                }
+            if (!empty($ubigeos)) {
+                $ubigeoData = $ubigeos[array_rand($ubigeos)];
             }
 
             $order = Order::create([
