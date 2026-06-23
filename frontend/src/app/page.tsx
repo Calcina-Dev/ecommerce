@@ -11,7 +11,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/storefront/pages/home`)
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/storefront/pages/home`, { cache: 'no-store' })
       .then(res => {
         if (!res.ok) throw new Error('Page not found');
         return res.json();
