@@ -53,7 +53,16 @@ class IzipayWebhookController extends Controller
                 'payment_status' => 'paid',
                 'payment_method' => 'izipay',
             ]);
-            // Here you could dispatch an event to send an email, etc.
+            
+            $admins = \App\Models\User::whereIn('role', ['admin', 'employee'])->get();
+            if ($admins->count() > 0) {
+                \Filament\Notifications\Notification::make()
+                    ->title('¡Pago Recibido (Izipay)!')
+                    ->body("La orden {$order->order_number} ha sido pagada.")
+                    ->icon('heroicon-o-check-circle')
+                    ->success()
+                    ->sendToDatabase($admins);
+            }
         } elseif ($orderStatus === 'CANCELED' || $orderStatus === 'UNPAID') {
             $order->update([
                 'status' => 'cancelled',
