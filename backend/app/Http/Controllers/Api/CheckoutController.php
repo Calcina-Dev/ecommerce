@@ -277,13 +277,13 @@ class CheckoutController extends Controller
             return response()->json(['error' => 'No transaction UUID found'], 400);
         }
 
-        // Fetch transaction securely from Izipay API
-        $transaction = $izipayService->getTransaction($transactionUuid);
+        $transactionResp = $izipayService->getTransaction($transactionUuid);
 
-        if (!$transaction) {
+        if (!$transactionResp || !isset($transactionResp['answer'])) {
             return response()->json(['error' => 'Transaction not found in Izipay'], 404);
         }
 
+        $transaction = $transactionResp['answer'];
         $transactionStatus = $transaction['status'] ?? null;
         $orderId = $transaction['orderDetails']['orderId'] ?? null;
         $transactionAmount = $transaction['amount'] ?? 0;
