@@ -24,7 +24,9 @@ services:
       - ecomerce-network
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
     volumes:
       - ./backend:/app
     ports:
