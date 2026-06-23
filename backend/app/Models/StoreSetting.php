@@ -14,5 +14,11 @@ class StoreSetting extends Model
         'contact_email',
         'store_address',
         'store_name',
+        'footer_columns',
+        'footer_theme',
+    ];
+
+    protected $casts = [
+        'footer_columns' => 'array',
     ];
 }

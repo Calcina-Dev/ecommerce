@@ -44,6 +44,36 @@ class ManageStoreSettings extends Page implements HasForms
                         TextInput::make('instagram_url')->label('Instagram URL')->url(),
                         TextInput::make('tiktok_url')->label('TikTok URL')->url(),
                     ])->columns(2),
+                Section::make('Pie de Página (Footer)')
+                    ->schema([
+                        \Filament\Forms\Components\Select::make('footer_theme')
+                            ->label('Color de Fondo')
+                            ->options([
+                                'light' => 'Claro (Blanco)',
+                                'dark' => 'Oscuro (Negro/Azul Oscuro)',
+                            ])
+                            ->default('light')
+                            ->required(),
+                        \Filament\Forms\Components\Repeater::make('footer_columns')
+                            ->label('Columnas del Footer')
+                            ->schema([
+                                TextInput::make('title')
+                                    ->label('Título de la Columna (ej: Empresa)')
+                                    ->required(),
+                                \Filament\Forms\Components\Repeater::make('links')
+                                    ->label('Enlaces')
+                                    ->schema([
+                                        TextInput::make('label')->label('Texto del Enlace')->required(),
+                                        TextInput::make('url')->label('URL')->required(),
+                                    ])
+                                    ->columns(2)
+                                    ->defaultItems(1)
+                                    ->addActionLabel('Agregar Enlace'),
+                            ])
+                            ->collapsible()
+                            ->defaultItems(0)
+                            ->addActionLabel('Agregar Columna'),
+                    ]),
             ])
             ->statePath('data');
     }

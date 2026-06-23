@@ -89,6 +89,17 @@ class StorefrontPageForm
                                 TextInput::make('button_text')->label('Texto del Botón (Opcional)'),
                                 TextInput::make('button_link')->label('Enlace del Botón (Opcional)'),
                             ]),
+                            
+                        Builder\Block::make('custom_html')
+                            ->label('Código HTML Personalizado (Ideal para IA)')
+                            ->icon('heroicon-m-code-bracket')
+                            ->schema([
+                                Textarea::make('content')
+                                    ->label('Contenido HTML')
+                                    ->helperText('Pega aquí el código HTML proporcionado por tu diseñador o Inteligencia Artificial. Se recomienda usar clases de Tailwind CSS.')
+                                    ->rows(15)
+                                    ->required(),
+                            ]),
                     ])
                     ->columnSpanFull()
                     ->collapsible(),
