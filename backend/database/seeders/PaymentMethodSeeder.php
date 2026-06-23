@@ -22,6 +22,7 @@ class PaymentMethodSeeder extends Seeder
             
             // WEB
             ['name' => 'Mercado Pago', 'code' => 'mercadopago', 'scope' => 'web'],
+            ['name' => 'Izipay', 'code' => 'izipay', 'scope' => 'web'],
             ['name' => 'PayPal', 'code' => 'paypal', 'scope' => 'web'],
             ['name' => 'Stripe', 'code' => 'stripe', 'scope' => 'web'],
         ];
