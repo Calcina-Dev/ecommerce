@@ -106,7 +106,6 @@ class OnlineOrderSeeder extends Seeder
                 'shipping_province' => $ubigeoData ? $ubigeoData['province'] : 'Lima',
                 'shipping_district' => $ubigeoData ? $ubigeoData['district'] : 'Lima',
                 'shipping_postal_code' => $ubigeoData ? $ubigeoData['postal_code'] : '150101',
-                'shipping_reference' => 'Cerca al parque',
                 'payment_method' => $paymentMethod,
                 'payment_status' => $paymentStatus,
                 'card_brand' => $cardBrand,
