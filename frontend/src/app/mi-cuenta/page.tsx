@@ -238,12 +238,20 @@ export default function MiCuentaPage() {
                       ) : (
                         <div className="relative mb-12 mt-4 hidden sm:block">
                           <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                            <motion.div 
-                              initial={{ width: 0 }} 
-                              animate={{ width: "100%" }} 
-                              transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-                              className="w-full border-t-2 border-gray-200"
-                            ></motion.div>
+                            <div className="w-full relative h-[2px]">
+                              <motion.div 
+                                initial={{ width: 0 }} 
+                                animate={{ width: "100%" }} 
+                                transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                                className="absolute left-0 top-0 w-full border-t-2 border-gray-200"
+                              ></motion.div>
+                              <motion.div 
+                                initial={{ width: 0 }} 
+                                animate={{ width: `${Math.max(0, (((order.status === 'delivered' ? 4 : order.status === 'shipped' ? 3 : order.status === 'processing' ? 2 : 1) - 1) / 3) * 100)}%` }} 
+                                transition={{ duration: 1.5, ease: "easeInOut", delay: 0.5 }}
+                                className="absolute left-0 top-0 border-t-2 border-green-600"
+                              ></motion.div>
+                            </div>
                           </div>
                           <div className="relative flex justify-between">
                           {[

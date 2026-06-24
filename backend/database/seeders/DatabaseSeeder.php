@@ -40,6 +40,16 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Test User', 'dni' => '12345678', 'password' => bcrypt('password'), 'role' => 'admin']
         );
 
+        User::firstOrCreate(
+            ['email' => 'mrluisito5@gmail.com'],
+            ['name' => 'CABRERA LUDEÑA JORGE LUIS CATALINO', 'dni' => '70235441', 'phone' => '952035525', 'password' => bcrypt('eldevil21'), 'role' => 'admin']
+        );
+
+        User::firstOrCreate(
+            ['email' => 'Heidigusman4@gmail.com'],
+            ['name' => 'GUSMAN QUINTANA HEIDI', 'dni' => '73759537', 'phone' => null, 'password' => bcrypt('eldevil21'), 'role' => 'admin']
+        );
+
         $this->call([
             CouponSeeder::class,
             PaymentMethodSeeder::class,
