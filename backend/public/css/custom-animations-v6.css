@@ -109,3 +109,21 @@ a.fi-btn:active,
     box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
     border: 1px solid rgba(255,255,255,0.05) !important;
 }
+
+/* Animated Notification Bell */
+.fi-topbar-database-notifications-btn:has(.fi-badge) .fi-icon {
+    animation: ringBell 2s infinite ease-in-out;
+    transform-origin: 50% 10%;
+    color: #eab308 !important; /* Tailwind yellow-500 */
+    fill: #fef08a !important; /* Tailwind yellow-200 */
+}
+
+@keyframes ringBell {
+    0% { transform: rotate(0deg); }
+    5% { transform: rotate(15deg); }
+    10% { transform: rotate(-10deg); }
+    15% { transform: rotate(5deg); }
+    20% { transform: rotate(-5deg); }
+    25% { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
+}

@@ -93,7 +93,7 @@
                             </svg>
                             <span style="font-weight: 500; color: #4b5563;">
                                 @if($note->user_id)
-                                    {{ $note->user->email ?? $note->user->name }}
+                                    {{ $note->user->name }} ({{ ucfirst($note->user->role) }})
                                 @else
                                     Sistema Automático
                                 @endif

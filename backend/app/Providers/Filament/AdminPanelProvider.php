@@ -47,9 +47,10 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
             ])
-            ->assets([
-                \Filament\Support\Assets\Css::make('custom-animations-v6', public_path('css/custom-animations-v6.css')),
-            ])
+            ->renderHook(
+                \Filament\View\PanelsRenderHook::HEAD_END,
+                fn () => \Illuminate\Support\Facades\Blade::render('<link href="{{ asset(\'css/custom-animations-v6.css\') }}" rel="stylesheet" />'),
+            )
             ->navigationGroups([
                 \Filament\Navigation\NavigationGroup::make()
                      ->label('Ventas'),
