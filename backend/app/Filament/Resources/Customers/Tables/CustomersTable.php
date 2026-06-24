@@ -35,7 +35,6 @@ class CustomersTable
                         $onlineOrders = $record->orders()->whereNotIn('status', ['cancelled', 'failed'])->sum('total_amount');
                         return $posSales + $onlineOrders;
                     })
-                    ->sortable(),
             ])
             ->filters([
                 //
