@@ -56,16 +56,23 @@ class OrderObserver
             if (in_array($order->status, ['shipped', 'delivered']) && !in_array($order->getOriginal('status'), ['shipped', 'delivered'])) {
                 $this->assignDocumentNumber($order);
                 $this->deductStock($order);
-                
-                if ($order->status === 'shipped' && $order->shipping_email) {
-                    try {
-                        \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderShipped($order));
-                    } catch (\Throwable $e) {
-                        error_log("Failed to send shipped email: " . $e->getMessage());
-                    }
-                }
             } elseif ($order->status === 'cancelled' && in_array($order->getOriginal('status'), ['shipped', 'delivered'])) {
                 $this->restoreStock($order);
+            }
+
+            // Email Notifications for status changes
+            if ($order->shipping_email) {
+                try {
+                    if ($order->status === 'shipped' && $order->getOriginal('status') !== 'shipped') {
+                        \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderShipped($order));
+                    } elseif ($order->status === 'delivered' && $order->getOriginal('status') !== 'delivered') {
+                        \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderCompleted($order));
+                    } elseif ($order->status === 'cancelled' && $order->getOriginal('status') !== 'cancelled') {
+                        \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderCancelled($order));
+                    }
+                } catch (\Throwable $e) {
+                    error_log("Failed to send order status email: " . $e->getMessage());
+                }
             }
         }
 

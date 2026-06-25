@@ -100,7 +100,7 @@ class PurchaseInvoicesTable
                     ->color('danger')
                     ->requiresConfirmation()
                     ->visible(fn (\App\Models\PurchaseInvoice $record) => $record->status === 'VALID')
-                    ->action(fn (\App\Models\PurchaseInvoice $record) => clone $record->update(['status' => 'CANCELLED']) ? null : null),
+                    ->action(fn (\App\Models\PurchaseInvoice $record) => $record->update(['status' => 'CANCELLED'])),
                 EditAction::make(),
             ])
             ->toolbarActions([

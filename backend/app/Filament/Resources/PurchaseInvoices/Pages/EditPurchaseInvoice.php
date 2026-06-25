@@ -39,7 +39,10 @@ class EditPurchaseInvoice extends EditRecord
                 ->color('danger')
                 ->requiresConfirmation()
                 ->visible(fn () => $this->record->status === 'VALID')
-                ->action(fn () => clone $this->record->update(['status' => 'CANCELLED']) ? redirect($this->getResource()::getUrl('index')) : null),
+                ->action(function () {
+                    $this->record->update(['status' => 'CANCELLED']);
+                    return redirect($this->getResource()::getUrl('index'));
+                }),
             DeleteAction::make()
                 ->visible(fn () => $this->record->status === 'DRAFT'),
         ];
