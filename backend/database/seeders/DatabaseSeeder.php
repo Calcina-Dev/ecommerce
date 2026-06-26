@@ -14,11 +14,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Generar 10 clientes/usuarios aleatorios para pruebas
-        User::factory(10)->create();
+        // User::factory(10)->create();
 
         $this->call([
             WarehouseSeeder::class,
-            CatalogSeeder::class,
+            // CatalogSeeder::class,
         ]);
 
         \App\Models\DocumentSeries::firstOrCreate(['document_type' => 'BOLETA'], ['series' => 'B001', 'current_number' => 0]);
@@ -29,10 +29,10 @@ class DatabaseSeeder extends Seeder
         \App\Models\DocumentSeries::firstOrCreate(['document_type' => 'NOTA_INGRESO'], ['series' => 'NI01', 'current_number' => 0]);
         \App\Models\DocumentSeries::firstOrCreate(['document_type' => 'NOTA_SALIDA'], ['series' => 'NS01', 'current_number' => 0]);
 
-        $this->call([
-            PurchaseFlowSeeder::class,
-            WarehouseTransferSeeder::class,
-        ]);
+        // $this->call([
+        //     PurchaseFlowSeeder::class,
+        //     WarehouseTransferSeeder::class,
+        // ]);
 
         // SaleSeeder should be called after DocumentSeries are created.
         User::firstOrCreate(
@@ -54,8 +54,8 @@ class DatabaseSeeder extends Seeder
             CouponSeeder::class,
             PaymentMethodSeeder::class,
             ShippingMethodSeeder::class,
-            SaleSeeder::class,
-            OnlineOrderSeeder::class,
+            // SaleSeeder::class,
+            // OnlineOrderSeeder::class,
             StorefrontPageSeeder::class,
             StoreSettingSeeder::class,
         ]);

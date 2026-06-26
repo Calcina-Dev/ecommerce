@@ -58,3 +58,11 @@ Route::get('/debug-logs', function () {
     $lastLines = array_slice($lines, -100);
     return response(implode("", $lastLines))->header('Content-Type', 'text/plain');
 });
+
+Route::get('/run-system-import-reset', function () {
+    \Illuminate\Support\Facades\Artisan::call('import:woocommerce', ['--clean' => true]);
+    return response()->json([
+        'status' => 'success',
+        'output' => \Illuminate\Support\Facades\Artisan::output()
+    ]);
+});

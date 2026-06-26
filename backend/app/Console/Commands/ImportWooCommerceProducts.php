@@ -28,7 +28,7 @@ class ImportWooCommerceProducts extends Command
         if ($this->option('clean')) {
             $this->warn('Limpiando base de datos operativa en PostgreSQL (OC, Facturas, Ventas, Clientes, Cajas, Inventario)...');
 
-            DB::statement('TRUNCATE orders, order_items, sales, purchase_invoices, purchase_invoice_lines, purchase_orders, purchase_order_items, stock_movements, stock_balances, batches, product_images, products, coupons, cash_sessions CASCADE;');
+            DB::statement('TRUNCATE orders, order_items, sales, purchase_invoices, purchase_invoice_lines, purchase_orders, purchase_order_items, stock_movements, stock_balances, batches, product_images, products, coupons, cash_sessions, categories, brands CASCADE;');
 
             User::whereNotIn('role', ['admin', 'employee'])->delete();
 
