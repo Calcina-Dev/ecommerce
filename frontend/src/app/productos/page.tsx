@@ -74,7 +74,7 @@ function CatalogContent() {
               placeholder="Ej. Vitamina C..." 
               className="w-full px-4 py-2 border rounded-xl bg-background text-foreground"
               value={filters.search || ""}
-              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value || undefined, page: 1 }))}
+              onChange={(e) => setFilters({ search: e.target.value || undefined, page: 1 })}
             />
           </div>
 
@@ -85,7 +85,7 @@ function CatalogContent() {
                 type="checkbox"
                 className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer transition-colors"
                 checked={!!filters.onSale}
-                onChange={(e) => setFilters(prev => ({ ...prev, onSale: e.target.checked || undefined, page: 1 }))}
+                onChange={(e) => setFilters({ onSale: e.target.checked || undefined, page: 1 })}
               />
               <span className="text-sm font-medium group-hover:text-primary transition-colors">Solo productos con descuento</span>
             </label>
@@ -96,7 +96,7 @@ function CatalogContent() {
               <h3 className="font-medium text-lg mb-4">Categorías</h3>
               <div className="space-y-2">
                 <button 
-                  onClick={() => setFilters(prev => ({ ...prev, categoryId: undefined, page: 1 }))}
+                  onClick={() => setFilters({ categoryId: undefined, page: 1 })}
                   className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${!filters.categoryId ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                 >
                   Todas
@@ -104,7 +104,7 @@ function CatalogContent() {
                 {filterData.categories.map((cat: any) => (
                   <button 
                     key={cat.id}
-                    onClick={() => setFilters(prev => ({ ...prev, categoryId: cat.id, page: 1 }))}
+                    onClick={() => setFilters({ categoryId: cat.id, page: 1 })}
                     className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${filters.categoryId === cat.id ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                   >
                     {cat.name}
@@ -119,7 +119,7 @@ function CatalogContent() {
               <h3 className="font-medium text-lg mb-4">Marcas</h3>
               <div className="space-y-2">
                 <button 
-                  onClick={() => setFilters(prev => ({ ...prev, brandId: undefined, page: 1 }))}
+                  onClick={() => setFilters({ brandId: undefined, page: 1 })}
                   className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${!filters.brandId ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                 >
                   Todas
@@ -127,7 +127,7 @@ function CatalogContent() {
                 {filterData.brands.map((brand: any) => (
                   <button 
                     key={brand.id}
-                    onClick={() => setFilters(prev => ({ ...prev, brandId: brand.id, page: 1 }))}
+                    onClick={() => setFilters({ brandId: brand.id, page: 1 })}
                     className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${filters.brandId === brand.id ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                   >
                     {brand.name}
