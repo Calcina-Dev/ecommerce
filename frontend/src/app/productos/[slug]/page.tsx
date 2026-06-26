@@ -9,17 +9,33 @@ import { motion } from "framer-motion";
 
 function cleanDescriptionText(text: string | null) {
   if (!text) return "";
+  
+  // Strip literal escaped newlines and backslashes
   let clean = text.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\\/g, '');
+  
+  // Strip ALL Unicode emojis, pictographs, checkmarks, and AI clipart symbols
+  clean = clean.replace(/\p{Extended_Pictographic}/gu, '');
+  clean = clean.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '');
+
   const lines = clean.split('\n').map(l => l.trim()).filter(Boolean);
+  
   return lines.map(line => {
+    // Clean bullet leftovers or odd spacing before colons
+    let item = line.replace(/^[-•*+>]\s*/, '').trim();
+    item = item.replace(/\s+:/g, ':').trim();
+
     if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
-      const item = line.replace(/^[-•*]\s*/, '');
       return `<li class="ml-5 list-disc marker:text-emerald-600 font-medium mb-1.5 text-foreground/90">${item}</li>`;
     }
-    if (line.endsWith(':')) {
-      return `<h4 class="font-bold text-foreground mt-5 mb-2 tracking-tight text-base border-b pb-1">${line}</h4>`;
+    if (item.includes(':') && item.length < 120) {
+      const [title, ...desc] = item.split(':');
+      const descText = desc.join(':').trim();
+      if (descText) {
+        return `<div class="mb-3 leading-relaxed"><span class="font-bold text-foreground block sm:inline">${title}:</span> <span class="text-muted-foreground">${descText}</span></div>`;
+      }
+      return `<h4 class="font-bold text-foreground mt-6 mb-2 tracking-tight text-base border-b pb-1">${title}:</h4>`;
     }
-    return `<p class="mb-3 leading-relaxed text-muted-foreground">${line}</p>`;
+    return `<p class="mb-3 leading-relaxed text-muted-foreground">${item}</p>`;
   }).join('');
 }
 
@@ -171,7 +187,7 @@ export default function ProductDetailPage() {
             </div>
 
             <p className="text-lg text-foreground/80 mb-8 leading-relaxed">
-              {product.short_description ? product.short_description.replace(/\\r\\n/g, ' ').replace(/\\n/g, ' ').replace(/\\/g, '') : "Descripción breve no disponible."}
+              {product.short_description ? product.short_description.replace(/\\r\\n/g, ' ').replace(/\\n/g, ' ').replace(/\\/g, '').replace(/\p{Extended_Pictographic}/gu, '') : "Descripción breve no disponible."}
             </p>
 
             <div className="space-y-6 mb-8">
