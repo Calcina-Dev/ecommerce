@@ -60,9 +60,10 @@
         }
         .pos-image {
             width: 100%;
-            height: 140px; /* Un poco más grande para que la foto luzca */
-            object-fit: cover;
-            background: var(--gray-100);
+            height: 150px;
+            object-fit: contain;
+            padding: 12px;
+            background: #f8fafc;
         }
         .dark .pos-image {
             background: var(--gray-800);
