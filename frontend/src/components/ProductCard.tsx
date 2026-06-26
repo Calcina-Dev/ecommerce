@@ -107,7 +107,7 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         )}
         <h3 className="font-semibold text-gray-900 text-[15px] leading-snug mb-2 line-clamp-2 transition-colors group-hover:text-accent tracking-tight">
-          {product.name}
+          {product.name ? product.name.replace(/\\r\\n/g, ' ').replace(/\\n/g, ' ').replace(/\\/g, '') : ''}
         </h3>
         
         <div className="mt-auto flex items-baseline gap-2 pt-2">

@@ -7,10 +7,27 @@ import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/useCartStore";
 import { motion } from "framer-motion";
 
+function cleanDescriptionText(text: string | null) {
+  if (!text) return "";
+  let clean = text.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\\/g, '');
+  const lines = clean.split('\n').map(l => l.trim()).filter(Boolean);
+  return lines.map(line => {
+    if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
+      const item = line.replace(/^[-•*]\s*/, '');
+      return `<li class="ml-5 list-disc marker:text-emerald-600 font-medium mb-1.5 text-foreground/90">${item}</li>`;
+    }
+    if (line.endsWith(':')) {
+      return `<h4 class="font-bold text-foreground mt-5 mb-2 tracking-tight text-base border-b pb-1">${line}</h4>`;
+    }
+    return `<p class="mb-3 leading-relaxed text-muted-foreground">${line}</p>`;
+  }).join('');
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const slug = params.slug;
   const [product, setProduct] = useState<any>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const addItem = useCartStore((state) => state.addItem);
 
@@ -19,6 +36,7 @@ export default function ProductDetailPage() {
       .then(res => res.json())
       .then(data => {
         setProduct(data);
+        setActiveIdx(0);
         setLoading(false);
       })
       .catch(err => {
@@ -82,18 +100,41 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
           {/* Gallery */}
           <div className="space-y-4">
-            <div className="relative aspect-square rounded-3xl overflow-hidden bg-muted border">
+            <div className="relative aspect-square rounded-3xl overflow-hidden bg-muted border group shadow-sm">
               <Image 
-                src={images[0]} 
+                src={images[activeIdx] || images[0]} 
                 alt={product.name}
                 fill
-                className="object-cover"
+                className="object-cover transition-all duration-300"
               />
+              {images.length > 1 && (
+                <>
+                  <button 
+                    onClick={() => setActiveIdx((prev) => (prev > 0 ? prev - 1 : images.length - 1))}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-md border shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105 hover:bg-background z-10 font-bold"
+                  >
+                    ←
+                  </button>
+                  <button 
+                    onClick={() => setActiveIdx((prev) => (prev < images.length - 1 ? prev + 1 : 0))}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-md border shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105 hover:bg-background z-10 font-bold"
+                  >
+                    →
+                  </button>
+                  <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold border shadow-sm z-10">
+                    {activeIdx + 1} / {images.length}
+                  </div>
+                </>
+              )}
             </div>
             {images.length > 1 && (
-              <div className="flex gap-4 overflow-x-auto pb-2">
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
                 {images.map((img: string, idx: number) => (
-                  <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden bg-muted border flex-shrink-0 cursor-pointer">
+                  <div 
+                    key={idx} 
+                    onClick={() => setActiveIdx(idx)}
+                    className={`relative w-20 h-20 rounded-xl overflow-hidden bg-muted border flex-shrink-0 cursor-pointer transition-all duration-200 ${activeIdx === idx ? 'ring-2 ring-emerald-600 border-emerald-600 scale-95 opacity-100 shadow-md' : 'opacity-60 hover:opacity-100'}`}
+                  >
                     <Image src={img} alt="" fill className="object-cover" />
                   </div>
                 ))}
@@ -130,7 +171,7 @@ export default function ProductDetailPage() {
             </div>
 
             <p className="text-lg text-foreground/80 mb-8 leading-relaxed">
-              {product.short_description || "Descripción breve no disponible."}
+              {product.short_description ? product.short_description.replace(/\\r\\n/g, ' ').replace(/\\n/g, ' ').replace(/\\/g, '') : "Descripción breve no disponible."}
             </p>
 
             <div className="space-y-6 mb-8">
@@ -160,32 +201,29 @@ export default function ProductDetailPage() {
                 </motion.button>
               </div>
               
-              {/* Trust Signals */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t">
-                <div className="flex flex-col items-center justify-center text-center gap-2 text-muted-foreground">
-                  <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                  </div>
-                  <span className="text-xs font-medium">Calidad Garantizada</span>
+              {/* Premium Clinical Trust Signals */}
+              <div className="grid grid-cols-3 gap-3 pt-6 border-t border-border/60 mt-6 mb-8">
+                <div className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
+                  <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">Laboratorio</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">Grado Clínico GMP</span>
                 </div>
-                <div className="flex flex-col items-center justify-center text-center gap-2 text-muted-foreground">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                  </div>
-                  <span className="text-xs font-medium">Pago Seguro</span>
+                <div className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
+                  <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">Trazabilidad</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">Lote Auditado FEFO</span>
                 </div>
-                <div className="flex flex-col items-center justify-center text-center gap-2 text-muted-foreground col-span-2 md:col-span-1">
-                  <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                  </div>
-                  <span className="text-xs font-medium">Envío a todo el país</span>
+                <div className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
+                  <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">Despacho</span>
+                  <span className="text-[11px] text-muted-foreground font-medium">Envío Seguro Nacional</span>
                 </div>
               </div>
             </div>
 
-            <div className="prose prose-sm sm:prose-base dark:prose-invert">
-              <h3 className="text-xl font-semibold mb-2">Detalles del Producto</h3>
-              <div dangerouslySetInnerHTML={{ __html: product.description || "Sin descripción detallada." }} />
+            <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
+              <h3 className="text-xl font-bold tracking-tight mb-4 text-foreground">Información Clínica y Beneficios</h3>
+              <div 
+                className="text-sm sm:text-base leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: cleanDescriptionText(product.description) || "Sin descripción clínica detallada." }} 
+              />
             </div>
           </div>
         </div>

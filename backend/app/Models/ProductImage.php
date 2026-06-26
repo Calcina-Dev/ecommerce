@@ -22,4 +22,12 @@ class ProductImage extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function getImageUrlAttribute($value): string
+    {
+        if ($value && str_starts_with($value, '/')) {
+            return asset($value);
+        }
+        return $value ?? '';
+    }
 }
