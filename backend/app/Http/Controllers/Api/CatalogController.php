@@ -13,7 +13,7 @@ class CatalogController extends Controller
 {
     public function home()
     {
-        $featuredProducts = Product::with(['primaryImage', 'brand'])
+        $featuredProducts = Product::with(['images', 'primaryImage', 'brand'])
             ->where('is_active', true)
             ->where('is_featured', true)
             ->limit(8)
@@ -32,7 +32,7 @@ class CatalogController extends Controller
 
     public function products(Request $request)
     {
-        $query = Product::with(['primaryImage', 'brand', 'category'])
+        $query = Product::with(['images', 'primaryImage', 'brand', 'category'])
             ->where('is_active', true);
 
         if ($request->has('category_id')) {

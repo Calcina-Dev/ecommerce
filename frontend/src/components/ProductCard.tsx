@@ -3,7 +3,8 @@ import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Product {
   id: number;
@@ -14,6 +15,11 @@ interface Product {
   primary_image?: {
     image_url: string;
   };
+  images?: {
+    id: number;
+    image_url: string;
+    is_primary?: boolean;
+  }[];
   brand?: {
     name: string;
   };
@@ -27,6 +33,24 @@ export function ProductCard({ product }: { product: Product }) {
         ? product.primary_image.image_url
         : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/storage/${product.primary_image.image_url}`)
     : "https://images.unsplash.com/photo-1584308666744-24d5e47ac9db?q=80&w=600&auto=format&fit=crop";
+
+  const allImages = (product.images && product.images.length > 0)
+    ? product.images.map(img => img.image_url.startsWith('http') ? img.image_url : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/storage/${img.image_url}`)
+    : [imageUrl];
+
+  const [currentIdx, setCurrentIdx] = useState(0);
+
+  const nextImg = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentIdx((prev) => (prev + 1) % allImages.length);
+  };
+
+  const prevImg = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentIdx((prev) => (prev - 1 + allImages.length) % allImages.length);
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // Evitar navegación al detalle
@@ -66,13 +90,40 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </div>
 
-      <Link href={`/productos/${product.slug}`} className="relative aspect-[4/5] bg-gray-50/70 overflow-hidden rounded-t-2xl block p-4" style={{ transform: 'translateZ(0)' }}>
+      <Link href={`/productos/${product.slug}`} className="relative aspect-[4/5] bg-gray-50/70 overflow-hidden rounded-t-2xl block p-4 group/slider" style={{ transform: 'translateZ(0)' }}>
         <Image
-          src={imageUrl}
+          src={allImages[currentIdx] || imageUrl}
           alt={product.name}
           fill
           className="object-contain p-5 sm:p-6 transition-transform duration-500 group-hover:scale-105"
         />
+
+        {allImages.length > 1 && (
+          <>
+            <button 
+              onClick={prevImg}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white shadow flex items-center justify-center text-gray-700 opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
+              title="Anterior"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={nextImg}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 hover:bg-white shadow flex items-center justify-center text-gray-700 opacity-0 group-hover/slider:opacity-100 transition-opacity z-20"
+              title="Siguiente"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-20 pointer-events-none">
+              {allImages.map((_, i) => (
+                <span 
+                  key={i} 
+                  className={`h-1.5 rounded-full transition-all duration-300 ${i === currentIdx ? 'bg-primary w-3' : 'bg-gray-300 w-1.5'}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </Link>
 
       {/* Hover Quick Action - Desktop Only */}
