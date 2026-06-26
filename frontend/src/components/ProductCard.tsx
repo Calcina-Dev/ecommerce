@@ -66,12 +66,12 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </div>
 
-      <Link href={`/productos/${product.slug}`} className="relative aspect-[4/5] bg-gray-50 overflow-hidden rounded-t-2xl block" style={{ transform: 'translateZ(0)' }}>
+      <Link href={`/productos/${product.slug}`} className="relative aspect-[4/5] bg-gray-50/70 overflow-hidden rounded-t-2xl block p-4" style={{ transform: 'translateZ(0)' }}>
         <Image
           src={imageUrl}
           alt={product.name}
           fill
-          className="object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-110"
+          className="object-contain p-5 sm:p-6 transition-transform duration-500 group-hover:scale-105"
         />
       </Link>
 
