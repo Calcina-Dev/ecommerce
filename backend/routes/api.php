@@ -60,6 +60,7 @@ Route::get('/debug-logs', function () {
 });
 
 Route::get('/run-system-import-reset', function () {
+    try { \Illuminate\Support\Facades\Artisan::call('storage:link'); } catch (\Throwable $e) {}
     \Illuminate\Support\Facades\Artisan::call('import:woocommerce', ['--clean' => true]);
     return response()->json([
         'status' => 'success',
