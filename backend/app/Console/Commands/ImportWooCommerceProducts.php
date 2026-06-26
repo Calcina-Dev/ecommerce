@@ -28,7 +28,8 @@ class ImportWooCommerceProducts extends Command
         if ($this->option('clean')) {
             $this->warn('Limpiando base de datos operativa en PostgreSQL (OC, Facturas, Ventas, Clientes, Cajas, Inventario)...');
 
-            DB::statement('TRUNCATE orders, order_items, sales, purchase_invoices, purchase_invoice_lines, purchase_orders, purchase_order_items, stock_movements, stock_balances, batches, product_images, products, coupons, cash_sessions, categories, brands CASCADE;');
+            DB::statement('TRUNCATE orders, order_items, sales, purchase_invoices, purchase_invoice_lines, purchase_orders, purchase_order_items, stock_movements, stock_balances, batches, product_images, products, coupons, cash_sessions, categories, brands RESTART IDENTITY CASCADE;');
+            try { DB::statement("SELECT setval('products_id_seq', 69, true);"); } catch (\Throwable $e) {}
 
             User::whereNotIn('role', ['admin', 'employee'])->delete();
 
@@ -128,12 +129,12 @@ class ImportWooCommerceProducts extends Command
             }
 
             // 4. Producto
-            $cleanSku = !empty($sku) ? $sku : 'WC-' . strtoupper(Str::slug(substr($name, 0, 15))) . '-' . rand(10, 99);
+            $cleanSku = !empty($sku) ? $sku : 'WC-' . strtoupper(Str::slug(substr($name, 0, 20)));
             $product = Product::updateOrCreate(
                 ['sku' => $cleanSku],
                 [
                     'name' => $name,
-                    'slug' => Str::slug($name) . '-' . rand(100, 999),
+                    'slug' => Str::slug($name),
                     'short_description' => substr(strip_tags($shortDesc), 0, 255),
                     'description' => $desc ?: $shortDesc,
                     'price' => $finalPrice,
