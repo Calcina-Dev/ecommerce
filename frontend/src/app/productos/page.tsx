@@ -156,36 +156,67 @@ function CatalogContent() {
                 ))}
               </div>
 
-              {/* Pagination Controls */}
+              {/* Minimalist Numbered Pagination Controls */}
               {pagination.last_page > 1 && (
-                <div className="flex justify-center items-center gap-4 mt-12">
-                  <button
-                    onClick={() => {
-                      if (pagination.current_page > 1) {
+                <div className="flex justify-center items-center gap-1 sm:gap-1.5 mt-16 text-sm sm:text-base select-none">
+                  {pagination.current_page > 1 && (
+                    <button
+                      onClick={() => {
                         setFilters({ page: pagination.current_page - 1 });
                         window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }
-                    }}
-                    disabled={pagination.current_page === 1}
-                    className="px-4 py-2 border rounded-xl disabled:opacity-50 hover:bg-muted transition-colors"
-                  >
-                    Anterior
-                  </button>
-                  <span className="text-sm font-medium">
-                    Página {pagination.current_page} de {pagination.last_page}
-                  </span>
-                  <button
-                    onClick={() => {
-                      if (pagination.current_page < pagination.last_page) {
+                      }}
+                      className="flex items-center gap-1 mr-2 px-3 py-1.5 text-muted-foreground hover:text-foreground font-medium transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                      Anterior
+                    </button>
+                  )}
+
+                  {(() => {
+                    const pages = [];
+                    const maxShown = 10;
+                    let start = Math.max(1, pagination.current_page - Math.floor(maxShown / 2));
+                    let end = Math.min(pagination.last_page, start + maxShown - 1);
+                    if (end - start + 1 < maxShown) {
+                      start = Math.max(1, end - maxShown + 1);
+                    }
+                    for (let i = start; i <= end; i++) pages.push(i);
+
+                    return pages.map((page) => {
+                      const isActive = page === pagination.current_page;
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => {
+                            if (!isActive) {
+                              setFilters({ page });
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                          }}
+                          className={`min-w-[38px] h-[38px] px-2.5 rounded-lg flex items-center justify-center font-semibold transition-all ${
+                            isActive 
+                              ? 'border-2 border-blue-500 text-foreground shadow-sm bg-background scale-105 z-10' 
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    });
+                  })()}
+
+                  {pagination.current_page < pagination.last_page && (
+                    <button
+                      onClick={() => {
                         setFilters({ page: pagination.current_page + 1 });
                         window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }
-                    }}
-                    disabled={pagination.current_page === pagination.last_page}
-                    className="px-4 py-2 border rounded-xl disabled:opacity-50 hover:bg-muted transition-colors"
-                  >
-                    Siguiente
-                  </button>
+                      }}
+                      className="flex items-center gap-1 ml-2 px-3 py-1.5 text-muted-foreground hover:text-foreground font-medium transition-colors"
+                    >
+                      Siguiente
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                  )}
                 </div>
               )}
             </>
