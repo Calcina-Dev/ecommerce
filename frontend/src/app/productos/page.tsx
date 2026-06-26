@@ -12,20 +12,18 @@ function CatalogContent() {
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
-  // Sincronizar URL parameters con el store al cargar la página
+  // Sincronizar URL parameters con el store siempre que cambie la URL
   useEffect(() => {
     const categoryId = searchParams.get('category');
     const search = searchParams.get('search');
     const ofertas = searchParams.get('ofertas');
     
-    // Si hay parámetros en la URL, los seteamos (solo en el montaje inicial)
-    if (categoryId || search || ofertas) {
-      setFilters({ 
-        categoryId: categoryId ? parseInt(categoryId) : undefined,
-        search: search || undefined,
-        onSale: ofertas === 'true' || ofertas === '1'
-      });
-    }
+    setFilters({ 
+      categoryId: categoryId ? parseInt(categoryId) : undefined,
+      search: search || undefined,
+      onSale: ofertas === 'true' || ofertas === '1',
+      page: 1
+    });
   }, [searchParams]);
 
   // Cargar filtros disponibles
@@ -74,9 +72,9 @@ function CatalogContent() {
             <input 
               type="text" 
               placeholder="Ej. Vitamina C..." 
-              className="w-full px-4 py-2 border rounded-xl bg-background"
+              className="w-full px-4 py-2 border rounded-xl bg-background text-foreground"
               value={filters.search || ""}
-              onChange={(e) => setFilters({ search: e.target.value, page: 1 })}
+              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value || undefined, page: 1 }))}
             />
           </div>
 
@@ -87,7 +85,7 @@ function CatalogContent() {
                 type="checkbox"
                 className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer transition-colors"
                 checked={!!filters.onSale}
-                onChange={(e) => setFilters({ onSale: e.target.checked, page: 1 })}
+                onChange={(e) => setFilters(prev => ({ ...prev, onSale: e.target.checked || undefined, page: 1 }))}
               />
               <span className="text-sm font-medium group-hover:text-primary transition-colors">Solo productos con descuento</span>
             </label>
@@ -98,7 +96,7 @@ function CatalogContent() {
               <h3 className="font-medium text-lg mb-4">Categorías</h3>
               <div className="space-y-2">
                 <button 
-                  onClick={() => setFilters({ categoryId: undefined, page: 1 })}
+                  onClick={() => setFilters(prev => ({ ...prev, categoryId: undefined, page: 1 }))}
                   className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${!filters.categoryId ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                 >
                   Todas
@@ -106,7 +104,7 @@ function CatalogContent() {
                 {filterData.categories.map((cat: any) => (
                   <button 
                     key={cat.id}
-                    onClick={() => setFilters({ categoryId: cat.id, page: 1 })}
+                    onClick={() => setFilters(prev => ({ ...prev, categoryId: cat.id, page: 1 }))}
                     className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${filters.categoryId === cat.id ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                   >
                     {cat.name}
@@ -121,7 +119,7 @@ function CatalogContent() {
               <h3 className="font-medium text-lg mb-4">Marcas</h3>
               <div className="space-y-2">
                 <button 
-                  onClick={() => setFilters({ brandId: undefined, page: 1 })}
+                  onClick={() => setFilters(prev => ({ ...prev, brandId: undefined, page: 1 }))}
                   className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${!filters.brandId ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                 >
                   Todas
@@ -129,7 +127,7 @@ function CatalogContent() {
                 {filterData.brands.map((brand: any) => (
                   <button 
                     key={brand.id}
-                    onClick={() => setFilters({ brandId: brand.id, page: 1 })}
+                    onClick={() => setFilters(prev => ({ ...prev, brandId: brand.id, page: 1 }))}
                     className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${filters.brandId === brand.id ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
                   >
                     {brand.name}

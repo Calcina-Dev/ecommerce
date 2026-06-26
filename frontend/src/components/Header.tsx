@@ -1,12 +1,15 @@
 "use client"
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCartStore } from "@/store/useCartStore";
 
 export function Header() {
   const { user, logout } = useAuthStore();
   const { totalItems, setIsOpen } = useCartStore();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -37,20 +40,32 @@ export function Header() {
           />
         </Link>
 
-        {/* Search Bar (Bexo Style) */}
+        {/* Search Bar (Functional) */}
         <div className="flex-1 max-w-2xl w-full">
-          <div className="relative">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (searchQuery.trim()) {
+                router.push(`/productos?search=${encodeURIComponent(searchQuery.trim())}`);
+              } else {
+                router.push(`/productos`);
+              }
+            }} 
+            className="relative"
+          >
             <input 
               type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="¿Qué estás buscando hoy?" 
-              className="w-full bg-gray-100 border-transparent focus:bg-white focus:border-accent focus:ring-2 focus:ring-accent/20 rounded-full py-2.5 pl-6 pr-12 text-sm transition-all"
+              className="w-full bg-gray-100 border-transparent focus:bg-white focus:border-accent focus:ring-2 focus:ring-accent/20 rounded-full py-2.5 pl-6 pr-12 text-sm transition-all text-foreground"
             />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-accent transition-colors">
+            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-accent transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
             </button>
-          </div>
+          </form>
         </div>
 
         {/* Navigation & Actions */}
