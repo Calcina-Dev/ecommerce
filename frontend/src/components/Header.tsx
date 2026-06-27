@@ -16,6 +16,23 @@ export function Header() {
     setIsClient(true);
   }, []);
 
+  useEffect(() => {
+    if (!isClient) return;
+    const timer = setTimeout(() => {
+      if (searchQuery.trim() !== "") {
+        const encoded = encodeURIComponent(searchQuery.trim());
+        if (window.location.pathname !== "/productos" || !window.location.search.includes(`search=${encoded}`)) {
+          router.push(`/productos?search=${encoded}`);
+        }
+      } else if (searchQuery === "") {
+        if (window.location.pathname === "/productos" && window.location.search.includes("search=")) {
+          router.push("/productos");
+        }
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery, isClient, router]);
+
   const handleLogout = () => {
     // Aquí idealmente llamarías a la API de logout también
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/auth/logout`, {

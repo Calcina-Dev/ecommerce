@@ -36,25 +36,28 @@ function CatalogContent() {
 
   // Cargar productos
   useEffect(() => {
-    setLoading(true);
-    const queryParams = new URLSearchParams();
-    if (filters.categoryId) queryParams.append('category_id', filters.categoryId.toString());
-    if (filters.brandId) queryParams.append('brand_id', filters.brandId.toString());
-    if (filters.search) queryParams.append('search', filters.search);
-    if (filters.page) queryParams.append('page', filters.page.toString());
-    if (filters.onSale) queryParams.append('on_sale', '1');
+    const timer = setTimeout(() => {
+      setLoading(true);
+      const queryParams = new URLSearchParams();
+      if (filters.categoryId) queryParams.append('category_id', filters.categoryId.toString());
+      if (filters.brandId) queryParams.append('brand_id', filters.brandId.toString());
+      if (filters.search) queryParams.append('search', filters.search);
+      if (filters.page) queryParams.append('page', filters.page.toString());
+      if (filters.onSale) queryParams.append('on_sale', '1');
 
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/products?${queryParams.toString()}`)
-      .then(res => res.json())
-      .then(data => {
-        setProducts(data.data || []);
-        setPagination({ current_page: data.current_page || 1, last_page: data.last_page || 1 });
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/products?${queryParams.toString()}`)
+        .then(res => res.json())
+        .then(data => {
+          setProducts(data.data || []);
+          setPagination({ current_page: data.current_page || 1, last_page: data.last_page || 1 });
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error(err);
+          setLoading(false);
+        });
+    }, 300);
+    return () => clearTimeout(timer);
   }, [filters]);
 
   return (
