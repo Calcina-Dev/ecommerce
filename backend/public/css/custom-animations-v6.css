@@ -105,9 +105,15 @@ a.fi-btn:active,
     box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
     border: 1px solid rgba(0,0,0,0.04) !important;
 }
-.dark .fi-ta-content, .dark .fi-wi-stats-overview-stat, .dark .fi-section, .dark .fi-modal-window {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
-    border: 1px solid rgba(255,255,255,0.05) !important;
+.dark .fi-ta-content, .dark .fi-wi-stats-overview-stat, .dark .fi-section, .dark .fi-modal-window, .dark .fi-wi-chart {
+    background-color: rgba(24, 24, 27, 0.85) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    color: #f3f4f6 !important;
+}
+.dark .fi-wi-chart .fi-wi-chart-canvas-ctn,
+.dark .fi-wi-chart > div {
+    background-color: transparent !important;
 }
 
 /* Animated Notification Bell */

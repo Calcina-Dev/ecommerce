@@ -1,14 +1,32 @@
-/* Estilos personalizados para darle un look iOS a Filament */
+/* Estilos personalizados para darle un look iOS a Filament (Soporte Modo Claro y Oscuro) */
 
 /* Bordes más redondeados en las tarjetas */
 .fi-wi-stats-overview-stat,
-.fi-wi-chart {
+.fi-wi-chart,
+.fi-section {
     border-radius: 16px !important;
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05) !important;
-    border: 1px solid rgba(0, 0, 0, 0.03) !important;
-    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(0, 0, 0, 0.04) !important;
+    background-color: rgba(255, 255, 255, 0.85) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Modo Oscuro para Tarjetas */
+.dark .fi-wi-stats-overview-stat,
+.dark .fi-wi-chart,
+.dark .fi-section,
+.dark .fi-ta-content {
+    background-color: rgba(24, 24, 27, 0.85) !important; /* Zinc 900 translúcido */
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4) !important;
+    color: #f3f4f6 !important;
+}
+
+/* Eliminar el "padding gris" en gráficos en modo oscuro */
+.dark .fi-wi-chart .fi-wi-chart-canvas-ctn,
+.dark .fi-wi-chart > div {
+    background-color: transparent !important;
 }
 
 /* Redondear botones */
@@ -16,12 +34,23 @@
     border-radius: 12px !important;
 }
 
-/* Fondo general un poco más claro/gris estilo iOS */
+/* Fondo general un poco más claro/gris estilo iOS en modo claro */
 body {
     background-color: #F5F5F7 !important;
+}
+
+/* Fondo oscuro elegante en modo oscuro */
+.dark body,
+.dark .fi-body {
+    background-color: #09090b !important; /* Zinc 950 */
+    color: #f3f4f6 !important;
 }
 
 /* Sombras suaves estilo Apple */
 .fi-sidebar {
     box-shadow: 1px 0 10px rgba(0,0,0,0.03) !important;
+}
+.dark .fi-sidebar {
+    background-color: rgba(18, 18, 21, 0.95) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
