@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \Filament\Support\Facades\FilamentAsset::register([
-            \Filament\Support\Assets\Css::make('custom-stylesheet', public_path('css/custom.css')),
+            \Filament\Support\Assets\Css::make('custom-stylesheet', asset('css/custom.css?v=' . (file_exists(public_path('css/custom.css')) ? filemtime(public_path('css/custom.css')) : time()))),
         ]);
 
         \Illuminate\Database\Eloquent\Relations\Relation::enforceMorphMap([
