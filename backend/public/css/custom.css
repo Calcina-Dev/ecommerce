@@ -29,16 +29,17 @@
     color: #f3f4f6 !important;
 }
 
-.dark .fi-wi-chart {
+/* Eliminar cajas dobles y fondos grises internos en gráficos en modo claro y oscuro */
+.fi-wi-chart .fi-section-content-ctn,
+.fi-wi-chart .fi-section-content,
+.fi-wi-chart .fi-wi-chart-canvas-ctn,
+.dark .fi-wi-chart .fi-section-content-ctn,
+.dark .fi-wi-chart .fi-section-content,
+.dark .fi-wi-chart .fi-wi-chart-canvas-ctn {
     background: transparent !important;
+    background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
-}
-
-/* Eliminar el "padding gris" en gráficos en modo oscuro */
-.dark .fi-wi-chart .fi-wi-chart-canvas-ctn,
-.dark .fi-wi-chart > div {
-    background-color: transparent !important;
 }
 
 /* Mantener altura uniforme y ocupar todo el espacio del gráfico incluso cuando las ventas están en 0 */
