@@ -54,8 +54,8 @@ class DatabaseSeeder extends Seeder
             CouponSeeder::class,
             PaymentMethodSeeder::class,
             ShippingMethodSeeder::class,
-            SaleSeeder::class,
-            OnlineOrderSeeder::class,
+            // SaleSeeder::class,
+            // OnlineOrderSeeder::class,
             StorefrontPageSeeder::class,
             StoreSettingSeeder::class,
         ]);

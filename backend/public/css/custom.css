@@ -41,6 +41,19 @@
     background-color: transparent !important;
 }
 
+/* Mantener altura uniforme y ocupar todo el espacio del gráfico incluso cuando las ventas están en 0 */
+.fi-wi-chart-canvas-ctn {
+    min-height: 260px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+.fi-wi-chart-canvas-ctn canvas {
+    min-height: 260px !important;
+    width: 100% !important;
+}
+
 /* Redondear botones */
 .fi-btn {
     border-radius: 12px !important;
