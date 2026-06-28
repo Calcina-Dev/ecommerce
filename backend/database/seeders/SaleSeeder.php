@@ -92,7 +92,7 @@ class SaleSeeder extends Seeder
                     'quantity' => $qty,
                     'price' => $price,
                     'subtotal' => $subtotal,
-                    'unit_cost' => 0,
+                    'unit_cost' => round($price * 0.45, 2),
                 ]);
 
                 $paymentMethod = $paymentMethods->random();

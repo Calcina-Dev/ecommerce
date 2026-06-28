@@ -135,7 +135,7 @@ class OnlineOrderSeeder extends Seeder
                     'price' => $product->price,
                     'quantity' => $qty,
                     'subtotal' => $subtotal,
-                    'unit_cost' => 0, 
+                    'unit_cost' => round($product->price * 0.45, 2), 
                 ]);
 
                 $orderTotal += $subtotal;

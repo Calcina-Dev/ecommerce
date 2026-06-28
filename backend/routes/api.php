@@ -62,6 +62,11 @@ Route::get('/debug-logs', function () {
 Route::get('/run-system-import-reset', function () {
     try { \Illuminate\Support\Facades\Artisan::call('storage:link'); } catch (\Throwable $e) {}
     \Illuminate\Support\Facades\Artisan::call('import:woocommerce', ['--clean' => true]);
+    try {
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'SaleSeeder', '--force' => true]);
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'OnlineOrderSeeder', '--force' => true]);
+    } catch (\Throwable $e) {}
+    try { \Illuminate\Support\Facades\Cache::flush(); } catch (\Throwable $e) {}
     return response()->json([
         'status' => 'success',
         'output' => \Illuminate\Support\Facades\Artisan::output()

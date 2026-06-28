@@ -2,7 +2,6 @@
 
 /* Bordes más redondeados en las tarjetas */
 .fi-wi-stats-overview-stat,
-.fi-wi-chart,
 .fi-section {
     border-radius: 16px !important;
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05) !important;
@@ -12,15 +11,28 @@
     -webkit-backdrop-filter: blur(12px) !important;
 }
 
+/* Evitar doble tarjeta en widgets de gráficos */
+.fi-wi-chart {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+
 /* Modo Oscuro para Tarjetas */
 .dark .fi-wi-stats-overview-stat,
-.dark .fi-wi-chart,
 .dark .fi-section,
 .dark .fi-ta-content {
     background-color: rgba(24, 24, 27, 0.85) !important; /* Zinc 900 translúcido */
     border: 1px solid rgba(255, 255, 255, 0.07) !important;
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4) !important;
     color: #f3f4f6 !important;
+}
+
+.dark .fi-wi-chart {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 /* Eliminar el "padding gris" en gráficos en modo oscuro */
