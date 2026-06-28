@@ -3,8 +3,9 @@
         .pos-container {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            height: calc(100vh - 8rem);
+            gap: 1.25rem;
+            height: calc(100vh - 5rem);
+            min-height: 650px;
         }
         @media (min-width: 1024px) {
             .pos-container {
@@ -35,9 +36,10 @@
         .pos-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 1rem;
+            gap: 0.85rem;
             overflow-y: auto;
-            padding-bottom: 1rem;
+            padding-bottom: 1.5rem;
+            flex: 1;
         }
         .pos-card {
             background: white;
@@ -48,8 +50,8 @@
             transition: all 0.2s;
             display: flex;
             flex-direction: column;
-            min-height: 220px; /* Asegurar suficiente altura */
             color: #111827;
+            height: 100%;
         }
         .dark .pos-card {
             background: #ffffff !important;
@@ -64,26 +66,27 @@
         }
         .pos-image {
             width: 100%;
-            height: 150px;
+            height: 110px;
             object-fit: contain;
-            padding: 12px;
+            padding: 8px;
             background: #ffffff;
+            flex-shrink: 0;
         }
         .dark .pos-image {
             background: #ffffff;
         }
         .pos-card-body {
-            padding: 0.75rem;
+            padding: 0.6rem;
             display: flex;
             flex-direction: column;
             flex: 1;
             justify-content: space-between;
-            gap: 0.5rem; /* Espacio entre el título y el precio */
+            gap: 0.35rem;
         }
         .pos-title {
-            font-size: 0.875rem;
-            font-weight: 600; /* Un poco más gordito para mejor legibilidad */
-            line-height: 1.25;
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1.2;
             margin: 0;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -94,17 +97,18 @@
             display: flex; 
             justify-content: space-between; 
             align-items: flex-end;
-            margin-top: auto; /* Empujar hacia abajo siempre */
+            margin-top: auto;
         }
         .pos-stock {
-            font-size: 0.75rem; 
+            font-size: 0.7rem; 
             color: var(--gray-500);
+            font-weight: 500;
         }
         .pos-price {
-            font-size: 1.125rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: var(--primary-600);
-            line-height: 1; /* Prevenir cutoff */
+            line-height: 1.1;
         }
         .dark .pos-price {
             color: var(--primary-600) !important;
