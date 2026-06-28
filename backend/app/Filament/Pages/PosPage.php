@@ -52,14 +52,22 @@ class PosPage extends Page implements HasForms
 
         $this->activeSession = \App\Models\CashSession::where('user_id', auth()->id())
             ->where('status', 'open')
-            ->first();
+            ->first() ?? \App\Models\CashSession::where('status', 'open')->first();
 
         if (!$this->activeSession) {
+            $register = \App\Models\CashRegister::firstOrCreate(['name' => 'Caja Principal']);
+            $this->activeSession = \App\Models\CashSession::create([
+                'cash_register_id' => $register->id,
+                'user_id' => auth()->id() ?? 1,
+                'opening_balance' => 100.00,
+                'status' => 'open',
+                'opened_at' => now(),
+            ]);
+
             Notification::make()
-                ->title('Caja Cerrada')
-                ->body('Debes abrir un turno de caja antes de poder realizar ventas.')
-                ->danger()
-                ->persistent()
+                ->title('Turno de Caja Abierto Automáticamente')
+                ->body('Se ha iniciado turno en la Caja Principal listos para vender.')
+                ->success()
                 ->send();
         }
 
@@ -311,8 +319,14 @@ class PosPage extends Page implements HasForms
     public function checkout()
     {
         if (!$this->activeSession) {
-            Notification::make()->title('Error: Caja Cerrada')->body('Debes abrir un turno primero.')->danger()->send();
-            return;
+            $register = \App\Models\CashRegister::firstOrCreate(['name' => 'Caja Principal']);
+            $this->activeSession = \App\Models\CashSession::where('status', 'open')->first() ?? \App\Models\CashSession::create([
+                'cash_register_id' => $register->id,
+                'user_id' => auth()->id() ?? 1,
+                'opening_balance' => 100.00,
+                'status' => 'open',
+                'opened_at' => now(),
+            ]);
         }
 
         if (empty($this->cart)) {

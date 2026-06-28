@@ -63,10 +63,11 @@
             height: 150px;
             object-fit: contain;
             padding: 12px;
-            background: #f8fafc;
+            background: #ffffff;
         }
         .dark .pos-image {
-            background: var(--gray-800);
+            background: #ffffff;
+            border-bottom: 1px solid var(--gray-800);
         }
         .pos-card-body {
             padding: 0.75rem;

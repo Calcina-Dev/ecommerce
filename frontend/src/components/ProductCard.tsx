@@ -90,7 +90,7 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </div>
 
-      <Link href={`/productos/${product.slug}`} className="relative aspect-[4/5] bg-gray-50/70 dark:bg-zinc-800/40 overflow-hidden rounded-t-2xl block p-4 group/slider" style={{ transform: 'translateZ(0)' }}>
+      <Link href={`/productos/${product.slug}`} className="relative aspect-[4/5] bg-white dark:bg-white overflow-hidden rounded-t-2xl block p-4 group/slider border-b border-gray-100 dark:border-zinc-800/80" style={{ transform: 'translateZ(0)' }}>
         <Image
           src={allImages[currentIdx] || imageUrl}
           alt={product.name}

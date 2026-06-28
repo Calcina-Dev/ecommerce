@@ -116,7 +116,7 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
           {/* Gallery */}
           <div className="space-y-4">
-            <div className="relative aspect-square rounded-3xl overflow-hidden bg-white sm:bg-gray-50/60 border group shadow-sm p-4 sm:p-8">
+            <div className="relative aspect-square rounded-3xl overflow-hidden bg-white dark:bg-white border border-gray-100 dark:border-zinc-800/80 group shadow-sm p-4 sm:p-8">
               <Image 
                 src={images[activeIdx] || images[0]} 
                 alt={product.name}
@@ -149,7 +149,7 @@ export default function ProductDetailPage() {
                   <div 
                     key={idx} 
                     onClick={() => setActiveIdx(idx)}
-                    className={`relative w-20 h-20 rounded-xl overflow-hidden bg-white border flex-shrink-0 cursor-pointer transition-all duration-200 p-1.5 ${activeIdx === idx ? 'ring-2 ring-emerald-600 border-emerald-600 scale-95 opacity-100 shadow-md' : 'opacity-60 hover:opacity-100'}`}
+                    className={`relative w-20 h-20 rounded-xl overflow-hidden bg-white dark:bg-white border border-gray-100 dark:border-zinc-800 flex-shrink-0 cursor-pointer transition-all duration-200 p-1.5 ${activeIdx === idx ? 'ring-2 ring-emerald-600 border-emerald-600 scale-95 opacity-100 shadow-md' : 'opacity-60 hover:opacity-100'}`}
                   >
                     <Image src={img} alt="" fill className="object-contain p-1.5" />
                   </div>
