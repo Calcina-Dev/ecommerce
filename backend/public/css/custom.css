@@ -31,14 +31,22 @@
 
 /* Eliminar cajas dobles y fondos grises internos en gráficos en modo claro y oscuro */
 .fi-wi-chart .fi-section-content-ctn,
-.fi-wi-chart .fi-section-content,
-.fi-wi-chart .fi-wi-chart-canvas-ctn,
+.fi-wi-chart .fi-section-content-ctn *,
 .dark .fi-wi-chart .fi-section-content-ctn,
-.dark .fi-wi-chart .fi-section-content,
-.dark .fi-wi-chart .fi-wi-chart-canvas-ctn {
+.dark .fi-wi-chart .fi-section-content-ctn * {
     background: transparent !important;
     background-color: transparent !important;
     border: none !important;
+    box-shadow: none !important;
+}
+
+/* Eliminar dobles cajas y fondos oscuros en tablas dentro de widgets/tarjetas */
+.dark .fi-section .fi-ta-ctn,
+.dark .fi-section .fi-ta-content,
+.dark .fi-section .fi-ta-header-ctn,
+.dark .fi-section .fi-ta-filter {
+    background-color: transparent !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
     box-shadow: none !important;
 }
 
