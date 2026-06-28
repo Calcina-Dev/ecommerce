@@ -49,14 +49,18 @@
             display: flex;
             flex-direction: column;
             min-height: 220px; /* Asegurar suficiente altura */
+            color: #111827;
         }
         .dark .pos-card {
-            background: var(--gray-900);
-            border-color: var(--gray-800);
+            background: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            color: #111827 !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         .pos-card:hover {
-            border-color: var(--primary-500);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-500) !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
         }
         .pos-image {
             width: 100%;
@@ -67,7 +71,6 @@
         }
         .dark .pos-image {
             background: #ffffff;
-            border-bottom: 1px solid var(--gray-800);
         }
         .pos-card-body {
             padding: 0.75rem;
@@ -104,7 +107,7 @@
             line-height: 1; /* Prevenir cutoff */
         }
         .dark .pos-price {
-            color: var(--primary-400);
+            color: var(--primary-600) !important;
         }
         .pos-cart-item {
             display: flex;
