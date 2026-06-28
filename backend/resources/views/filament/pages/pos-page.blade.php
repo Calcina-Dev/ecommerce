@@ -130,6 +130,39 @@
         .icon-sm { width: 1.25rem; height: 1.25rem; }
         .icon-md { width: 1.5rem; height: 1.5rem; }
         .icon-lg { width: 3rem; height: 3rem; }
+        .pos-search-box {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--gray-200);
+            display: flex;
+            gap: 1rem;
+        }
+        .dark .pos-search-box {
+            background: var(--gray-900) !important;
+            border-color: var(--gray-800) !important;
+        }
+        .pos-input, .pos-select {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+            background: white;
+            color: #111827;
+        }
+        .dark .pos-input, .dark .pos-select {
+            background: var(--gray-800) !important;
+            border-color: var(--gray-700) !important;
+            color: white !important;
+        }
+        .pos-checkout-box {
+            padding: 1rem;
+            background: white;
+            border-top: 1px solid var(--gray-200);
+        }
+        .dark .pos-checkout-box {
+            background: var(--gray-900) !important;
+            border-color: var(--gray-800) !important;
+        }
     </style>
 
     <div class="pos-container">
@@ -137,10 +170,10 @@
         {{-- Lado Izquierdo: Catálogo de Productos --}}
         <div class="pos-left">
             {{-- Buscador y Almacén --}}
-            <div style="background: white; padding: 1rem; border-radius: 0.75rem; border: 1px solid var(--gray-200); display: flex; gap: 1rem;" class="dark:bg-gray-900 dark:border-gray-800">
-                <input wire:model.live.debounce.300ms="searchQuery" type="text" style="flex: 1; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; background: transparent;" class="dark:border-gray-700 dark:text-white" placeholder="Buscar productos por nombre o SKU...">
+            <div class="pos-search-box">
+                <input wire:model.live.debounce.300ms="searchQuery" type="text" style="flex: 1;" class="pos-input" placeholder="Buscar productos por nombre o SKU...">
                 
-                <select wire:model.live="selectedWarehouseId" style="width: 250px; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; background: transparent;" class="dark:border-gray-700 dark:text-white">
+                <select wire:model.live="selectedWarehouseId" style="width: 250px;" class="pos-select">
                     @foreach(\App\Models\Warehouse::where('is_active', true)->get() as $wh)
                         <option value="{{ $wh->id }}" class="dark:bg-gray-800">{{ $wh->name }}</option>
                     @endforeach
@@ -231,7 +264,7 @@
                     {{ $this->form }}
                 </div>
                 
-                <div style="padding: 1rem; background: white; border-top: 1px solid var(--gray-200);" class="dark:bg-gray-950 dark:border-gray-800">
+                <div class="pos-checkout-box">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; font-size: 0.875rem; color: var(--gray-500);">
                         <span>Subtotal</span>
                         <span class="dark:text-white">S/ {{ number_format($subtotal, 2) }}</span>
