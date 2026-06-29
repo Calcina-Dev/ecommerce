@@ -33,13 +33,13 @@ class CatalogController extends Controller
 
     public function products(Request $request)
     {
-        $cacheKey = 'catalog_products_' . md5(json_encode($request->all()));
+        $cacheKey = 'catalog_products_v2_' . md5(json_encode($request->all()));
         
-        $products = Cache::remember($cacheKey, 600, function () use ($request) {
+        $products = Cache::remember($cacheKey, 60, function () use ($request) {
             $query = Product::with(['images', 'primaryImage', 'brand', 'category'])
                 ->where('is_active', true);
 
-            if ($request->has('category_id')) {
+            if ($request->filled('category_id') && $request->category_id !== 'undefined') {
                 $catId = $request->category_id;
                 $childIds = \App\Models\Category::where('parent_id', $catId)->pluck('id')->toArray();
                 $grandChildIds = !empty($childIds) ? \App\Models\Category::whereIn('parent_id', $childIds)->pluck('id')->toArray() : [];
@@ -53,11 +53,11 @@ class CatalogController extends Controller
                 });
             }
 
-            if ($request->has('brand_id')) {
+            if ($request->filled('brand_id') && $request->brand_id !== 'undefined') {
                 $query->where('brand_id', $request->brand_id);
             }
 
-            if ($request->has('search')) {
+            if ($request->filled('search') && $request->search !== 'undefined') {
                 $query->where('name', 'ilike', '%' . $request->search . '%');
             }
 

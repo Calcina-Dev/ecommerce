@@ -9,6 +9,7 @@ function CatalogContent() {
   const [products, setProducts] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ current_page: 1, last_page: 1 });
   const [loading, setLoading] = useState(true);
+  const [expandedCats, setExpandedCats] = useState<Record<number, boolean>>({});
   const searchParams = useSearchParams();
 
   // Sincronizar URL parameters con el store siempre que cambie la URL
@@ -42,10 +43,10 @@ function CatalogContent() {
     const timer = setTimeout(() => {
       setLoading(true);
       const queryParams = new URLSearchParams();
-      if (filters.categoryId) queryParams.append('category_id', filters.categoryId.toString());
-      if (filters.brandId) queryParams.append('brand_id', filters.brandId.toString());
-      if (filters.search) queryParams.append('search', filters.search);
-      if (filters.page) queryParams.append('page', filters.page.toString());
+      if (filters.categoryId && !isNaN(Number(filters.categoryId))) queryParams.append('category_id', filters.categoryId.toString());
+      if (filters.brandId && !isNaN(Number(filters.brandId))) queryParams.append('brand_id', filters.brandId.toString());
+      if (filters.search && filters.search !== 'undefined') queryParams.append('search', filters.search);
+      if (filters.page && !isNaN(Number(filters.page))) queryParams.append('page', filters.page.toString());
       if (filters.onSale) queryParams.append('on_sale', '1');
 
       fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/products?${queryParams.toString()}`)
@@ -100,50 +101,96 @@ function CatalogContent() {
           {Array.isArray(filterData?.categories) && (
             <div>
               <h3 className="font-bold text-lg mb-4 text-gray-900">Categorías</h3>
-              <div className="space-y-1 max-h-[450px] overflow-y-auto pr-1 custom-scrollbar">
+              <div className="space-y-1.5 max-h-[75vh] overflow-y-auto pr-1 custom-scrollbar">
                 <button 
                   onClick={() => setFilters({ categoryId: undefined, page: 1 })}
                   className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${!filters.categoryId ? 'bg-accent text-white font-bold shadow-sm' : 'hover:bg-gray-100 text-gray-700 font-medium'}`}
                 >
-                  ✨ Todas las categorías
+                  Todas las categorías
                 </button>
-                {filterData.categories.map((parent: any) => (
-                  <div key={parent.id} className="pt-1">
-                    <button 
-                      onClick={() => setFilters({ categoryId: parent.id, page: 1 })}
-                      className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-all font-bold ${filters.categoryId === parent.id ? 'bg-accent text-white shadow-sm' : 'hover:bg-gray-100 text-gray-800'}`}
-                    >
-                      {parent.name}
-                    </button>
-                    {parent.children && parent.children.length > 0 && (
-                      <div className="pl-3 mt-1 space-y-1 border-l-2 border-gray-100 ml-3">
-                        {parent.children.map((child: any) => (
-                          <div key={child.id}>
-                            <button 
-                              onClick={() => setFilters({ categoryId: child.id, page: 1 })}
-                              className={`block w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-all font-medium ${filters.categoryId === child.id ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-gray-50 text-gray-600'}`}
-                            >
-                              {child.name}
-                            </button>
-                            {child.children && child.children.length > 0 && (
-                              <div className="pl-3 mt-0.5 space-y-0.5 border-l border-gray-100 ml-2">
-                                {child.children.map((sub: any) => (
-                                  <button 
-                                    key={sub.id}
-                                    onClick={() => setFilters({ categoryId: sub.id, page: 1 })}
-                                    className={`block w-full text-left px-2 py-1 rounded-md text-[11px] transition-all ${filters.categoryId === sub.id ? 'text-accent font-bold bg-accent/5' : 'hover:text-accent text-gray-400'}`}
-                                  >
-                                    • {sub.name}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                {filterData.categories.map((parent: any) => {
+                  const isParentExpanded = !!expandedCats[parent.id] || filters.categoryId === parent.id;
+                  const hasParentChildren = parent.children && parent.children.length > 0;
+                  return (
+                    <div key={parent.id} className="pt-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <button 
+                          onClick={() => {
+                            setFilters({ categoryId: parent.id, page: 1 });
+                            if (hasParentChildren && !isParentExpanded) {
+                              setExpandedCats(prev => ({ ...prev, [parent.id]: true }));
+                            }
+                          }}
+                          className={`flex-1 text-left px-3 py-2 rounded-xl text-sm transition-all font-bold ${filters.categoryId === parent.id ? 'bg-accent text-white shadow-sm' : 'hover:bg-gray-100 text-gray-800'}`}
+                        >
+                          {parent.name}
+                        </button>
+                        {hasParentChildren && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedCats(prev => ({ ...prev, [parent.id]: !isParentExpanded }));
+                            }}
+                            className={`p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-transform duration-200 ${isParentExpanded ? 'rotate-90 text-accent' : ''}`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                          </button>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
+                      {isParentExpanded && hasParentChildren && (
+                        <div className="pl-3 mt-1 space-y-1 border-l-2 border-gray-100 ml-3">
+                          {parent.children.map((child: any) => {
+                            const isChildExpanded = !!expandedCats[child.id] || filters.categoryId === child.id;
+                            const hasChildChildren = child.children && child.children.length > 0;
+                            return (
+                              <div key={child.id}>
+                                <div className="flex items-center justify-between gap-1">
+                                  <button 
+                                    onClick={() => {
+                                      setFilters({ categoryId: child.id, page: 1 });
+                                      if (hasChildChildren && !isChildExpanded) {
+                                        setExpandedCats(prev => ({ ...prev, [child.id]: true }));
+                                      }
+                                    }}
+                                    className={`flex-1 text-left px-2.5 py-1.5 rounded-lg text-xs transition-all font-medium ${filters.categoryId === child.id ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-gray-50 text-gray-600'}`}
+                                  >
+                                    {child.name}
+                                  </button>
+                                  {hasChildChildren && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setExpandedCats(prev => ({ ...prev, [child.id]: !isChildExpanded }));
+                                      }}
+                                      className={`p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-transform duration-200 ${isChildExpanded ? 'rotate-90 text-accent' : ''}`}
+                                    >
+                                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </button>
+                                  )}
+                                </div>
+                                {isChildExpanded && hasChildChildren && (
+                                  <div className="pl-3 mt-0.5 space-y-0.5 border-l border-gray-100 ml-2">
+                                    {child.children.map((sub: any) => (
+                                      <button 
+                                        key={sub.id}
+                                        onClick={() => setFilters({ categoryId: sub.id, page: 1 })}
+                                        className={`block w-full text-left px-2 py-1 rounded-md text-[11px] transition-all ${filters.categoryId === sub.id ? 'text-accent font-bold bg-accent/5' : 'hover:text-accent text-gray-400'}`}
+                                      >
+                                        • {sub.name}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
