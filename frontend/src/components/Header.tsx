@@ -19,7 +19,7 @@ export function Header() {
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/filters`)
       .then(res => res.json())
       .then(data => {
-        if (data?.categories) setCategoriesTree(data.categories);
+        if (Array.isArray(data?.categories)) setCategoriesTree(data.categories);
       })
       .catch(err => console.error("Error loading categories menu:", err));
   }, []);

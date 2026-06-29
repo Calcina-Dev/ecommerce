@@ -48,8 +48,8 @@ function CatalogContent() {
       fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/products?${queryParams.toString()}`)
         .then(res => res.json())
         .then(data => {
-          setProducts(data.data || []);
-          setPagination({ current_page: data.current_page || 1, last_page: data.last_page || 1 });
+          setProducts(Array.isArray(data?.data) ? data.data : []);
+          setPagination({ current_page: data?.current_page || 1, last_page: data?.last_page || 1 });
           setLoading(false);
         })
         .catch(err => {
@@ -94,7 +94,7 @@ function CatalogContent() {
             </label>
           </div>
 
-          {filterData?.categories && (
+          {Array.isArray(filterData?.categories) && (
             <div>
               <h3 className="font-bold text-lg mb-4 text-gray-900">Categorías</h3>
               <div className="space-y-1 max-h-[450px] overflow-y-auto pr-1 custom-scrollbar">
@@ -145,7 +145,7 @@ function CatalogContent() {
             </div>
           )}
 
-          {filterData?.brands && (
+          {Array.isArray(filterData?.brands) && (
             <div>
               <h3 className="font-medium text-lg mb-4">Marcas</h3>
               <div className="space-y-2">
