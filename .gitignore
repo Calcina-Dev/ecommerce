@@ -10,3 +10,4 @@ Thumbs.db
 .vscode/
 .cursor/
 *.code-workspace
+backend/storage/app/public/products/

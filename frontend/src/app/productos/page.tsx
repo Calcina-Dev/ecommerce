@@ -96,22 +96,50 @@ function CatalogContent() {
 
           {filterData?.categories && (
             <div>
-              <h3 className="font-medium text-lg mb-4">Categorías</h3>
-              <div className="space-y-2">
+              <h3 className="font-bold text-lg mb-4 text-gray-900">Categorías</h3>
+              <div className="space-y-1 max-h-[450px] overflow-y-auto pr-1 custom-scrollbar">
                 <button 
                   onClick={() => setFilters({ categoryId: undefined, page: 1 })}
-                  className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${!filters.categoryId ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
+                  className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${!filters.categoryId ? 'bg-accent text-white font-bold shadow-sm' : 'hover:bg-gray-100 text-gray-700 font-medium'}`}
                 >
-                  Todas
+                  ✨ Todas las categorías
                 </button>
-                {filterData.categories.map((cat: any) => (
-                  <button 
-                    key={cat.id}
-                    onClick={() => setFilters({ categoryId: cat.id, page: 1 })}
-                    className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${filters.categoryId === cat.id ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
-                  >
-                    {cat.name}
-                  </button>
+                {filterData.categories.map((parent: any) => (
+                  <div key={parent.id} className="pt-1">
+                    <button 
+                      onClick={() => setFilters({ categoryId: parent.id, page: 1 })}
+                      className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-all font-bold ${filters.categoryId === parent.id ? 'bg-accent text-white shadow-sm' : 'hover:bg-gray-100 text-gray-800'}`}
+                    >
+                      {parent.name}
+                    </button>
+                    {parent.children && parent.children.length > 0 && (
+                      <div className="pl-3 mt-1 space-y-1 border-l-2 border-gray-100 ml-3">
+                        {parent.children.map((child: any) => (
+                          <div key={child.id}>
+                            <button 
+                              onClick={() => setFilters({ categoryId: child.id, page: 1 })}
+                              className={`block w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-all font-medium ${filters.categoryId === child.id ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-gray-50 text-gray-600'}`}
+                            >
+                              {child.name}
+                            </button>
+                            {child.children && child.children.length > 0 && (
+                              <div className="pl-3 mt-0.5 space-y-0.5 border-l border-gray-100 ml-2">
+                                {child.children.map((sub: any) => (
+                                  <button 
+                                    key={sub.id}
+                                    onClick={() => setFilters({ categoryId: sub.id, page: 1 })}
+                                    className={`block w-full text-left px-2 py-1 rounded-md text-[11px] transition-all ${filters.categoryId === sub.id ? 'text-accent font-bold bg-accent/5' : 'hover:text-accent text-gray-400'}`}
+                                  >
+                                    • {sub.name}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>

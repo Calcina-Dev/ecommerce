@@ -18,7 +18,13 @@ class ProductForm
             ->components([
                 Select::make('category_id')
                     ->relationship('category', 'name')
+                    ->label('Categoría Principal')
                     ->required(),
+                Select::make('categories')
+                    ->relationship('categories', 'name')
+                    ->label('Categorías Múltiples / Etiquetas')
+                    ->multiple()
+                    ->preload(),
                 Select::make('brand_id')
                     ->relationship('brand', 'name')
                     ->required(),

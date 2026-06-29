@@ -40,7 +40,17 @@ class CatalogController extends Controller
                 ->where('is_active', true);
 
             if ($request->has('category_id')) {
-                $query->where('category_id', $request->category_id);
+                $catId = $request->category_id;
+                $childIds = \App\Models\Category::where('parent_id', $catId)->pluck('id')->toArray();
+                $grandChildIds = !empty($childIds) ? \App\Models\Category::whereIn('parent_id', $childIds)->pluck('id')->toArray() : [];
+                $targetIds = array_merge([$catId], $childIds, $grandChildIds);
+
+                $query->where(function ($q) use ($targetIds) {
+                    $q->whereIn('category_id', $targetIds)
+                      ->orWhereHas('categories', function ($cQuery) use ($targetIds) {
+                          $cQuery->whereIn('categories.id', $targetIds);
+                      });
+                });
             }
 
             if ($request->has('brand_id')) {
@@ -65,7 +75,7 @@ class CatalogController extends Controller
     public function productDetail($slug)
     {
         $product = Cache::remember('catalog_detail_' . $slug, 600, function () use ($slug) {
-            return Product::with(['images', 'brand', 'category'])
+            return Product::with(['images', 'brand', 'category', 'categories'])
                 ->where('slug', $slug)
                 ->where('is_active', true)
                 ->firstOrFail();
@@ -76,9 +86,14 @@ class CatalogController extends Controller
 
     public function filters()
     {
-        $data = Cache::remember('catalog_filters', 3600, function () {
+        $data = Cache::remember('catalog_filters_tree_v1', 3600, function () {
             return [
-                'categories' => Category::where('is_active', true)->get(),
+                'categories' => Category::where('is_active', true)
+                    ->whereNull('parent_id')
+                    ->with(['children' => function ($q) {
+                        $q->where('is_active', true)->with(['children' => fn ($q2) => $q2->where('is_active', true)]);
+                    }])
+                    ->get(),
                 'brands' => Brand::where('is_active', true)->get(),
             ];
         });

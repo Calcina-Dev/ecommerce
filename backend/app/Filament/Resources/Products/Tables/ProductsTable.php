@@ -39,8 +39,14 @@ class ProductsTable
             ])
             ->filters([
                 \Filament\Tables\Filters\SelectFilter::make('category_id')
-                    ->label('Categoría')
+                    ->label('Categoría Principal')
                     ->relationship('category', 'name')
+                    ->searchable()
+                    ->preload(),
+                \Filament\Tables\Filters\SelectFilter::make('categories')
+                    ->label('Categorías Múltiples')
+                    ->relationship('categories', 'name')
+                    ->multiple()
                     ->searchable()
                     ->preload(),
                 \Filament\Tables\Filters\SelectFilter::make('brand_id')

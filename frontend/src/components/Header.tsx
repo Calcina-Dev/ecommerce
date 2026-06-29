@@ -11,9 +11,17 @@ export function Header() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isClient, setIsClient] = useState(false);
+  const [categoriesTree, setCategoriesTree] = useState<any[]>([]);
+  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/filters`)
+      .then(res => res.json())
+      .then(data => {
+        if (data?.categories) setCategoriesTree(data.categories);
+      })
+      .catch(err => console.error("Error loading categories menu:", err));
   }, []);
 
   useEffect(() => {
@@ -34,38 +42,35 @@ export function Header() {
   }, [searchQuery, isClient, router]);
 
   const handleLogout = () => {
-    // Aquí idealmente llamarías a la API de logout también
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/auth/logout`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${useAuthStore.getState().token}`
       }
-    }).catch(console.error);
-    logout();
+    }).finally(() => {
+      logout();
+      router.push("/");
+    });
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 w-full border-b border-gray-100 bg-white/70 backdrop-blur-xl transition-all [transform:translateZ(0)]">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4 sm:gap-8">
         
         {/* Logo */}
-        <Link href="/" className="flex-shrink-0 flex items-center">
-          <img 
-            src="https://comprasaludable.com/wp-content/uploads/2020/10/LOGO-COMPRASALUDABLE-800x800-1.png" 
-            alt="Compra Saludable" 
-            className="w-20 h-20 object-contain"
-          />
+        <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
+          <span className="text-2xl font-black tracking-tight text-foreground group-hover:text-accent transition-colors duration-300 ease-[var(--spring-easing)]">
+            COMPRA<span className="text-accent">SALUDABLE</span>
+          </span>
         </Link>
 
         {/* Search Bar (Functional) */}
-        <div className="flex-1 max-w-2xl w-full">
+        <div className="flex-1 max-w-xl mx-auto hidden md:block">
           <form 
             onSubmit={(e) => {
               e.preventDefault();
-              if (searchQuery.trim()) {
+              if (searchQuery.trim() !== "") {
                 router.push(`/productos?search=${encodeURIComponent(searchQuery.trim())}`);
-              } else {
-                router.push(`/productos`);
               }
             }} 
             className="relative"
@@ -87,8 +92,66 @@ export function Header() {
 
         {/* Navigation & Actions */}
         <div className="flex items-center gap-6 flex-shrink-0">
-          <nav className="hidden lg:flex gap-6 text-sm font-semibold text-gray-600">
-            <Link href="/productos" className="hover:text-accent transition-colors active:scale-95 duration-200 ease-[var(--spring-easing)] inline-block">Categorías</Link>
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-gray-600">
+            <div 
+              className="relative py-2"
+              onMouseEnter={() => setShowMenu(true)}
+              onMouseLeave={() => setShowMenu(false)}
+            >
+              <Link href="/productos" className="flex items-center gap-1 hover:text-accent transition-colors py-1">
+                Categorías
+                <svg className={`w-4 h-4 transition-transform duration-200 ${showMenu ? 'rotate-180 text-accent' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </Link>
+
+              {showMenu && categoriesTree.length > 0 && (
+                <div className="absolute top-full -left-24 w-[700px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 z-50 grid grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-2 duration-200">
+                  {categoriesTree.map((parent: any) => (
+                    <div key={parent.id} className="space-y-2.5">
+                      <Link 
+                        href={`/productos?category=${parent.id}`} 
+                        onClick={() => setShowMenu(false)}
+                        className="font-bold text-gray-900 hover:text-accent transition-colors block text-base border-b border-gray-100 pb-2 flex items-center justify-between group/link"
+                      >
+                        <span>{parent.name}</span>
+                        <span className="text-xs text-accent opacity-0 group-hover/link:opacity-100 transition-opacity">Ver todo →</span>
+                      </Link>
+                      {parent.children && parent.children.length > 0 && (
+                        <ul className="space-y-2 pt-0.5">
+                          {parent.children.map((child: any) => (
+                            <li key={child.id}>
+                              <Link 
+                                href={`/productos?category=${child.id}`}
+                                onClick={() => setShowMenu(false)}
+                                className="text-sm text-gray-600 hover:text-accent transition-all block pl-1 hover:translate-x-1 duration-150 font-medium"
+                              >
+                                {child.name}
+                              </Link>
+                              {child.children && child.children.length > 0 && (
+                                <ul className="pl-3 space-y-1 mt-1 border-l-2 border-accent/20">
+                                  {child.children.map((sub: any) => (
+                                    <li key={sub.id}>
+                                      <Link 
+                                        href={`/productos?category=${sub.id}`}
+                                        onClick={() => setShowMenu(false)}
+                                        className="text-xs text-gray-400 hover:text-accent transition-colors block py-0.5"
+                                      >
+                                        {sub.name}
+                                      </Link>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <Link href="/productos?ofertas=true" className="hover:text-accent text-red-500 transition-colors active:scale-95 duration-200 ease-[var(--spring-easing)] inline-block">Ofertas</Link>
             <Link href="/rastrear-pedido" className="hover:text-accent transition-colors active:scale-95 duration-200 ease-[var(--spring-easing)] inline-block">Rastrear Pedido</Link>
           </nav>

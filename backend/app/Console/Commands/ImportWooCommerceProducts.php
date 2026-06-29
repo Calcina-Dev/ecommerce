@@ -69,6 +69,52 @@ class ImportWooCommerceProducts extends Command
             File::makeDirectory($imagesDir, 0755, true, true);
         }
 
+        // Garantizar la estructura predefinida de categorías y subcategorías
+        $predefinedHierarchy = [
+            'Para ti' => ['Para Mujeres', 'Para Hombres', 'Adultos Mayores (50+)', 'Para Niños', 'Para Deportistas'],
+            'Por Necesidad Específica' => [
+                'Dolor Articular' => [],
+                'Mejor Inmunidad' => [],
+                'Mejor Digestión' => ['Probióticos'],
+            ],
+            'Vitaminas y Suplementos' => ['Multivitamínicos', 'Gomitas', 'Magnesio', 'Omega 3 y aceites', 'Hierro y Calcio', 'Vitaminas B / C / D / E'],
+            'Ofertas' => ['2x1 y Combos', 'Descuentos por tiempo limitado'],
+            'Destacados Peruanos' => ['Aguaymanto', 'Cacao Peruano', 'Lucuma', 'Maca Andina', 'Sacha Inchi'],
+        ];
+
+        foreach ($predefinedHierarchy as $parentName => $children) {
+            $parentCat = Category::firstOrCreate(
+                ['slug' => Str::slug($parentName)],
+                ['name' => $parentName, 'parent_id' => null, 'is_active' => true]
+            );
+            if ($parentCat->name !== $parentName) {
+                $parentCat->update(['name' => $parentName]);
+            }
+
+            foreach ($children as $childKey => $childVal) {
+                $childName = is_array($childVal) ? $childKey : $childVal;
+                $subchildren = is_array($childVal) ? $childVal : [];
+
+                $childCat = Category::firstOrCreate(
+                    ['slug' => Str::slug($childName)],
+                    ['name' => $childName, 'parent_id' => $parentCat->id, 'is_active' => true]
+                );
+                if ($childCat->parent_id !== $parentCat->id) {
+                    $childCat->update(['parent_id' => $parentCat->id]);
+                }
+
+                foreach ($subchildren as $subName) {
+                    $subCat = Category::firstOrCreate(
+                        ['slug' => Str::slug($subName)],
+                        ['name' => $subName, 'parent_id' => $childCat->id, 'is_active' => true]
+                    );
+                    if ($subCat->parent_id !== $childCat->id) {
+                        $subCat->update(['parent_id' => $childCat->id]);
+                    }
+                }
+            }
+        }
+
         $importedCount = 0;
         $updatedCount = 0;
         $imagesDownloaded = 0;
@@ -100,17 +146,47 @@ class ImportWooCommerceProducts extends Command
 
             $stockQty = is_numeric($stockVal) ? intval($stockVal) : 25;
 
-            // 2. Categoría
-            $categoryId = null;
+            // 2. Categoría (múltiples y jerárquicas)
+            $primaryCategoryId = null;
+            $allCategoryIds = [];
+
             if (!empty($categoriesStr)) {
-                $cats = explode(',', $categoriesStr);
-                $firstCatName = trim(explode('>', $cats[0])[0]);
-                if (!empty($firstCatName)) {
-                    $category = Category::firstOrCreate(
-                        ['slug' => Str::slug($firstCatName)],
-                        ['name' => $firstCatName, 'is_active' => true]
-                    );
-                    $categoryId = $category->id;
+                $catsList = explode(',', $categoriesStr);
+                foreach ($catsList as $catPath) {
+                    $catPath = trim($catPath);
+                    if (empty($catPath)) continue;
+
+                    $parts = explode('>', $catPath);
+                    $parentId = null;
+                    $lastCat = null;
+
+                    foreach ($parts as $partName) {
+                        $partName = trim($partName);
+                        if (empty($partName)) continue;
+
+                        if ($partName === 'Ofertas Especiales') $partName = 'Ofertas';
+                        if ($partName === 'Por Necesidad') $partName = 'Por Necesidad Específica';
+                        if ($partName === 'Sistema Inmunológico Fuerte') $partName = 'Mejor Inmunidad';
+                        if ($partName === 'Estreñimiento y Digestión') $partName = 'Mejor Digestión';
+
+                        $slug = Str::slug($partName);
+                        $category = Category::firstOrCreate(
+                            ['slug' => $slug],
+                            ['name' => $partName, 'parent_id' => $parentId, 'is_active' => true]
+                        );
+
+                        if ($parentId && !$category->parent_id && $category->id != $parentId) {
+                            $category->update(['parent_id' => $parentId]);
+                        }
+
+                        $parentId = $category->id;
+                        $lastCat = $category;
+                        $allCategoryIds[] = $category->id;
+                    }
+
+                    if ($lastCat && !$primaryCategoryId) {
+                        $primaryCategoryId = $lastCat->id;
+                    }
                 }
             }
 
@@ -141,10 +217,14 @@ class ImportWooCommerceProducts extends Command
                     'compare_at_price' => $comparePrice,
                     'stock' => $stockQty,
                     'is_active' => true,
-                    'category_id' => $categoryId,
+                    'category_id' => $primaryCategoryId,
                     'brand_id' => $brandId,
                 ]
             );
+
+            if (!empty($allCategoryIds)) {
+                $product->categories()->syncWithoutDetaching(array_unique($allCategoryIds));
+            }
 
             if ($product->wasRecentlyCreated) {
                 $importedCount++;
