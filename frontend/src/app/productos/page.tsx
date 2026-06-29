@@ -5,10 +5,9 @@ import { useCatalogStore } from "@/store/useCatalogStore";
 import { ProductCard } from "@/components/ProductCard";
 
 function CatalogContent() {
-  const { filters, setFilters } = useCatalogStore();
+  const { filters, setFilters, filterData, setFilterData } = useCatalogStore();
   const [products, setProducts] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ current_page: 1, last_page: 1 });
-  const [filterData, setFilterData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
@@ -26,13 +25,17 @@ function CatalogContent() {
     });
   }, [searchParams]);
 
-  // Cargar filtros disponibles
+  // Cargar filtros disponibles si no existen en el store
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/filters`)
-      .then(res => res.json())
-      .then(data => setFilterData(data))
-      .catch(console.error);
-  }, []);
+    if (!filterData) {
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/filters`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data?.categories)) setFilterData(data);
+        })
+        .catch(console.error);
+    }
+  }, [filterData]);
 
   // Cargar productos
   useEffect(() => {

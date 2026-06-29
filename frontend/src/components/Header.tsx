@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCartStore } from "@/store/useCartStore";
+import { useCatalogStore } from "@/store/useCatalogStore";
 
 export function Header() {
   const { user, logout } = useAuthStore();
   const { totalItems, setIsOpen } = useCartStore();
+  const { setFilterData } = useCatalogStore();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isClient, setIsClient] = useState(false);
@@ -19,7 +21,10 @@ export function Header() {
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/filters`)
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data?.categories)) setCategoriesTree(data.categories);
+        if (Array.isArray(data?.categories)) {
+          setCategoriesTree(data.categories);
+          setFilterData(data);
+        }
       })
       .catch(err => console.error("Error loading categories menu:", err));
   }, []);

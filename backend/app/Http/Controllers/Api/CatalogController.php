@@ -86,10 +86,18 @@ class CatalogController extends Controller
 
     public function filters()
     {
-        $data = Cache::remember('catalog_filters_tree_v1', 3600, function () {
+        $data = Cache::remember('catalog_filters_tree_v3', 3600, function () {
             return [
                 'categories' => Category::where('is_active', true)
                     ->whereNull('parent_id')
+                    ->whereIn('slug', ['para-ti', 'por-necesidad-especifica', 'vitaminas-y-suplementos', 'ofertas', 'destacados-peruanos'])
+                    ->orderByRaw("CASE 
+                        WHEN slug = 'para-ti' THEN 1
+                        WHEN slug = 'por-necesidad-especifica' THEN 2
+                        WHEN slug = 'vitaminas-y-suplementos' THEN 3
+                        WHEN slug = 'ofertas' THEN 4
+                        WHEN slug = 'destacados-peruanos' THEN 5
+                        ELSE 6 END")
                     ->with(['children' => function ($q) {
                         $q->where('is_active', true)->with(['children' => fn ($q2) => $q2->where('is_active', true)]);
                     }])
