@@ -51,12 +51,12 @@ class ProductForm
                     ])
                     ->columnSpanFull(),
                 \Filament\Schemas\Components\Section::make('✨ Resumen Inteligente IA (AI Overview)')
-                    ->description('Este resumen se mostrará en la tienda virtual con un efecto futurista de máquina de escribir (como si la IA lo analizara en vivo).')
+                    ->description('Pega aquí el análisis estructurado (en 3 bloques: Perfil/Modo de Empleo, Ingredientes y Seguridad). Se animará con efecto máquina de escribir en la web.')
                     ->schema([
                         Textarea::make('ai_overview')
-                            ->label('Puntos Clave / Síntesis IA')
-                            ->placeholder("• Alta biodisponibilidad y absorción rápida para máximos resultados.\n• Fórmula clínica diseñada para respaldar la energía y el bienestar general.\n• Dosis sugerida: 1 cápsula diaria con alimentos.")
-                            ->rows(4)
+                            ->label('Puntos Clave / Síntesis IA Estructurada')
+                            ->placeholder("🎯 PERFIL Y MODO DE EMPLEO\n• ¿Para qué sirve?: Equilibrio hormonal y salud metabólica.\n• ¿Para quién es ideal?: Adultos activos y mujeres buscando regularidad.\n• Activos clave: Myo-Inositol 2,000 mg • D-Chiro Inositol 50 mg.\n• ¿Cómo tomarlo?: 1 porción diaria en bebida fría o tibia sin cafeína ni alcohol.\n\n🧪 INGREDIENTES Y SINERGIA\n• Mecanismo: Señalización celular y manejo de carbohidratos.\n• Sinergia: Proporción 40:1 estudiada clínicamente.\n\n🛡️ SEGURIDAD Y CONSERVACIÓN\n• Advertencia: Consultar con médico en embarazo o lactancia.\n• Almacenamiento: Lugar fresco y seco.")
+                            ->rows(8)
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),

@@ -53,7 +53,22 @@ function AIOverviewBox({ overviewText, productName }: { overviewText?: string; p
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
 
-  const textToType = overviewText || `• Alta biodisponibilidad y absorción rápida para máximos resultados.\n• Fórmula clínica diseñada para respaldar la energía, la recuperación y el bienestar general.\n• Dosis sugerida: Consultar indicaciones en el empaque o 1 porción diaria con alimentos.\n• 98% de valoraciones positivas por su pureza y efectividad.`;
+  // Rich 3-Section Clinical E-commerce Structure (Based on gold standard AI Overviews)
+  const textToType = overviewText || `🎯 PERFIL Y MODO DE EMPLEO
+• ¿Para qué sirve?: Respaldo integral para el equilibrio metabólico, energía celular y bienestar general.
+• ¿Para quién es ideal?: Adultos con ritmo de vida exigente que buscan apoyo diario y optimización biológica.
+• Activos clave por porción: Fórmula de alta biodisponibilidad estandarizada de grado clínico.
+• ¿Cómo tomarlo?: Tomar 1 porción diaria con abundante agua, preferentemente junto a una comida principal para facilitar la digestión y absorción.
+• Certificaciones y dietas: 100% Vegano • Sin Gluten • Libre de OGM • Calidad GMP Auditada.
+
+🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA
+• Mecanismo de acción: Los ingredientes activos actúan a nivel celular como mensajeros secundarios, favoreciendo la señalización metabólica y la absorción de nutrientes.
+• Sinergia de la fórmula: Combinación equilibrada en proporciones fisiológicas exactas para potenciar la eficacia mutua y evitar la saturación de los receptores.
+• Precaución: Monitorear la tolerancia individual durante los primeros 3 días de uso.
+
+🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN
+• Advertencia médica: Consultar con un profesional de la salud antes de usar si está embarazada, en período de lactancia, toma medicamentos o tiene alguna condición médica.
+• Conservación: Almacenar en un lugar fresco, seco y alejado de la luz solar directa para preservar la potencia del lote.`;
 
   const startStreaming = () => {
     setIsGenerating(true);
