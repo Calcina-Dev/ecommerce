@@ -51,12 +51,13 @@ function cleanDescriptionText(text: string | null) {
 function formatAIText(text: string): string {
   if (!text) return "";
   
-  // Clean up any accidental intro echoes or markdown clutter
+  // Clean up any accidental intro echoes, markdown clutter, or corrupted unicode replacement symbols (\uFFFD or ?)
   let cleaned = text
     .replace(/^Actuando como un copywriter.*?\n/ig, '')
     .replace(/^Eres un copywriter.*?\n/ig, '')
     .replace(/^\*\*Producto a analizar:\*\*.*?\n/ig, '')
     .replace(/^\*\*Características \/ Descripción:\*\*.*?\n/ig, '')
+    .replace(/\uFFFD/g, '') // Remove any replacement characters () from database/encoding issues
     .trim();
 
   // Convert **bold** to styled strong
@@ -66,16 +67,23 @@ function formatAIText(text: string): string {
   const lines = cleaned.split('\n').map(l => l.trim()).filter(Boolean);
   
   return lines.map((line, idx) => {
-    // If it's a section title (starts with emoji or big header like PERFIL, EXPLICACION, SEGURIDAD)
-    if (/^(🎯|🧪|🛡️|⚡|✨|•?\s*(PERFIL|EXPLICACIÓN|SEGURIDAD|BENEFICIOS|ACTIVOS|MODO|ADVERTENCIAS))/i.test(line)) {
-      const cleanTitle = line.replace(/^•\s*/, '').trim();
-      return `<div class="${idx > 0 ? 'mt-5' : 'mt-1'} mb-2.5 font-extrabold text-xs sm:text-sm uppercase tracking-wider text-emerald-900 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-500/30 shadow-sm flex items-center gap-2">${cleanTitle}</div>`;
-    }
-    
-    // If it's a bullet item
+    // 1. If it's a bullet item (starts with •, -, or *) -> Check this FIRST so bullets never turn into badges!
     if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*')) {
       let item = line.replace(/^[•*\-]\s*/, '').trim();
+      item = item.replace(/^[\uFFFD\?]\s*/, '').trim();
       return `<div class="flex items-start gap-2.5 mb-2 pl-1.5"><span class="text-emerald-500 font-black mt-0.5 select-none">•</span><div class="flex-1 text-foreground/90 leading-relaxed">${item}</div></div>`;
+    }
+
+    // 2. If it's a section title (contains PERFIL, EXPLICACIÓN, SEGURIDAD, INGREDIENTES, ADVERTENCIAS, or starts with emoji/header)
+    if (/^(🎯|🧪|🛡️|⚡|✨|PERFIL|EXPLICACIÓN|SEGURIDAD|INGREDIENTES|ADVERTENCIAS|CONSERVACIÓN)/i.test(line) && !line.includes(':')) {
+      let cleanTitle = line.replace(/^(🎯|🧪|🛡️|⚡|✨|[\uFFFD\?]|•|-|\*)\s*/g, '').trim();
+      
+      let badgeIcon = '✨';
+      if (/PERFIL|MODO/i.test(cleanTitle)) badgeIcon = '🎯';
+      else if (/INGREDIENTES|SINERGIA|EXPLICACIÓN/i.test(cleanTitle)) badgeIcon = '🧪';
+      else if (/SEGURIDAD|ADVERTENCIAS|CONSERVACIÓN/i.test(cleanTitle)) badgeIcon = '🛡️';
+
+      return `<div class="${idx > 0 ? 'mt-5' : 'mt-1'} mb-2.5 font-extrabold text-xs sm:text-sm uppercase tracking-wider text-emerald-900 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-500/30 shadow-sm flex items-center gap-2"><span>${badgeIcon}</span> <span>${cleanTitle}</span></div>`;
     }
 
     // Regular paragraph
