@@ -105,24 +105,41 @@ class ProductForm
                                         $apiKey = env('GEMINI_API_KEY') ?? env('OPENAI_API_KEY');
                                         if (!empty($apiKey)) {
                                             try {
-                                                $response = \Illuminate\Support\Facades\Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", [
+                                                $response = \Illuminate\Support\Facades\Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}", [
                                                     'contents' => [
                                                         ['parts' => [['text' => "Actúa como un copywriter médico e-commerce. Producto: {$productName}. Descripción técnica: {$desc}.\n\nGenera un resumen clínico basándote estrictamente en esta estructura y formato:\n{$prompt}"]]]
                                                     ]
                                                 ]);
-                                                if ($response->successful() && isset($response['candidates'][0]['content']['parts'][0]['text'])) {
-                                                    $set('ai_overview', trim($response['candidates'][0]['content']['parts'][0]['text']));
-                                                    \Filament\Notifications\Notification::make()->title('✨ Resumen generado en vivo por Google Gemini IA')->success()->send();
-                                                    return;
-                                                } else {
-                                                    $errorMsg = $response->json('error.message') ?? $response->body();
-                                                    \Illuminate\Support\Facades\Log::warning("Gemini API error: " . $errorMsg);
-                                                    \Filament\Notifications\Notification::make()
-                                                        ->title('⚠️ Error exacto de Google Gemini API:')
-                                                        ->body(substr($errorMsg, 0, 400))
-                                                        ->warning()
-                                                        ->send();
+                                                if (!$response->successful() || !isset($response['candidates'][0]['content']['parts'])) {
+                                                    // Fallback to gemini-2.0-flash if 2.5-flash is unavailable
+                                                    $response = \Illuminate\Support\Facades\Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}", [
+                                                        'contents' => [
+                                                            ['parts' => [['text' => "Actúa como un copywriter médico e-commerce. Producto: {$productName}. Descripción técnica: {$desc}.\n\nGenera un resumen clínico basándote estrictamente en esta estructura y formato:\n{$prompt}"]]]
+                                                        ]
+                                                    ]);
                                                 }
+
+                                                if ($response->successful() && isset($response['candidates'][0]['content']['parts'])) {
+                                                    $textResult = '';
+                                                    foreach ($response['candidates'][0]['content']['parts'] as $part) {
+                                                        if (isset($part['text'])) {
+                                                            $textResult .= $part['text'];
+                                                        }
+                                                    }
+                                                    if (!empty($textResult)) {
+                                                        $set('ai_overview', trim($textResult));
+                                                        \Filament\Notifications\Notification::make()->title('✨ Resumen generado en vivo por Google Gemini 2.5 Flash IA')->success()->send();
+                                                        return;
+                                                    }
+                                                }
+
+                                                $errorMsg = $response->json('error.message') ?? $response->body();
+                                                \Illuminate\Support\Facades\Log::warning("Gemini API error: " . $errorMsg);
+                                                \Filament\Notifications\Notification::make()
+                                                    ->title('⚠️ Error exacto de Google Gemini API:')
+                                                    ->body(substr($errorMsg, 0, 400))
+                                                    ->warning()
+                                                    ->send();
                                             } catch (\Exception $e) {
                                                 \Illuminate\Support\Facades\Log::error("Gemini API exception: " . $e->getMessage());
                                                 \Filament\Notifications\Notification::make()
