@@ -100,7 +100,7 @@ class ProductForm
                                         $prompt = $state ?? "Estructura estándar de 3 bloques";
 
                                         $apiKey = env('GEMINI_API_KEY') ?? env('OPENAI_API_KEY');
-                                        if ($apiKey && str_starts_with($apiKey, 'AIza')) {
+                                        if (!empty($apiKey)) {
                                             try {
                                                 $response = \Illuminate\Support\Facades\Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", [
                                                     'contents' => [
@@ -109,11 +109,15 @@ class ProductForm
                                                 ]);
                                                 if ($response->successful() && isset($response['candidates'][0]['content']['parts'][0]['text'])) {
                                                     $set('ai_overview', trim($response['candidates'][0]['content']['parts'][0]['text']));
-                                                    \Filament\Notifications\Notification::make()->title('✨ Resumen generado exitosamente por Gemini IA')->success()->send();
+                                                    \Filament\Notifications\Notification::make()->title('✨ Resumen generado en vivo por Google Gemini IA')->success()->send();
                                                     return;
+                                                } else {
+                                                    \Illuminate\Support\Facades\Log::warning("Gemini API error: " . $response->body());
+                                                    \Filament\Notifications\Notification::make()->title('⚠️ Nota: Gemini no respondió (revisa cuota/clave). Usando motor de síntesis local.')->warning()->send();
                                                 }
                                             } catch (\Exception $e) {
-                                                // Fallback below
+                                                \Illuminate\Support\Facades\Log::error("Gemini API exception: " . $e->getMessage());
+                                                \Filament\Notifications\Notification::make()->title('⚠️ Error de conexión con Gemini. Usando motor de síntesis local.')->warning()->send();
                                             }
                                         }
 
