@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Products\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\Action;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
@@ -62,6 +63,12 @@ class ProductsTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
+                Action::make('ver_producto')
+                    ->label('Ver en tienda')
+                    ->icon('heroicon-o-globe-alt')
+                    ->url(fn ($record) => env('FRONTEND_URL', env('APP_ENV') === 'local' ? 'http://localhost:3000' : 'https://comprasaludable.up.railway.app') . '/productos/' . $record->slug)
+                    ->openUrlInNewTab()
+                    ->color('info'),
                 EditAction::make(),
             ])
             ->toolbarActions([
