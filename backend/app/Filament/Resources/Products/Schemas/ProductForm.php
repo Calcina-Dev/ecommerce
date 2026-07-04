@@ -108,17 +108,47 @@ class ProductForm
                     ->content('El stock ahora se gestiona automáticamente por Almacén a través de Recepciones y Transferencias.')
                     ->columnSpanFull(),
                 \Filament\Schemas\Components\Section::make('Insignias de Confianza y Garantías (Ficha de Producto)')
-                    ->description('Activa o desactiva las insignias que aparecen debajo del botón "Agregar al Carrito" en la tienda virtual.')
+                    ->description('Activa, desactiva y personaliza los textos de las insignias que aparecen debajo del botón "Agregar al Carrito" en la tienda virtual.')
                     ->schema([
-                        Toggle::make('show_gmp_badge')
-                            ->label('Laboratorio (Grado Clínico GMP)')
-                            ->default(true),
-                        Toggle::make('show_fefo_badge')
-                            ->label('Trazabilidad (Lote Auditado FEFO)')
-                            ->default(true),
-                        Toggle::make('show_shipping_badge')
-                            ->label('Despacho (Envío Seguro Nacional)')
-                            ->default(true),
+                        \Filament\Schemas\Components\Group::make()->schema([
+                            Toggle::make('show_gmp_badge')
+                                ->label('¿Activar Insignia 1?')
+                                ->default(true),
+                            TextInput::make('badge_1_title')
+                                ->label('Título 1')
+                                ->placeholder('Laboratorio')
+                                ->helperText('Ej: Laboratorio, Beneficio...'),
+                            TextInput::make('badge_1_subtitle')
+                                ->label('Texto 1')
+                                ->placeholder('Grado Clínico GMP')
+                                ->helperText('Ej: Grado Clínico GMP, Bueno para mujeres...'),
+                        ]),
+                        \Filament\Schemas\Components\Group::make()->schema([
+                            Toggle::make('show_fefo_badge')
+                                ->label('¿Activar Insignia 2?')
+                                ->default(true),
+                            TextInput::make('badge_2_title')
+                                ->label('Título 2')
+                                ->placeholder('Trazabilidad')
+                                ->helperText('Ej: Trazabilidad, Origen...'),
+                            TextInput::make('badge_2_subtitle')
+                                ->label('Texto 2')
+                                ->placeholder('Lote Auditado FEFO')
+                                ->helperText('Ej: Lote Auditado FEFO, 100% Orgánico...'),
+                        ]),
+                        \Filament\Schemas\Components\Group::make()->schema([
+                            Toggle::make('show_shipping_badge')
+                                ->label('¿Activar Insignia 3?')
+                                ->default(true),
+                            TextInput::make('badge_3_title')
+                                ->label('Título 3')
+                                ->placeholder('Despacho')
+                                ->helperText('Ej: Despacho, Garantía...'),
+                            TextInput::make('badge_3_subtitle')
+                                ->label('Texto 3')
+                                ->placeholder('Envío Seguro Nacional')
+                                ->helperText('Ej: Envío Seguro Nacional, Express 24h...'),
+                        ]),
                     ])
                     ->columns(3)
                     ->columnSpanFull(),
