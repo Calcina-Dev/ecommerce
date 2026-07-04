@@ -18,6 +18,7 @@ class Product extends Model
         'sku',
         'short_description',
         'description',
+        'ai_overview',
         'price',
         'compare_at_price',
         'stock',

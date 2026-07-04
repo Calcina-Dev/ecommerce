@@ -50,6 +50,16 @@ class ProductForm
                         'attachFiles', 'blockquote', 'bold', 'bulletList', 'codeBlock', 'h2', 'h3', 'italic', 'link', 'orderedList', 'redo', 'strike', 'underline', 'undo',
                     ])
                     ->columnSpanFull(),
+                \Filament\Schemas\Components\Section::make('✨ Resumen Inteligente IA (AI Overview)')
+                    ->description('Este resumen se mostrará en la tienda virtual con un efecto futurista de máquina de escribir (como si la IA lo analizara en vivo).')
+                    ->schema([
+                        Textarea::make('ai_overview')
+                            ->label('Puntos Clave / Síntesis IA')
+                            ->placeholder("• Alta biodisponibilidad y absorción rápida para máximos resultados.\n• Fórmula clínica diseñada para respaldar la energía y el bienestar general.\n• Dosis sugerida: 1 cápsula diaria con alimentos.")
+                            ->rows(4)
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpanFull(),
                 TextInput::make('price')
                     ->label('Precio Base')
                     ->numeric()
