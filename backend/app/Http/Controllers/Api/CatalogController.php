@@ -14,17 +14,19 @@ class CatalogController extends Controller
 {
     public function home()
     {
-        $data = Cache::remember('catalog_home', 600, function () {
+        $data = Cache::remember('catalog_home_v3', 600, function () {
             return [
                 'featured_products' => Product::with(['images', 'primaryImage', 'brand'])
                     ->where('is_active', true)
                     ->where('is_featured', true)
                     ->limit(8)
-                    ->get(),
+                    ->get()
+                    ->toArray(),
                 'categories' => Category::where('is_active', true)
                     ->whereNull('parent_id')
                     ->limit(6)
-                    ->get(),
+                    ->get()
+                    ->toArray(),
             ];
         });
 
@@ -33,7 +35,7 @@ class CatalogController extends Controller
 
     public function products(Request $request)
     {
-        $cacheKey = 'catalog_products_v2_' . md5(json_encode($request->all()));
+        $cacheKey = 'catalog_products_v3_' . md5(json_encode($request->all()));
         
         $products = Cache::remember($cacheKey, 60, function () use ($request) {
             $query = Product::with(['images', 'primaryImage', 'brand', 'category'])
@@ -66,7 +68,7 @@ class CatalogController extends Controller
                       ->whereColumn('compare_at_price', '>', 'price');
             }
 
-            return $query->paginate(12);
+            return $query->paginate(12)->toArray();
         });
 
         return response()->json($products);
@@ -74,11 +76,12 @@ class CatalogController extends Controller
 
     public function productDetail($slug)
     {
-        $product = Cache::remember('catalog_detail_' . $slug, 600, function () use ($slug) {
+        $product = Cache::remember('catalog_detail_v3_' . $slug, 600, function () use ($slug) {
             return Product::with(['images', 'brand', 'category', 'categories'])
                 ->where('slug', $slug)
                 ->where('is_active', true)
-                ->firstOrFail();
+                ->firstOrFail()
+                ->toArray();
         });
 
         return response()->json($product);
@@ -86,7 +89,7 @@ class CatalogController extends Controller
 
     public function filters()
     {
-        $data = Cache::remember('catalog_filters_tree_v3', 3600, function () {
+        $data = Cache::remember('catalog_filters_tree_v4', 3600, function () {
             return [
                 'categories' => Category::where('is_active', true)
                     ->whereNull('parent_id')
@@ -101,8 +104,9 @@ class CatalogController extends Controller
                     ->with(['children' => function ($q) {
                         $q->where('is_active', true)->with(['children' => fn ($q2) => $q2->where('is_active', true)]);
                     }])
-                    ->get(),
-                'brands' => Brand::where('is_active', true)->get(),
+                    ->get()
+                    ->toArray(),
+                'brands' => Brand::where('is_active', true)->get()->toArray(),
             ];
         });
 
