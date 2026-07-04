@@ -74,7 +74,7 @@ function formatAIText(text: string): string {
     
     // If it's a bullet item
     if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*')) {
-      let item = line.replace(/^[•-*]\s*/, '').trim();
+      let item = line.replace(/^[•*\-]\s*/, '').trim();
       return `<div class="flex items-start gap-2.5 mb-2 pl-1.5"><span class="text-emerald-500 font-black mt-0.5 select-none">•</span><div class="flex-1 text-foreground/90 leading-relaxed">${item}</div></div>`;
     }
 
