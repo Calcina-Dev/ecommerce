@@ -60,7 +60,8 @@ class ProductForm
                                 if (empty($state)) {
                                     $name = $record?->name ?? $get('name') ?? '[Nombre del Producto]';
                                     $desc = strip_tags($record?->description ?? $record?->short_description ?? $get('description') ?? $get('short_description') ?? '');
-                                    $desc = trim($desc);
+                                    $desc = str_replace(['\\n', '\\r', "\n", "\r"], ' ', $desc);
+                                    $desc = trim(preg_replace('/\s+/', ' ', $desc));
                                     if (strlen($desc) > 350) {
                                         $desc = substr($desc, 0, 350) . '...';
                                     }
