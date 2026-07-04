@@ -43,6 +43,8 @@ class PosPage extends Page implements HasForms
 
     // Sesión de caja activa
     public ?\App\Models\CashSession $activeSession = null;
+    public float $openingBalance = 0.00;
+    public ?int $selectedRegisterId = null;
 
     public ?int $selectedWarehouseId = null;
 
@@ -55,20 +57,7 @@ class PosPage extends Page implements HasForms
             ->first() ?? \App\Models\CashSession::where('status', 'open')->first();
 
         if (!$this->activeSession) {
-            $register = \App\Models\CashRegister::firstOrCreate(['name' => 'Caja Principal']);
-            $this->activeSession = \App\Models\CashSession::create([
-                'cash_register_id' => $register->id,
-                'user_id' => auth()->id() ?? 1,
-                'opening_balance' => 100.00,
-                'status' => 'open',
-                'opened_at' => now(),
-            ]);
-
-            Notification::make()
-                ->title('Turno de Caja Abierto Automáticamente')
-                ->body('Se ha iniciado turno en la Caja Principal listos para vender.')
-                ->success()
-                ->send();
+            $this->selectedRegisterId = \App\Models\CashRegister::where('is_active', true)->first()?->id;
         }
 
         $this->form->fill([
@@ -77,6 +66,33 @@ class PosPage extends Page implements HasForms
                 ['payment_method_id' => null, 'amount' => null, 'reference' => null]
             ],
         ]);
+    }
+
+    public function openSession()
+    {
+        $this->validate([
+            'openingBalance' => 'required|numeric|min:0',
+        ], [
+            'openingBalance.required' => 'El monto inicial es obligatorio.',
+            'openingBalance.numeric' => 'El monto inicial debe ser un número.',
+            'openingBalance.min' => 'El monto inicial no puede ser negativo.',
+        ]);
+
+        $register = \App\Models\CashRegister::firstOrCreate(['name' => 'Caja Principal']);
+
+        $this->activeSession = \App\Models\CashSession::create([
+            'cash_register_id' => $this->selectedRegisterId ?? $register->id,
+            'user_id' => auth()->id() ?? 1,
+            'opening_balance' => $this->openingBalance,
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+
+        Notification::make()
+            ->title('Turno Abierto Exitosamente')
+            ->body("Caja abierta con S/ " . number_format($this->openingBalance, 2))
+            ->success()
+            ->send();
     }
 
     // Reiniciar paginación al buscar o cambiar almacén
@@ -319,14 +335,8 @@ class PosPage extends Page implements HasForms
     public function checkout()
     {
         if (!$this->activeSession) {
-            $register = \App\Models\CashRegister::firstOrCreate(['name' => 'Caja Principal']);
-            $this->activeSession = \App\Models\CashSession::where('status', 'open')->first() ?? \App\Models\CashSession::create([
-                'cash_register_id' => $register->id,
-                'user_id' => auth()->id() ?? 1,
-                'opening_balance' => 100.00,
-                'status' => 'open',
-                'opened_at' => now(),
-            ]);
+            Notification::make()->title('No hay turno abierto')->body('Debes abrir un turno de caja antes de cobrar.')->danger()->send();
+            return;
         }
 
         if (empty($this->cart)) {

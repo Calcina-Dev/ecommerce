@@ -169,130 +169,169 @@
         }
     </style>
 
-    <div class="pos-container">
-        
-        {{-- Lado Izquierdo: Catálogo de Productos --}}
-        <div class="pos-left">
-            {{-- Buscador y Almacén --}}
-            <div class="pos-search-box">
-                <input wire:model.live.debounce.300ms="searchQuery" type="text" style="flex: 1;" class="pos-input" placeholder="Buscar productos por nombre o SKU...">
-                
-                <select wire:model.live="selectedWarehouseId" style="width: 250px;" class="pos-select">
-                    @foreach(\App\Models\Warehouse::where('is_active', true)->get() as $wh)
-                        <option value="{{ $wh->id }}" class="dark:bg-gray-800">{{ $wh->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            {{-- Grid de Productos --}}
-            <div class="pos-grid">
-                @foreach($this->products as $product)
-                    <div wire:click="addToCart({{ $product->id }})" class="pos-card">
-                        @if($product->images && count($product->images) > 0)
-                            @php
-                                $imageUrl = $product->images->first()->image_url;
-                                $isExternal = str_starts_with($imageUrl, 'http');
-                                $finalUrl = $isExternal ? $imageUrl : Storage::url($imageUrl);
-                            @endphp
-                            <img src="{{ $finalUrl }}" alt="{{ $product->name }}" class="pos-image">
-                        @else
-                            <div class="pos-image" style="display: flex; align-items: center; justify-content: center; color: var(--gray-400);">
-                                <svg class="icon-lg opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                        @endif
-                        
-                        <div class="pos-card-body">
-                            <h3 class="pos-title dark:text-white" title="{{ $product->name }}">{{ $product->name }}</h3>
-                            <div class="pos-price-container">
-                                <span class="pos-stock">Stock: {{ $product->warehouse_stock ?? 0 }}</span>
-                                <span class="pos-price">S/ {{ number_format($product->price, 2) }}</span>
-                            </div>
-                        </div>
+    @if(!$this->activeSession)
+        <div class="pos-container" style="justify-content: center; align-items: center; min-height: 550px;">
+            <div style="background: white; padding: 2.5rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--gray-200); max-width: 480px; width: 100%; text-align: center;" class="dark:bg-gray-900 dark:border-gray-800">
+                <div style="width: 4.5rem; height: 4.5rem; background: var(--primary-100); color: var(--primary-600); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;" class="dark:bg-primary-950 dark:text-primary-400">
+                    <svg style="width: 2.25rem; height: 2.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: #111827;" class="dark:text-white">Apertura de Turno de Caja</h2>
+                <p style="color: var(--gray-500); font-size: 0.9rem; margin-bottom: 1.75rem; line-height: 1.5;">
+                    No tienes una sesión de caja abierta en este momento. Ingresa el fondo o monto inicial en efectivo con el que abres la caja para comenzar a cobrar ventas.
+                </p>
+                <form wire:submit.prevent="openSession" style="display: flex; flex-direction: column; gap: 1.25rem; text-align: left;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151;" class="dark:text-gray-300">Caja Registradora</label>
+                        <select wire:model="selectedRegisterId" class="pos-select" style="width: 100%;">
+                            @foreach(\App\Models\CashRegister::where('is_active', true)->get() as $reg)
+                                <option value="{{ $reg->id }}">{{ $reg->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                @endforeach
-
-                @if($this->products->isEmpty())
-                    <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: var(--gray-500);">
-                        <p>No se encontraron productos.</p>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: #374151;" class="dark:text-gray-300">Fondo Inicial en Efectivo (S/)</label>
+                        <input wire:model="openingBalance" type="number" step="0.01" min="0" class="pos-input" style="width: 100%; font-size: 1.15rem; font-weight: 600;" placeholder="0.00" required>
+                        @error('openingBalance') <span style="color: #ef4444; font-size: 0.8rem; margin-top: 0.25rem; display: block;">{{ $message }}</span> @enderror
                     </div>
-                @endif
-            </div>
-            
-            {{-- Paginación --}}
-            <div style="margin-top: 1rem;">
-                {{ $this->products->links('components.pos-pagination') }}
+                    <button type="submit" style="background: var(--primary-600); color: white; padding: 0.9rem; border-radius: 0.75rem; font-weight: 600; font-size: 1rem; border: none; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" class="hover:bg-primary-700">
+                        <span>Abrir Caja y Comenzar →</span>
+                    </button>
+                </form>
             </div>
         </div>
-
-        {{-- Lado Derecho: Carrito y Checkout --}}
-        <div class="pos-right">
+    @else
+        <div class="pos-container">
             
-            {{-- Header Carrito --}}
-            <div style="padding: 1rem; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;" class="dark:border-gray-800">
-                <h2 style="font-weight: bold; font-size: 1.125rem;" class="dark:text-white">Ticket de Venta</h2>
-                <span style="background: var(--primary-600); color: white; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: bold;">
-                    {{ count($cart) }} items
-                </span>
-            </div>
+            {{-- Lado Izquierdo: Catálogo de Productos --}}
+            <div class="pos-left">
+                {{-- Buscador y Almacén --}}
+                <div class="pos-search-box">
+                    <input wire:model.live.debounce.300ms="searchQuery" type="text" style="flex: 1;" class="pos-input" placeholder="Buscar productos por nombre o SKU...">
+                    
+                    <select wire:model.live="selectedWarehouseId" style="width: 250px;" class="pos-select">
+                        @foreach(\App\Models\Warehouse::where('is_active', true)->get() as $wh)
+                            <option value="{{ $wh->id }}" class="dark:bg-gray-800">{{ $wh->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-            {{-- Items del Carrito --}}
-            <div style="flex: 1; overflow-y: auto; padding: 0.5rem;">
-                @forelse($cart as $id => $item)
-                    <div class="pos-cart-item">
-                        <div style="flex: 1; padding-right: 0.5rem;">
-                            <div style="font-size: 0.875rem; font-weight: 500;" class="dark:text-white line-clamp-1">{{ $item['name'] }}</div>
-                            <div class="pos-price" style="font-size: 0.875rem;">S/ {{ number_format($item['price'], 2) }}</div>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <button wire:click="decreaseQuantity({{ $id }})" class="pos-qty-btn dark:text-white">-</button>
-                            <span style="width: 1.5rem; text-align: center; font-size: 0.875rem;" class="dark:text-white">{{ $item['quantity'] }}</span>
-                            <button wire:click="increaseQuantity({{ $id }})" class="pos-qty-btn dark:text-white">+</button>
+                {{-- Grid de Productos --}}
+                <div class="pos-grid">
+                    @foreach($this->products as $product)
+                        <div wire:click="addToCart({{ $product->id }})" class="pos-card">
+                            @if($product->images && count($product->images) > 0)
+                                @php
+                                    $imageUrl = $product->images->first()->image_url;
+                                    $isExternal = str_starts_with($imageUrl, 'http');
+                                    $finalUrl = $isExternal ? $imageUrl : Storage::url($imageUrl);
+                                @endphp
+                                <img src="{{ $finalUrl }}" alt="{{ $product->name }}" class="pos-image">
+                            @else
+                                <div class="pos-image" style="display: flex; align-items: center; justify-content: center; color: var(--gray-400);">
+                                    <svg class="icon-lg opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                </div>
+                            @endif
                             
-                            <button wire:click="removeFromCart({{ $id }})" style="color: red; padding: 0.25rem; margin-left: 0.5rem;">
-                                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </button>
+                            <div class="pos-card-body">
+                                <h3 class="pos-title dark:text-white" title="{{ $product->name }}">{{ $product->name }}</h3>
+                                <div class="pos-price-container">
+                                    <span class="pos-stock">Stock: {{ $product->warehouse_stock ?? 0 }}</span>
+                                    <span class="pos-price">S/ {{ number_format($product->price, 2) }}</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                @empty
-                    <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray-400);">
-                        <svg class="icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                        <p style="margin-top: 0.5rem;">Agrega productos</p>
-                    </div>
-                @endforelse
-            </div>
+                    @endforeach
 
-            {{-- Formulario de Pago y Totales --}}
-            <div>
-                <div style="padding: 1rem; max-height: 250px; overflow-y: auto; border-top: 1px solid var(--gray-200);" class="dark:border-gray-800">
-                    {{ $this->form }}
+                    @if($this->products->isEmpty())
+                        <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: var(--gray-500);">
+                            <p>No se encontraron productos.</p>
+                        </div>
+                    @endif
                 </div>
                 
+                {{-- Paginación --}}
+                <div style="margin-top: 1rem;">
+                    {{ $this->products->links('components.pos-pagination') }}
+                </div>
+            </div>
+
+            {{-- Lado Derecho: Carrito y Checkout --}}
+            <div class="pos-right">
+                
+                {{-- Header Carrito --}}
+                <div style="padding: 1rem; background: white; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;" class="dark:bg-gray-900 dark:border-gray-800">
+                    <h3 style="font-weight: bold; font-size: 1.1rem; margin: 0;" class="dark:text-white">Orden Actual</h3>
+                    @if(!empty($cart))
+                        <span wire:click="clearCart" style="color: #ef4444; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Limpiar todo</span>
+                    @endif
+                </div>
+
+                {{-- Lista de Items en Carrito --}}
+                <div style="flex: 1; overflow-y: auto; padding: 0.5rem;">
+                    @forelse($cart as $id => $item)
+                        <div class="pos-cart-item">
+                            <div style="flex: 1;">
+                                <h4 style="font-size: 0.85rem; font-weight: 600; margin: 0; line-height: 1.2;" class="dark:text-white">{{ $item['name'] }}</h4>
+                                <span style="font-size: 0.75rem; color: var(--gray-500);">S/ {{ number_format($item['price'], 2) }} c/u</span>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button wire:click="updateQuantity({{ $id }}, {{ $item['quantity'] - 1 }})" class="pos-qty-btn dark:text-white">-</button>
+                                <span style="font-weight: bold; font-size: 0.9rem; min-width: 1.5rem; text-align: center;" class="dark:text-white">{{ $item['quantity'] }}</span>
+                                <button wire:click="updateQuantity({{ $id }}, {{ $item['quantity'] + 1 }})" class="pos-qty-btn dark:text-white">+</button>
+                                
+                                <span style="font-weight: bold; font-size: 0.9rem; margin-left: 0.5rem; width: 4.5rem; text-align: right;" class="dark:text-white">
+                                    S/ {{ number_format($item['price'] * $item['quantity'], 2) }}
+                                </span>
+                            </div>
+                        </div>
+                    @empty
+                        <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray-400); gap: 1rem;">
+                            <svg class="icon-lg opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            <p style="font-size: 0.9rem;">El carrito está vacío</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                {{-- Sección de Pago / Checkout --}}
                 <div class="pos-checkout-box">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; font-size: 0.875rem; color: var(--gray-500);">
-                        <span>Subtotal</span>
-                        <span class="dark:text-white">S/ {{ number_format($subtotal, 2) }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--gray-500);">
-                        <span>IGV (18%)</span>
-                        <span class="dark:text-white">S/ {{ number_format($total_tax, 2) }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 1.25rem; font-weight: bold;">
-                        <span class="dark:text-white">TOTAL</span>
-                        <span class="pos-price" style="font-size: 1.5rem;">S/ {{ number_format($total_amount, 2) }}</span>
-                    </div>
                     
+                    {{-- Selector de Documento (Boleta/Factura) --}}
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--gray-600); margin-bottom: 0.25rem;" class="dark:text-gray-300">Tipo de Comprobante</label>
+                        {{ $this->form }}
+                    </div>
+
+                    {{-- Resumen Totales --}}
+                    <div style="border-top: 1px dashed var(--gray-300); padding-top: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem;" class="dark:border-gray-700">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span style="color: var(--gray-600);" class="dark:text-gray-400">Subtotal</span>
+                            <span class="dark:text-white">S/ {{ number_format($subtotal, 2) }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: var(--gray-600);" class="dark:text-gray-400">IGV (18%)</span>
+                            <span class="dark:text-white">S/ {{ number_format($total_tax, 2) }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: bold; border-top: 1px solid var(--gray-200); padding-top: 0.5rem;" class="dark:border-gray-700">
+                            <span class="dark:text-white">TOTAL A PAGAR</span>
+                            <span class="pos-price" style="font-size: 1.3rem;">S/ {{ number_format($total_amount, 2) }}</span>
+                        </div>
+                    </div>
+
+                    {{-- Botón de Cobrar --}}
                     <button 
                         wire:click="checkout" 
                         wire:loading.attr="disabled"
-                        style="width: 100%; padding: 0.75rem; background: var(--primary-600); color: white; font-weight: bold; border-radius: 0.5rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem;"
-                    >
-                        <span wire:loading.remove>PROCESAR VENTA</span>
-                        <span wire:loading>Procesando...</span>
+                        @if(empty($cart)) disabled style="opacity: 0.5; cursor: not-allowed;" @endif
+                        style="width: 100%; padding: 0.85rem; background: var(--primary-600); color: white; border-radius: 0.75rem; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); display: flex; justify-content: center; align-items: center; gap: 0.5rem;" class="hover:bg-primary-700">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span wire:loading.remove>COBRAR Y EMITIR COMPROBANTE</span>
+                        <span wire:loading>Procesando Venta...</span>
                     </button>
+                    
                 </div>
             </div>
 
         </div>
-    </div>
+    @endif
 </x-filament-panels::page>
