@@ -34,6 +34,22 @@ class Product extends Model
         'compare_at_price' => 'decimal:2',
     ];
 
+    protected static function booted(): void
+    {
+        static::saved(function ($product) {
+            \Illuminate\Support\Facades\Cache::forget('catalog_detail_' . $product->slug);
+            if ($product->getOriginal('slug')) {
+                \Illuminate\Support\Facades\Cache::forget('catalog_detail_' . $product->getOriginal('slug'));
+            }
+            \Illuminate\Support\Facades\Cache::flush();
+        });
+
+        static::deleted(function ($product) {
+            \Illuminate\Support\Facades\Cache::forget('catalog_detail_' . $product->slug);
+            \Illuminate\Support\Facades\Cache::flush();
+        });
+    }
+
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);

@@ -28,7 +28,9 @@ class ProductForm
                     ->preload(),
                 Select::make('brand_id')
                     ->relationship('brand', 'name')
-                    ->required(),
+                    ->label('Marca (Opcional)')
+                    ->placeholder('Sin marca')
+                    ->nullable(),
                 TextInput::make('name')
                     ->required()
                     ->live(onBlur: true)

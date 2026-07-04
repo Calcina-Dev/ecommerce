@@ -28,6 +28,10 @@ interface Product {
 export function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((state) => state.addItem);
 
+  if (!product || !product.id || !product.name || product.price === undefined || product.price === null || isNaN(Number(product.price))) {
+    return null;
+  }
+
   const imageUrl = product.primary_image?.image_url 
     ? (product.primary_image.image_url.startsWith('http')
         ? product.primary_image.image_url

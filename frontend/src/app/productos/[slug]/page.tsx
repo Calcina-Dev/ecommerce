@@ -58,14 +58,24 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/products/${slug}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error("Producto no encontrado");
+        }
+        return res.json();
+      })
       .then(data => {
-        setProduct(data);
+        if (!data || !data.id || !data.name || data.price === undefined || data.price === null) {
+          setProduct(null);
+        } else {
+          setProduct(data);
+        }
         setActiveIdx(0);
         setLoading(false);
       })
       .catch(err => {
         console.error(err);
+        setProduct(null);
         setLoading(false);
       });
   }, [slug]);
@@ -103,8 +113,26 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (!product) {
-    return <div className="max-w-6xl mx-auto px-6 py-12 text-center">Producto no encontrado.</div>;
+  if (!product || !product.id || !product.name || product.price === undefined || product.price === null) {
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center">
+        <div className="max-w-md mx-auto px-6 py-16 text-center">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">
+            📦
+          </div>
+          <h2 className="text-2xl font-bold text-foreground mb-3">Producto no disponible</h2>
+          <p className="text-muted-foreground mb-8 text-sm leading-relaxed">
+            El producto que estás buscando fue modificado, cambió de enlace o ya no se encuentra en el catálogo en este momento.
+          </p>
+          <Link 
+            href="/productos" 
+            className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all shadow-md hover:shadow-lg"
+          >
+            ← Volver al Catálogo
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const images = product.images?.length > 0 
