@@ -17,6 +17,15 @@ function cleanDescriptionText(text: string | null) {
   clean = clean.replace(/\p{Extended_Pictographic}/gu, '');
   clean = clean.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '');
 
+  // Strip data-start, data-end and other data attributes from copy-pasting
+  clean = clean.replace(/\s+data-[a-z-]+="[^"]*"/gi, '');
+  clean = clean.replace(/\s+data-[a-z-]+='[^']*'/gi, '');
+
+  // If it already contains HTML tags like <p>, <ul>, <ol>, <li>, <strong>, <b>, <h3>, <h4>, <div>, <br>
+  if (/<(p|ul|ol|li|strong|b|em|i|h[1-6]|div|br|span|a|table|blockquote)[\s>]/i.test(clean)) {
+    return clean;
+  }
+
   const lines = clean.split('\n').map(l => l.trim()).filter(Boolean);
   
   return lines.map(line => {
@@ -186,9 +195,10 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            <p className="text-lg text-foreground/80 mb-8 leading-relaxed">
-              {product.short_description ? product.short_description.replace(/\\r\\n/g, ' ').replace(/\\n/g, ' ').replace(/\\/g, '').replace(/\p{Extended_Pictographic}/gu, '') : "Descripción breve no disponible."}
-            </p>
+            <div 
+              className="text-lg text-foreground/80 mb-8 leading-relaxed prose prose-sm sm:prose-base dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: cleanDescriptionText(product.short_description) || "Descripción breve no disponible." }}
+            />
 
             <div className="space-y-6 mb-8">
               <div className="flex items-center gap-4">

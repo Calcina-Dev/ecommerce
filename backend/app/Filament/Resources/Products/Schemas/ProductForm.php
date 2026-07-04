@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Products\Schemas;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -35,8 +36,17 @@ class ProductForm
                 TextInput::make('slug')
                     ->required()
                     ->unique(ignoreRecord: true),
-                Textarea::make('description')
-                    ->rows(3)
+                RichEditor::make('short_description')
+                    ->label('Descripción Breve (Resumen / Extracto)')
+                    ->toolbarButtons([
+                        'attachFiles', 'blockquote', 'bold', 'bulletList', 'codeBlock', 'h2', 'h3', 'italic', 'link', 'orderedList', 'redo', 'strike', 'underline', 'undo',
+                    ])
+                    ->columnSpanFull(),
+                RichEditor::make('description')
+                    ->label('Descripción Detallada / Información Clínica')
+                    ->toolbarButtons([
+                        'attachFiles', 'blockquote', 'bold', 'bulletList', 'codeBlock', 'h2', 'h3', 'italic', 'link', 'orderedList', 'redo', 'strike', 'underline', 'undo',
+                    ])
                     ->columnSpanFull(),
                 TextInput::make('price')
                     ->label('Precio Base')
