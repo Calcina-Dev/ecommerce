@@ -19,6 +19,7 @@ class Product extends Model
         'short_description',
         'description',
         'ai_overview',
+        'ai_prompt_template',
         'price',
         'compare_at_price',
         'stock',
