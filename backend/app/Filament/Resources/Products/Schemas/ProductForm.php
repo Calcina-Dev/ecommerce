@@ -55,9 +55,9 @@ class ProductForm
                     ->schema([
                         Textarea::make('ai_prompt_template')
                             ->label('1. Caja de Prompt / Estructura de Instrucciones (Editable)')
-                            ->default("🎯 PERFIL Y MODO DE EMPLEO\n• ¿Para qué sirve?: Beneficios biológicos directos y claros.\n• ¿Para quién es ideal?: Perfil del paciente o usuario recomendado.\n• Activos clave por porción: Cantidades exactas sin relleno (mg / mcg / UI).\n• ¿Cómo tomarlo?: Modo de empleo, horarios y mezclas permitidas/prohibidas.\n• Apto para dietas / Certificaciones: Vegano, Sin Gluten, Libre de Lácteos, Calidad GMP.\n\n🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA\n• Mecanismo por Ingrediente: Qué hace cada molécula en el cuerpo.\n• Sinergia de la Fórmula: Por qué están juntos y en qué proporción.\n• Precauciones específicas: Qué sentir o vigilar.\n\n🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN\n• Advertencia médica: Consulta previa a médico en embarazo, lactancia o tratamientos.\n• ¿Quién debe tener cuidado?: Poblaciones sensibles.\n• Conservación: Almacenar en un lugar fresco y seco.")
+                            ->default("🎯 PERFIL Y MODO DE EMPLEO\n• ¿Para qué sirve?: Beneficios biológicos directos y claros.\n• ¿Para quién es ideal?: Perfil del paciente o usuario recomendado.\n• Activos clave por porción: Cantidades exactas sin relleno (mg / mcg / UI).\n• ¿Cómo tomarlo?: Modo de empleo, horarios y mezclas permitidas/prohibidas.\n• Apto para dietas / Certificaciones: Vegano, Sin Gluten, Libre de Lácteos, Calidad GMP.\n\n🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA\n• Mecanismo por Ingrediente: Qué hace cada molécula en el cuerpo.\n• Sinergia de la Fórmula: Por qué están juntos y en qué proporción.\n• Precauciones específicas: Qué sentir o vigilar.\n\n🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN\n• Advertencia médica: Consulta previa a médico en embarazo, lactancia o tratamientos.\n• ¿Quién debe tener cuidado?: Poblaciones sensibles.\n• Conservación: Almacenar en un lugar fresco, seco y alejado de la luz solar directa para preservar la potencia.")
                             ->afterStateHydrated(function ($component, ?string $state, callable $get, ?Model $record) {
-                                if (empty($state)) {
+                                if (empty($state) || str_contains($state ?? '', '\\n') || str_contains($state ?? '', '\\r')) {
                                     $name = $record?->name ?? $get('name') ?? '[Nombre del Producto]';
                                     $desc = strip_tags($record?->description ?? $record?->short_description ?? $get('description') ?? $get('short_description') ?? '');
                                     $desc = str_replace(['\\n', '\\r', "\n", "\r"], ' ', $desc);
@@ -98,6 +98,8 @@ class ProductForm
                                     ->action(function ($state, callable $set, callable $get) {
                                         $productName = $get('name') ?? 'Producto sin nombre';
                                         $desc = strip_tags($get('description') ?? $get('short_description') ?? '');
+                                        $desc = str_replace(['\\n', '\\r', "\n", "\r"], ' ', $desc);
+                                        $desc = trim(preg_replace('/\s+/', ' ', $desc));
                                         $prompt = $state ?? "Estructura estándar de 3 bloques";
 
                                         $apiKey = env('GEMINI_API_KEY') ?? env('OPENAI_API_KEY');
@@ -113,13 +115,28 @@ class ProductForm
                                                     \Filament\Notifications\Notification::make()->title('✨ Resumen generado en vivo por Google Gemini IA')->success()->send();
                                                     return;
                                                 } else {
-                                                    \Illuminate\Support\Facades\Log::warning("Gemini API error: " . $response->body());
-                                                    \Filament\Notifications\Notification::make()->title('⚠️ Nota: Gemini no respondió (revisa cuota/clave). Usando motor de síntesis local.')->warning()->send();
+                                                    $errorMsg = $response->json('error.message') ?? $response->body();
+                                                    \Illuminate\Support\Facades\Log::warning("Gemini API error: " . $errorMsg);
+                                                    \Filament\Notifications\Notification::make()
+                                                        ->title('⚠️ Error exacto de Google Gemini API:')
+                                                        ->body(substr($errorMsg, 0, 400))
+                                                        ->warning()
+                                                        ->send();
                                                 }
                                             } catch (\Exception $e) {
                                                 \Illuminate\Support\Facades\Log::error("Gemini API exception: " . $e->getMessage());
-                                                \Filament\Notifications\Notification::make()->title('⚠️ Error de conexión con Gemini. Usando motor de síntesis local.')->warning()->send();
+                                                \Filament\Notifications\Notification::make()
+                                                    ->title('⚠️ Error de conexión (Excepción) con Gemini:')
+                                                    ->body(substr($e->getMessage(), 0, 400))
+                                                    ->warning()
+                                                    ->send();
                                             }
+                                        } else {
+                                            \Filament\Notifications\Notification::make()
+                                                ->title('⚠️ Aviso: No se encontró GEMINI_API_KEY en las variables de Railway.')
+                                                ->body('Usando motor de síntesis local mientras la configuras.')
+                                                ->warning()
+                                                ->send();
                                         }
 
                                         // Intelligent Local Synthesis (tailored to product name & features)
