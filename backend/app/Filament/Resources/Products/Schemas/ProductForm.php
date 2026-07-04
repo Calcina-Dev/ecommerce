@@ -56,6 +56,37 @@ class ProductForm
                         Textarea::make('ai_prompt_template')
                             ->label('1. Caja de Prompt / Estructura de Instrucciones (Editable)')
                             ->default("🎯 PERFIL Y MODO DE EMPLEO\n• ¿Para qué sirve?: Beneficios biológicos directos y claros.\n• ¿Para quién es ideal?: Perfil del paciente o usuario recomendado.\n• Activos clave por porción: Cantidades exactas sin relleno (mg / mcg / UI).\n• ¿Cómo tomarlo?: Modo de empleo, horarios y mezclas permitidas/prohibidas.\n• Apto para dietas / Certificaciones: Vegano, Sin Gluten, Libre de Lácteos, Calidad GMP.\n\n🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA\n• Mecanismo por Ingrediente: Qué hace cada molécula en el cuerpo.\n• Sinergia de la Fórmula: Por qué están juntos y en qué proporción.\n• Precauciones específicas: Qué sentir o vigilar.\n\n🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN\n• Advertencia médica: Consulta previa a médico en embarazo, lactancia o tratamientos.\n• ¿Quién debe tener cuidado?: Poblaciones sensibles.\n• Conservación: Almacenar en un lugar fresco y seco.")
+                            ->afterStateHydrated(function ($component, ?string $state, callable $get, ?Model $record) {
+                                if (empty($state)) {
+                                    $name = $record?->name ?? $get('name') ?? '[Nombre del Producto]';
+                                    $desc = strip_tags($record?->description ?? $record?->short_description ?? $get('description') ?? $get('short_description') ?? '');
+                                    $desc = trim($desc);
+                                    if (strlen($desc) > 350) {
+                                        $desc = substr($desc, 0, 350) . '...';
+                                    }
+
+                                    $template = "Actúa como un copywriter médico e-commerce especialista en suplementos y salud.\n" .
+                                                "Producto a analizar: {$name}\n" .
+                                                "Características / Descripción: " . ($desc ?: 'Suplemento nutricional de grado clínico') . "\n\n" .
+                                                "Genera un Resumen Clínico Inteligente (AI Overview) basándote estrictamente en esta estructura de 3 bloques:\n\n" .
+                                                "🎯 PERFIL Y MODO DE EMPLEO\n" .
+                                                "• ¿Para qué sirve?: Beneficios biológicos directos y claros.\n" .
+                                                "• ¿Para quién es ideal?: Perfil del paciente o usuario recomendado.\n" .
+                                                "• Activos clave por porción: Cantidades exactas sin relleno (mg / mcg / UI).\n" .
+                                                "• ¿Cómo tomarlo?: Modo de empleo, horarios y mezclas permitidas/prohibidas.\n" .
+                                                "• Apto para dietas / Certificaciones: Vegano, Sin Gluten, Libre de Lácteos, Calidad GMP.\n\n" .
+                                                "🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA\n" .
+                                                "• Mecanismo por Ingrediente: Qué hace cada molécula en el cuerpo.\n" .
+                                                "• Sinergia de la Fórmula: Por qué están juntos y en qué proporción.\n" .
+                                                "• Precauciones específicas: Qué sentir o vigilar.\n\n" .
+                                                "🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN\n" .
+                                                "• Advertencia médica: Consulta previa a médico en embarazo, lactancia o tratamientos.\n" .
+                                                "• ¿Quién debe tener cuidado?: Poblaciones sensibles.\n" .
+                                                "• Conservación: Almacenar en un lugar fresco, seco.";
+
+                                    $component->state($template);
+                                }
+                            })
                             ->rows(8)
                             ->columnSpanFull()
                             ->hintAction(
@@ -86,20 +117,54 @@ class ProductForm
                                             }
                                         }
 
-                                        // Intelligent Local Synthesis (when no API key is set or fallback)
-                                        $generated = "🎯 PERFIL Y MODO DE EMPLEO\n" .
-                                            "• ¿Para qué sirve?: Respaldo clínico avanzado para optimizar el equilibrio corporal y bienestar general con {$productName}.\n" .
-                                            "• ¿Para quién es ideal?: Adultos con ritmo de vida activo y personas que buscan soporte nutricional diario de máxima pureza.\n" .
-                                            "• Activos clave por porción: Fórmula estandarizada de alta biodisponibilidad y grado clínico.\n" .
-                                            "• ¿Cómo tomarlo?: Tomar 1 porción diaria con abundante agua, preferentemente junto a una comida principal.\n" .
-                                            "• Certificaciones y dietas: 100% Vegano • Sin Gluten • Libre de OGM • Calidad GMP y Lote Auditado FEFO.\n\n" .
-                                            "🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA\n" .
-                                            "• Mecanismo de acción: Los principios activos de {$productName} actúan a nivel celular favoreciendo la homeostasis metabólica.\n" .
-                                            "• Sinergia de la fórmula: Diseñada en proporciones fisiológicas exactas para potenciar la eficacia mutua y absorción sin saturación.\n" .
-                                            "• Precaución: Monitorear la tolerancia individual durante los primeros 3 días de uso.\n\n" .
-                                            "🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN\n" .
-                                            "• Advertencia médica: Consultar con un profesional de la salud antes de usar si está embarazada, lactando o en tratamiento crónico.\n" .
-                                            "• Conservación: Almacenar en un lugar fresco, seco y alejado de la luz solar directa para preservar la potencia.";
+                                        // Intelligent Local Synthesis (tailored to product name & features)
+                                        $lowerDesc = mb_strtolower($productName . ' ' . $desc);
+                                        
+                                        if (str_contains($lowerDesc, 'prost') || str_contains($lowerDesc, 'hombre') || str_contains($lowerDesc, 'masculin')) {
+                                            $generated = "🎯 PERFIL Y MODO DE EMPLEO\n" .
+                                                "• ¿Para qué sirve?: Apoyo natural especializado para la salud prostática, confort urinario y vitalidad masculina.\n" .
+                                                "• ¿Para quién es ideal?: Hombres a partir de los 40 años que buscan prevenir molestias y mantener una función urogenital saludable.\n" .
+                                                "• Activos clave por porción: Extractos botánicos biológicamente activos y antioxidantes de alta pureza.\n" .
+                                                "• ¿Cómo tomarlo?: Tomar 1 porción al día con abundante agua, preferentemente junto a una comida principal para maximizar la absorción.\n" .
+                                                "• Certificaciones y dietas: 100% Natural • Sin Gluten • Libre de OGM • Calidad GMP Auditada y Trazabilidad FEFO.\n\n" .
+                                                "🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA\n" .
+                                                "• Mecanismo de acción: Los fitoesteroles y antioxidantes protegen los tejidos prostáticos y apoyan el equilibrio celular masculino.\n" .
+                                                "• Sinergia de la fórmula: Combinación estandarizada que promueve el flujo urinario saludable sin causar pesadez ni fatiga.\n" .
+                                                "• Precaución: Monitorear la respuesta individual durante los primeros días de uso regular.\n\n" .
+                                                "🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN\n" .
+                                                "• Advertencia médica: Consultar con su médico urólogo antes de iniciar si está bajo tratamiento médico específico o condición previa.\n" .
+                                                "• ¿Quién debe tener cuidado?: Uso recomendado exclusivamente para adultos hombres.\n" .
+                                                "• Conservación: Almacenar en un lugar fresco, seco y alejado de la luz solar directa para preservar los activos botánicos.";
+                                        } elseif (str_contains($lowerDesc, 'mujer') || str_contains($lowerDesc, 'ovari') || str_contains($lowerDesc, 'hormon') || str_contains($lowerDesc, 'ciclo')) {
+                                            $generated = "🎯 PERFIL Y MODO DE EMPLEO\n" .
+                                                "• ¿Para qué sirve?: Respaldo integral para el equilibrio hormonal, bienestar del ciclo menstrual y salud metabólica femenina.\n" .
+                                                "• ¿Para quién es ideal?: Mujeres que buscan apoyo natural diario para el ritmo hormonal y armonía corporal.\n" .
+                                                "• Activos clave por porción: Inositoles y extractos puros en proporción fisiológica estandarizada.\n" .
+                                                "• ¿Cómo tomarlo?: Mezclar 1 porción al día en una bebida fría o tibia sin cafeína, preferentemente con alimentos.\n" .
+                                                "• Certificaciones y dietas: Vegano • Sin Gluten • Libre de Lácteos y OGM • Calidad GMP Auditada.\n\n" .
+                                                "🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA\n" .
+                                                "• Mecanismo de acción: Actúan como mensajeros celulares mejorando la señalización metabólica y sensibilidad celular.\n" .
+                                                "• Sinergia de la fórmula: Proporción científicamente calibrada para potenciar la eficacia biológica mutua sin saturación.\n" .
+                                                "• Precaución: Monitorear la respuesta en personas con sensibilidad a variaciones en la glucosa.\n\n" .
+                                                "🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN\n" .
+                                                "• Advertencia médica: Consultar con su médico especialista en caso de embarazo, lactancia o tratamientos hormonales.\n" .
+                                                "• ¿Quién debe tener cuidado?: Poblaciones sensibles o bajo tratamiento clínico de fertilidad.\n" .
+                                                "• Conservación: Almacenar en un lugar fresco, seco y herméticamente cerrado.";
+                                        } else {
+                                            $generated = "🎯 PERFIL Y MODO DE EMPLEO\n" .
+                                                "• ¿Para qué sirve?: Respaldo clínico avanzado para optimizar el equilibrio corporal, energía y bienestar general con {$productName}.\n" .
+                                                "• ¿Para quién es ideal?: Adultos con ritmo de vida activo y personas que buscan soporte nutricional diario de máxima pureza.\n" .
+                                                "• Activos clave por porción: Fórmula estandarizada de alta biodisponibilidad y grado clínico.\n" .
+                                                "• ¿Cómo tomarlo?: Tomar 1 porción diaria con abundante agua, preferentemente junto a una comida principal.\n" .
+                                                "• Certificaciones y dietas: 100% Vegano • Sin Gluten • Libre de OGM • Calidad GMP y Lote Auditado FEFO.\n\n" .
+                                                "🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA\n" .
+                                                "• Mecanismo de acción: Los principios activos de {$productName} actúan a nivel celular favoreciendo la homeostasis metabólica.\n" .
+                                                "• Sinergia de la fórmula: Diseñada en proporciones fisiológicas exactas para potenciar la eficacia mutua y absorción sin saturación.\n" .
+                                                "• Precaución: Monitorear la tolerancia individual durante los primeros 3 días de uso.\n\n" .
+                                                "🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN\n" .
+                                                "• Advertencia médica: Consultar con un profesional de la salud antes de usar si está embarazada, lactando o en tratamiento crónico.\n" .
+                                                "• Conservación: Almacenar en un lugar fresco, seco y alejado de la luz solar directa para preservar la potencia.";
+                                        }
 
                                         $set('ai_overview', $generated);
                                         \Filament\Notifications\Notification::make()
