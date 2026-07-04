@@ -170,8 +170,7 @@ function AIOverviewBox({ overviewText, productName }: { overviewText?: string; p
         )}
       </div>
       <div className="mt-3 pt-2.5 border-t border-emerald-500/10 flex items-center justify-between text-[10px] text-muted-foreground font-semibold">
-        <span className="flex items-center gap-1">⚡ Generado por Modelo Clínico E-commerce IA</span>
-        <span className="text-emerald-600 dark:text-emerald-400">✓ Verificado por Laboratorio</span>
+        <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">⚡ Generado por CompraSaludable-IA</span>
       </div>
     </div>
   );
