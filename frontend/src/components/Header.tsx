@@ -204,6 +204,35 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Search Bar (Visible only on mobile screens) */}
+      <div className="md:hidden px-4 pb-3 pt-1 border-t border-gray-100 bg-white/95">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (searchQuery.trim() !== "") {
+              router.push(`/productos?search=${encodeURIComponent(searchQuery.trim())}`);
+            }
+          }} 
+          className="relative"
+        >
+          <input 
+            type="text" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="¿Qué estás buscando hoy?" 
+            className="w-full bg-gray-100/90 border border-gray-200/60 focus:bg-white focus:border-accent focus:ring-2 focus:ring-accent/20 rounded-2xl py-2 pl-9 pr-10 text-xs transition-all text-foreground shadow-inner"
+          />
+          <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          {searchQuery && (
+            <button type="button" onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          )}
+        </form>
+      </div>
     </header>
   );
 }
