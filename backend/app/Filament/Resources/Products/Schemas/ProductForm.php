@@ -107,7 +107,23 @@ class ProductForm
                     ->label('Stock Actual')
                     ->content('El stock ahora se gestiona automáticamente por Almacén a través de Recepciones y Transferencias.')
                     ->columnSpanFull(),
+                \Filament\Forms\Components\Section::make('Insignias de Confianza y Garantías (Ficha de Producto)')
+                    ->description('Activa o desactiva las insignias que aparecen debajo del botón "Agregar al Carrito" en la tienda virtual.')
+                    ->schema([
+                        Toggle::make('show_gmp_badge')
+                            ->label('Laboratorio (Grado Clínico GMP)')
+                            ->default(true),
+                        Toggle::make('show_fefo_badge')
+                            ->label('Trazabilidad (Lote Auditado FEFO)')
+                            ->default(true),
+                        Toggle::make('show_shipping_badge')
+                            ->label('Despacho (Envío Seguro Nacional)')
+                            ->default(true),
+                    ])
+                    ->columns(3)
+                    ->columnSpanFull(),
                 Toggle::make('is_active')
+                    ->label('¿Producto Activo?')
                     ->default(true),
             ]);
     }

@@ -255,21 +255,39 @@ export default function ProductDetailPage() {
                 </motion.button>
               </div>
               
-              {/* Premium Clinical Trust Signals */}
-              <div className="grid grid-cols-3 gap-3 pt-6 border-t border-border/60 mt-6 mb-8">
-                <div className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
-                  <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">Laboratorio</span>
-                  <span className="text-[11px] text-muted-foreground font-medium">Grado Clínico GMP</span>
-                </div>
-                <div className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
-                  <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">Trazabilidad</span>
-                  <span className="text-[11px] text-muted-foreground font-medium">Lote Auditado FEFO</span>
-                </div>
-                <div className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
-                  <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">Despacho</span>
-                  <span className="text-[11px] text-muted-foreground font-medium">Envío Seguro Nacional</span>
-                </div>
-              </div>
+              {/* Premium Clinical Trust Signals (Configurable per product) */}
+              {(() => {
+                const activeBadges = [
+                  product.show_gmp_badge !== false && (
+                    <div key="gmp" className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
+                      <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">Laboratorio</span>
+                      <span className="text-[11px] text-muted-foreground font-medium">Grado Clínico GMP</span>
+                    </div>
+                  ),
+                  product.show_fefo_badge !== false && (
+                    <div key="fefo" className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
+                      <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">Trazabilidad</span>
+                      <span className="text-[11px] text-muted-foreground font-medium">Lote Auditado FEFO</span>
+                    </div>
+                  ),
+                  product.show_shipping_badge !== false && (
+                    <div key="shipping" className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
+                      <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">Despacho</span>
+                      <span className="text-[11px] text-muted-foreground font-medium">Envío Seguro Nacional</span>
+                    </div>
+                  ),
+                ].filter(Boolean);
+
+                if (activeBadges.length === 0) return null;
+
+                const gridCols = activeBadges.length === 1 ? 'grid-cols-1' : activeBadges.length === 2 ? 'grid-cols-2' : 'grid-cols-3';
+
+                return (
+                  <div className={`grid ${gridCols} gap-3 pt-6 border-t border-border/60 mt-6 mb-8`}>
+                    {activeBadges}
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">

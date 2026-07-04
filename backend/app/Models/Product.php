@@ -23,6 +23,9 @@ class Product extends Model
         'stock',
         'is_active',
         'is_featured',
+        'show_gmp_badge',
+        'show_fefo_badge',
+        'show_shipping_badge',
         'brand_id',
         'category_id',
     ];
@@ -30,6 +33,9 @@ class Product extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
+        'show_gmp_badge' => 'boolean',
+        'show_fefo_badge' => 'boolean',
+        'show_shipping_badge' => 'boolean',
         'price' => 'decimal:2',
         'compare_at_price' => 'decimal:2',
     ];
