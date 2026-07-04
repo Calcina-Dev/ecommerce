@@ -48,6 +48,41 @@ function cleanDescriptionText(text: string | null) {
   }).join('');
 }
 
+function formatAIText(text: string): string {
+  if (!text) return "";
+  
+  // Clean up any accidental intro echoes or markdown clutter
+  let cleaned = text
+    .replace(/^Actuando como un copywriter.*?\n/ig, '')
+    .replace(/^Eres un copywriter.*?\n/ig, '')
+    .replace(/^\*\*Producto a analizar:\*\*.*?\n/ig, '')
+    .replace(/^\*\*Características \/ Descripción:\*\*.*?\n/ig, '')
+    .trim();
+
+  // Convert **bold** to styled strong
+  cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-emerald-950 dark:text-emerald-200">$1</strong>');
+  cleaned = cleaned.replace(/\*(.*?)\*/g, '<strong class="font-bold text-foreground/90">$1</strong>');
+
+  const lines = cleaned.split('\n').map(l => l.trim()).filter(Boolean);
+  
+  return lines.map((line, idx) => {
+    // If it's a section title (starts with emoji or big header like PERFIL, EXPLICACION, SEGURIDAD)
+    if (/^(🎯|🧪|🛡️|⚡|✨|•?\s*(PERFIL|EXPLICACIÓN|SEGURIDAD|BENEFICIOS|ACTIVOS|MODO|ADVERTENCIAS))/i.test(line)) {
+      const cleanTitle = line.replace(/^•\s*/, '').trim();
+      return `<div class="${idx > 0 ? 'mt-5' : 'mt-1'} mb-2.5 font-extrabold text-xs sm:text-sm uppercase tracking-wider text-emerald-900 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-500/30 shadow-sm flex items-center gap-2">${cleanTitle}</div>`;
+    }
+    
+    // If it's a bullet item
+    if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*')) {
+      let item = line.replace(/^[•-*]\s*/, '').trim();
+      return `<div class="flex items-start gap-2.5 mb-2 pl-1.5"><span class="text-emerald-500 font-black mt-0.5 select-none">•</span><div class="flex-1 text-foreground/90 leading-relaxed">${item}</div></div>`;
+    }
+
+    // Regular paragraph
+    return `<p class="mb-2.5 text-foreground/80 leading-relaxed pl-1">${line}</p>`;
+  }).join('');
+}
+
 function AIOverviewBox({ overviewText, productName }: { overviewText?: string; productName: string }) {
   const [displayedText, setDisplayedText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -126,17 +161,17 @@ function AIOverviewBox({ overviewText, productName }: { overviewText?: string; p
             Analizando ficha clínica e ingredientes en vivo...
           </div>
         ) : (
-          <div className="whitespace-pre-line space-y-1.5">
-            {displayedText}
-            {isGenerating && (
-              <span className="inline-block w-1.5 h-3.5 bg-emerald-500 ml-0.5 animate-pulse align-middle" />
-            )}
-          </div>
+          <div 
+            className="space-y-1.5"
+            dangerouslySetInnerHTML={{ 
+              __html: formatAIText(displayedText) + (isGenerating ? '<span class="inline-block w-1.5 h-3.5 bg-emerald-500 ml-1 animate-pulse align-middle"></span>' : '') 
+            }}
+          />
         )}
       </div>
-      <div className="mt-2.5 pt-2 border-t border-emerald-500/10 flex items-center justify-between text-[10px] text-muted-foreground">
-        <span>⚡ Generado por Modelo Clínico E-commerce IA</span>
-        <span>✓ Verificado por Laboratorio</span>
+      <div className="mt-3 pt-2.5 border-t border-emerald-500/10 flex items-center justify-between text-[10px] text-muted-foreground font-semibold">
+        <span className="flex items-center gap-1">⚡ Generado por Modelo Clínico E-commerce IA</span>
+        <span className="text-emerald-600 dark:text-emerald-400">✓ Verificado por Laboratorio</span>
       </div>
     </div>
   );

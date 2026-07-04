@@ -55,21 +55,10 @@ class ProductForm
                     ->schema([
                         Textarea::make('ai_prompt_template')
                             ->label('1. Caja de Prompt / Estructura de Instrucciones (Editable)')
-                            ->default("🎯 PERFIL Y MODO DE EMPLEO\n• ¿Para qué sirve?: Beneficios biológicos directos y claros.\n• ¿Para quién es ideal?: Perfil del paciente o usuario recomendado.\n• Activos clave por porción: Cantidades exactas sin relleno (mg / mcg / UI).\n• ¿Cómo tomarlo?: Modo de empleo, horarios y mezclas permitidas/prohibidas.\n• Apto para dietas / Certificaciones: Vegano, Sin Gluten, Libre de Lácteos, Calidad GMP.\n\n🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA\n• Mecanismo por Ingrediente: Qué hace cada molécula en el cuerpo.\n• Sinergia de la Fórmula: Por qué están juntos y en qué proporción.\n• Precauciones específicas: Qué sentir o vigilar.\n\n🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN\n• Advertencia médica: Consulta previa a médico en embarazo, lactancia o tratamientos.\n• ¿Quién debe tener cuidado?: Poblaciones sensibles.\n• Conservación: Almacenar en un lugar fresco, seco y alejado de la luz solar directa para preservar la potencia.")
+                            ->default("ESTRUCTURA CLÍNICA OBLIGATORIA (3 BLOQUES):\n\n🎯 PERFIL Y MODO DE EMPLEO\n• ¿Para qué sirve?: Beneficios biológicos directos y claros.\n• ¿Para quién es ideal?: Perfil del paciente o usuario recomendado.\n• Activos clave por porción: Cantidades exactas sin relleno (mg / mcg / UI).\n• ¿Cómo tomarlo?: Modo de empleo, horarios y mezclas permitidas/prohibidas.\n• Apto para dietas / Certificaciones: Vegano, Sin Gluten, Libre de Lácteos, Calidad GMP.\n\n🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA\n• Mecanismo por Ingrediente: Qué hace cada molécula en el cuerpo.\n• Sinergia de la Fórmula: Por qué están juntos y en qué proporción.\n• Precauciones específicas: Qué sentir o vigilar.\n\n🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN\n• Advertencia médica: Consulta previa a médico en embarazo, lactancia o tratamientos.\n• ¿Quién debe tener cuidado?: Poblaciones sensibles.\n• Conservación: Almacenar en un lugar fresco, seco y alejado de la luz solar directa.")
                             ->afterStateHydrated(function ($component, ?string $state, callable $get, ?Model $record) {
-                                if (empty($state) || str_contains($state ?? '', '\\n') || str_contains($state ?? '', '\\r')) {
-                                    $name = $record?->name ?? $get('name') ?? '[Nombre del Producto]';
-                                    $desc = strip_tags($record?->description ?? $record?->short_description ?? $get('description') ?? $get('short_description') ?? '');
-                                    $desc = str_replace(['\\n', '\\r', "\n", "\r"], ' ', $desc);
-                                    $desc = trim(preg_replace('/\s+/', ' ', $desc));
-                                    if (strlen($desc) > 350) {
-                                        $desc = substr($desc, 0, 350) . '...';
-                                    }
-
-                                    $template = "Actúa como un copywriter médico e-commerce especialista en suplementos y salud.\n" .
-                                                "Producto a analizar: {$name}\n" .
-                                                "Características / Descripción: " . ($desc ?: 'Suplemento nutricional de grado clínico') . "\n\n" .
-                                                "Genera un Resumen Clínico Inteligente (AI Overview) basándote estrictamente en esta estructura de 3 bloques:\n\n" .
+                                if (empty($state) || str_contains($state ?? '', '\\n') || str_contains($state ?? '', 'Actúa como un copywriter') || str_contains($state ?? '', 'Producto a analizar:')) {
+                                    $template = "ESTRUCTURA CLÍNICA OBLIGATORIA (3 BLOQUES):\n\n" .
                                                 "🎯 PERFIL Y MODO DE EMPLEO\n" .
                                                 "• ¿Para qué sirve?: Beneficios biológicos directos y claros.\n" .
                                                 "• ¿Para quién es ideal?: Perfil del paciente o usuario recomendado.\n" .
@@ -83,7 +72,7 @@ class ProductForm
                                                 "🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN\n" .
                                                 "• Advertencia médica: Consulta previa a médico en embarazo, lactancia o tratamientos.\n" .
                                                 "• ¿Quién debe tener cuidado?: Poblaciones sensibles.\n" .
-                                                "• Conservación: Almacenar en un lugar fresco, seco.";
+                                                "• Conservación: Almacenar en un lugar fresco, seco y alejado de la luz solar directa.";
 
                                     $component->state($template);
                                 }
@@ -102,19 +91,30 @@ class ProductForm
                                         $desc = trim(preg_replace('/\s+/', ' ', $desc));
                                         $prompt = $state ?? "Estructura estándar de 3 bloques";
 
+                                        $fullPrompt = "Eres un copywriter médico e-commerce de élite y científico nutricional. Tu objetivo es redactar una síntesis clínica comercial altamente persuasiva, profesional y fácil de leer para una tienda online premium.\n\n" .
+                                            "DATOS DEL PRODUCTO A ANALIZAR:\n" .
+                                            "- Nombre del Producto: {$productName}\n" .
+                                            "- Descripción Técnica y Características: {$desc}\n\n" .
+                                            "REGLAS ESTRICTAS E INQUEBRANTABLES DE REDACCIÓN:\n" .
+                                            "1. NO digas 'Actuando como copywriter', NO pongas introducciones, NO repitas el nombre ni la descripción del producto al inicio, NO pongas conclusiones ni texto fuera de los 3 bloques.\n" .
+                                            "2. NO uses asteriscos dobles (**) para poner negritas ni títulos. Usa exactamente el símbolo de viñeta (•) seguido del subtítulo limpio, por ejemplo: '• ¿Para qué sirve?: Explicación directa...'.\n" .
+                                            "3. Genera EXCLUSIVAMENTE los 3 bloques solicitados con sus respectivos emojis y viñetas.\n\n" .
+                                            "ESTRUCTURA OBLIGATORIA A LLENAR:\n" .
+                                            $prompt;
+
                                         $apiKey = env('GEMINI_API_KEY') ?? env('OPENAI_API_KEY');
                                         if (!empty($apiKey)) {
                                             try {
                                                 $response = \Illuminate\Support\Facades\Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}", [
                                                     'contents' => [
-                                                        ['parts' => [['text' => "Actúa como un copywriter médico e-commerce. Producto: {$productName}. Descripción técnica: {$desc}.\n\nGenera un resumen clínico basándote estrictamente en esta estructura y formato:\n{$prompt}"]]]
+                                                        ['parts' => [['text' => $fullPrompt]]]
                                                     ]
                                                 ]);
                                                 if (!$response->successful() || !isset($response['candidates'][0]['content']['parts'])) {
                                                     // Fallback to gemini-2.0-flash if 2.5-flash is unavailable
                                                     $response = \Illuminate\Support\Facades\Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$apiKey}", [
                                                         'contents' => [
-                                                            ['parts' => [['text' => "Actúa como un copywriter médico e-commerce. Producto: {$productName}. Descripción técnica: {$desc}.\n\nGenera un resumen clínico basándote estrictamente en esta estructura y formato:\n{$prompt}"]]]
+                                                            ['parts' => [['text' => $fullPrompt]]]
                                                         ]
                                                     ]);
                                                 }
