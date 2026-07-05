@@ -35,7 +35,8 @@ class CatalogController extends Controller
 
     public function products(Request $request)
     {
-        $cacheKey = 'catalog_products_v3_' . md5(json_encode($request->all()));
+        $queryParams = $request->only(['page', 'category_id', 'brand_id', 'search', 'sort_by', 'min_price', 'max_price', 'on_sale']);
+        $cacheKey = 'catalog_products_v3_' . md5(json_encode($queryParams));
         
         $products = Cache::remember($cacheKey, 60, function () use ($request) {
             $query = Product::with(['images', 'primaryImage', 'brand', 'category'])

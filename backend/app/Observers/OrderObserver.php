@@ -35,7 +35,8 @@ class OrderObserver
             'type' => 'system',
         ]);
 
-        if (in_array($order->status, ['shipped', 'delivered'])) {
+        $isPaidOrProcessing = in_array($order->status, ['processing', 'shipped', 'delivered']) || $order->payment_status === 'paid';
+        if ($isPaidOrProcessing) {
             $this->deductStock($order);
         }
     }
@@ -45,18 +46,23 @@ class OrderObserver
      */
     public function updated(Order $order): void
     {
-        if ($order->isDirty('status')) {
-            \App\Models\OrderNote::create([
-                'order_id' => $order->id,
-                'user_id' => auth()->id(),
-                'content' => "El estado del pedido cambió de '" . ($order->getOriginal('status') ?? 'nuevo') . "' a '{$order->status}'.",
-                'type' => 'system',
-            ]);
+        if ($order->isDirty('status') || $order->isDirty('payment_status')) {
+            $wasPaidOrProcessing = in_array($order->getOriginal('status'), ['processing', 'shipped', 'delivered']) || $order->getOriginal('payment_status') === 'paid';
+            $isPaidOrProcessing = in_array($order->status, ['processing', 'shipped', 'delivered']) || $order->payment_status === 'paid';
 
-            if (in_array($order->status, ['shipped', 'delivered']) && !in_array($order->getOriginal('status'), ['shipped', 'delivered'])) {
+            if ($order->isDirty('status')) {
+                \App\Models\OrderNote::create([
+                    'order_id' => $order->id,
+                    'user_id' => auth()->id(),
+                    'content' => "El estado del pedido cambió de '" . ($order->getOriginal('status') ?? 'nuevo') . "' a '{$order->status}'.",
+                    'type' => 'system',
+                ]);
+            }
+
+            if ($isPaidOrProcessing && !$wasPaidOrProcessing) {
                 $this->assignDocumentNumber($order);
                 $this->deductStock($order);
-            } elseif ($order->status === 'cancelled' && in_array($order->getOriginal('status'), ['shipped', 'delivered'])) {
+            } elseif ($order->status === 'cancelled' && $wasPaidOrProcessing) {
                 $this->restoreStock($order);
             }
 

@@ -47,6 +47,17 @@ class CheckoutController extends Controller
             return response()->json(['valid' => false, 'message' => 'El cupón ha alcanzado su límite de uso.'], 400);
         }
 
+        $userId = auth('sanctum')->id();
+        if ($userId) {
+            $userUsedCount = \App\Models\Order::where('user_id', $userId)
+                ->where('coupon_id', $coupon->id)
+                ->where('status', '!=', 'cancelled')
+                ->count();
+            if ($userUsedCount >= 1 && $coupon->usage_limit !== null) {
+                return response()->json(['valid' => false, 'message' => 'Ya has utilizado este cupón en una compra anterior.'], 400);
+            }
+        }
+
         $discount = 0;
         if ($coupon->type === 'percentage') {
             $discount = ($request->total_amount * $coupon->value) / 100;
@@ -127,6 +138,17 @@ class CheckoutController extends Controller
                     }
                     if ($appliedCoupon->usage_limit !== null && $appliedCoupon->times_used >= $appliedCoupon->usage_limit) {
                         throw new \Exception("El cupón ha alcanzado su límite de uso.");
+                    }
+
+                    $userId = auth('sanctum')->id();
+                    if ($userId) {
+                        $userUsedCount = \App\Models\Order::where('user_id', $userId)
+                            ->where('coupon_id', $appliedCoupon->id)
+                            ->where('status', '!=', 'cancelled')
+                            ->count();
+                        if ($userUsedCount >= 1 && $appliedCoupon->usage_limit !== null) {
+                            throw new \Exception("Ya has utilizado este cupón en una compra anterior.");
+                        }
                     }
 
                     if ($appliedCoupon->type === 'percentage') {
