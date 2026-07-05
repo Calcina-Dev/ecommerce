@@ -26,8 +26,11 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Database\Eloquent\Relations\Relation::enforceMorphMap([
             'user' => \App\Models\User::class,
             'ORDER' => \App\Models\Order::class,
+            'ORDER_CANCEL' => \App\Models\Order::class,
             'SALE' => \App\Models\Sale::class,
+            'SALE_CANCEL' => \App\Models\Sale::class,
             'PURCHASE' => \App\Models\PurchaseOrder::class,
+            'PURCHASE_CANCEL' => \App\Models\PurchaseOrder::class,
         ]);
     }
 }

@@ -25,11 +25,13 @@ class StockMovementsTable
                         $ref = $record->reference;
                         if (!$ref) return $record->reference_type . ' ' . $record->reference_id;
                         
-                        if ($record->reference_type === 'ORDER') {
-                            return ($ref->document_series ? "{$ref->document_series}-{$ref->document_number} " : '') . "({$ref->order_number})";
+                        if (in_array($record->reference_type, ['ORDER', 'ORDER_CANCEL'])) {
+                            $prefix = $record->reference_type === 'ORDER_CANCEL' ? '[Anulación] ' : '';
+                            return $prefix . ($ref->document_series ? "{$ref->document_series}-{$ref->document_number} " : '') . "({$ref->order_number})";
                         }
-                        if ($record->reference_type === 'SALE' || $record->reference_type === 'PURCHASE') {
-                            return $ref->document_series ? "{$ref->document_series}-{$ref->document_number}" : $ref->id;
+                        if (in_array($record->reference_type, ['SALE', 'SALE_CANCEL', 'PURCHASE', 'PURCHASE_CANCEL'])) {
+                            $prefix = str_ends_with($record->reference_type, '_CANCEL') ? '[Anulación] ' : '';
+                            return $prefix . ($ref->document_series ? "{$ref->document_series}-{$ref->document_number}" : $ref->id);
                         }
                         if ($record->reference_type === \App\Models\PurchaseInvoice::class) {
                             return 'Recepcion: ' . $ref->document_number;

@@ -9,6 +9,11 @@ import { Button } from "@/components/ui/button";
 export function CartSheet() {
   const { items, isOpen, setIsOpen, removeItem, updateQuantity, totalPrice, totalItems } = useCartStore();
 
+  const FREE_SHIPPING_THRESHOLD = 150;
+  const currentTotal = totalPrice();
+  const progress = Math.min(100, (currentTotal / FREE_SHIPPING_THRESHOLD) * 100);
+  const amountNeeded = Math.max(0, FREE_SHIPPING_THRESHOLD - currentTotal);
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent showCloseButton={false} className="w-full sm:max-w-md flex flex-col p-0 border-l rounded-l-3xl overflow-hidden">
@@ -29,6 +34,30 @@ export function CartSheet() {
               {totalItems()}
             </span>
           </SheetTitle>
+
+          {items.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200/60">
+              <div className="flex items-center justify-between text-xs font-medium mb-1.5">
+                {amountNeeded > 0 ? (
+                  <span className="text-gray-700">
+                    Agrega <strong className="text-emerald-600 font-bold">S/ {amountNeeded.toFixed(2)}</strong> más para <strong className="text-emerald-600 font-bold">Envío Gratis</strong>
+                  </span>
+                ) : (
+                  <span className="text-emerald-600 font-bold flex items-center gap-1.5 animate-pulse">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
+                    ¡Felicidades! Tienes Envío Gratis
+                  </span>
+                )}
+                <span className="text-gray-400 font-semibold">{Math.round(progress)}%</span>
+              </div>
+              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
         </SheetHeader>
 
         <ScrollArea className="flex-1 p-6">

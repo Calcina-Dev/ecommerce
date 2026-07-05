@@ -355,35 +355,43 @@ export default function CheckoutPage() {
                 <input required name="shipping_address" value={formData.shipping_address} onChange={handleChange} placeholder="Calle, Número, Depto" className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Código Postal (Ubigeo)</label>
-                  <input required name="shipping_postal_code" maxLength={6} value={formData.shipping_postal_code} onChange={handlePostalCodeChange} placeholder="Ej: 130101" className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
-                  <p className="text-xs text-muted-foreground mt-1">Escribe tu Ubigeo para autocompletar</p>
+              <div className="space-y-3 pt-2 border-t border-gray-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-gray-900">Ubicación de entrega (Perú)</span>
+                  <span className="text-xs text-muted-foreground">Selecciona tu zona o ingresa Ubigeo</span>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Departamento</label>
-                  <select required name="shipping_department" value={formData.shipping_department} onChange={(e) => { handleChange(e); setFormData(p => ({...p, shipping_province: "", shipping_district: ""})) }} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white">
-                    <option value="">Seleccione...</option>
-                    {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Departamento</label>
+                    <select required name="shipping_department" value={formData.shipping_department} onChange={(e) => { handleChange(e); setFormData(p => ({...p, shipping_province: "", shipping_district: "", shipping_postal_code: ""})) }} className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white text-sm font-medium transition-all">
+                      <option value="">Seleccionar...</option>
+                      {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Provincia</label>
+                    <select required name="shipping_province" value={formData.shipping_province} onChange={(e) => { handleChange(e); setFormData(p => ({...p, shipping_district: "", shipping_postal_code: ""})) }} disabled={!formData.shipping_department} className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white text-sm font-medium disabled:bg-gray-50 disabled:text-gray-400 transition-all">
+                      <option value="">Seleccionar...</option>
+                      {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Distrito</label>
+                    <select required name="shipping_district" value={formData.shipping_district} onChange={handleDistrictChange} disabled={!formData.shipping_province} className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white text-sm font-medium disabled:bg-gray-50 disabled:text-gray-400 transition-all">
+                      <option value="">Seleccionar...</option>
+                      {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Provincia</label>
-                  <select required name="shipping_province" value={formData.shipping_province} onChange={(e) => { handleChange(e); setFormData(p => ({...p, shipping_district: ""})) }} disabled={!formData.shipping_department} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white disabled:bg-muted/50">
-                    <option value="">Seleccione...</option>
-                    {provinces.map(p => <option key={p} value={p}>{p}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Distrito</label>
-                  <select required name="shipping_district" value={formData.shipping_district} onChange={handleDistrictChange} disabled={!formData.shipping_province} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white disabled:bg-muted/50">
-                    <option value="">Seleccione...</option>
-                    {districts.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                <div className="flex items-center gap-3 pt-1">
+                  <div className="w-40 flex-shrink-0">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Ubigeo / C. Postal</label>
+                    <input required name="shipping_postal_code" maxLength={6} value={formData.shipping_postal_code} onChange={handlePostalCodeChange} placeholder="Ej: 150101" className="w-full px-3.5 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-mono bg-gray-50/50 focus:bg-white transition-all" />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-4 leading-snug">
+                    💡 <span className="font-medium">Se autocompleta al elegir tu distrito</span>, o puedes ingresarlo directamente para seleccionar tu zona.
+                  </p>
                 </div>
               </div>
             </form>

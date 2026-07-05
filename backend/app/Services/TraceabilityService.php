@@ -132,15 +132,15 @@ class TraceabilityService
             $edges[] = ['from' => $orderId, 'to' => $docId, 'arrows' => 'to', 'color' => '#9ca3af'];
         }
 
-        $movements = StockMovement::where('reference_type', 'ORDER')->where('reference_id', $order->id)->get();
+        $movements = StockMovement::whereIn('reference_type', ['ORDER', 'ORDER_CANCEL'])->where('reference_id', $order->id)->get();
         foreach ($movements as $movement) {
             $movId = 'mov-' . $movement->id;
             $kardexCode = $this->getKardexCode($movement);
             $nodes[] = $this->formatNode(
                 $movId, 
-                "<b>Salida Kardex " . ($kardexCode ? "($kardexCode)" : "") . "</b>\n" . ($movement->product ? $movement->product->name : 'Prod') . "\nCant: " . $movement->quantity, 
+                "<b>" . ($movement->type === 'IN' ? 'Reingreso' : 'Salida') . " Kardex " . ($kardexCode ? "($kardexCode)" : "") . "</b>\n" . ($movement->product ? $movement->product->name : 'Prod') . "\nCant: " . $movement->quantity, 
                 'Lote: ' . ($movement->batch ? $movement->batch->batch_number : 'N/A'), 
-                '#f97316', 
+                $movement->type === 'IN' ? '#22c55e' : '#f97316', 
                 ''
             );
             $edges[] = ['from' => $orderId, 'to' => $movId, 'arrows' => 'to', 'color' => '#9ca3af'];
@@ -175,15 +175,15 @@ class TraceabilityService
             $edges[] = ['from' => $saleId, 'to' => $payId, 'arrows' => 'to', 'color' => '#9ca3af'];
         }
 
-        $movements = StockMovement::where('reference_type', 'SALE')->where('reference_id', $sale->id)->get();
+        $movements = StockMovement::whereIn('reference_type', ['SALE', 'SALE_CANCEL'])->where('reference_id', $sale->id)->get();
         foreach ($movements as $movement) {
             $movId = 'mov-' . $movement->id;
             $kardexCode = $this->getKardexCode($movement);
             $nodes[] = $this->formatNode(
                 $movId, 
-                "<b>Salida Kardex " . ($kardexCode ? "($kardexCode)" : "") . "</b>\n" . ($movement->product ? $movement->product->name : 'Prod') . "\nCant: " . $movement->quantity, 
+                "<b>" . ($movement->type === 'IN' ? 'Reingreso' : 'Salida') . " Kardex " . ($kardexCode ? "($kardexCode)" : "") . "</b>\n" . ($movement->product ? $movement->product->name : 'Prod') . "\nCant: " . $movement->quantity, 
                 'Lote: ' . ($movement->batch ? $movement->batch->batch_number : 'N/A'), 
-                '#f97316', 
+                $movement->type === 'IN' ? '#22c55e' : '#f97316', 
                 ''
             );
             $edges[] = ['from' => $saleId, 'to' => $movId, 'arrows' => 'to', 'color' => '#9ca3af'];
@@ -194,10 +194,10 @@ class TraceabilityService
 
     private function buildStockMovementNetwork(StockMovement $movement): array
     {
-        if ($movement->reference_type === 'ORDER') {
+        if (in_array($movement->reference_type, ['ORDER', 'ORDER_CANCEL'])) {
             $order = Order::find($movement->reference_id);
             if ($order) return $this->buildOrderNetwork($order);
-        } elseif ($movement->reference_type === 'SALE') {
+        } elseif (in_array($movement->reference_type, ['SALE', 'SALE_CANCEL'])) {
             $sale = Sale::find($movement->reference_id);
             if ($sale) return $this->buildSaleNetwork($sale);
         } elseif ($movement->reference_type === \App\Models\PurchaseInvoice::class || $movement->reference_type === 'PURCHASE') {
