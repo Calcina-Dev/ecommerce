@@ -11,8 +11,20 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
+        $user = $request->user();
+
+        // Vincular automáticamente órdenes pasadas hechas como invitado (user_id NULL) con el correo del usuario
+        if ($user && !empty($user->email)) {
+            Order::whereNull('user_id')
+                ->where('shipping_email', $user->email)
+                ->update(['user_id' => $user->id]);
+        }
+
         $orders = Order::with(['items.product', 'coupon', 'shippingMethod'])
-            ->where('user_id', $request->user()->id)
+            ->where(function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                      ->orWhere('shipping_email', $user->email);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 
