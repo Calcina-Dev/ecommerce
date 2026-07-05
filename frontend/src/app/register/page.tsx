@@ -73,7 +73,7 @@ export default function RegisterPage() {
         <div className="bg-background max-w-md w-full rounded-3xl p-8 border shadow-lg">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold">Crear Cuenta</h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-muted-foreground mt-2 text-sm">
               Únete y descubre los mejores suplementos
             </p>
           </div>
@@ -122,7 +122,7 @@ export default function RegisterPage() {
                 minLength={8}
               />
             </div>
-            <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl text-base">
+            <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl text-base font-bold">
               {loading ? "Registrando..." : "Crear Cuenta"}
             </Button>
           </form>
