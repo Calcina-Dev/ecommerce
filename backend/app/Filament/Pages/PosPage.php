@@ -61,6 +61,19 @@ class PosPage extends Page implements HasForms
 
         if (!$this->activeSession) {
             $this->selectedRegisterId = \App\Models\CashRegister::where('is_active', true)->first()?->id;
+        } elseif (!$this->activeSession->opened_at->isToday()) {
+            Notification::make()
+                ->title('⚠️ Turno de caja de fecha anterior')
+                ->body("Tienes una caja abierta desde el " . $this->activeSession->opened_at->format('d/m/Y H:i') . ". Recuerda cerrarla para cuadrar la tesorería.")
+                ->warning()
+                ->persistent()
+                ->actions([
+                    \Filament\Notifications\Actions\Action::make('go_to_sessions')
+                        ->label('Ir a Turnos de Caja')
+                        ->url(\App\Filament\Resources\CashSessions\CashSessionResource::getUrl('index'))
+                        ->button(),
+                ])
+                ->send();
         }
 
         $this->form->fill([

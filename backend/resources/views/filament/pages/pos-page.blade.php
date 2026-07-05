@@ -200,13 +200,72 @@
             </div>
         </div>
     @else
-        <div class="pos-container">
+        <div class="pos-container"
+             x-data="{
+                handleKeydown(e) {
+                    if (e.key === 'F1' || (e.altKey && (e.key === 's' || e.key === 'S' || e.key === 'p' || e.key === 'P'))) {
+                        e.preventDefault();
+                        const searchInput = document.getElementById('pos-search-input');
+                        if (searchInput) {
+                            searchInput.focus();
+                            searchInput.select();
+                        }
+                    }
+                    else if (e.key === 'F2' || (e.altKey && (e.key === 'c' || e.key === 'C'))) {
+                        e.preventDefault();
+                        const customerEl = document.querySelector('[id*=\"customer_id\"] input, input[id*=\"customer_id\"], [id*=\"customer_id\"] button, button[role=\"combobox\"][aria-controls*=\"customer_id\"], [id*=\"customer_id\"]');
+                        if (customerEl) {
+                            customerEl.focus();
+                            customerEl.click();
+                        }
+                    }
+                    else if (e.key === 'F9' || ((e.ctrlKey || e.metaKey) && e.key === 'Enter')) {
+                        e.preventDefault();
+                        const btn = document.getElementById('pos-checkout-btn');
+                        if (btn && !btn.disabled) {
+                            btn.click();
+                        }
+                    }
+                    else if (e.key === 'F3' || (e.altKey && (e.key === 'l' || e.key === 'L'))) {
+                        e.preventDefault();
+                        $wire.clearCart();
+                    }
+                }
+             }"
+             @keydown.window="handleKeydown($event)"
+        >
             
             {{-- Lado Izquierdo: Catálogo de Productos --}}
             <div class="pos-left">
+                @if($this->activeSession && !$this->activeSession->opened_at->isToday())
+                    <div style="background: #fef2f2; border: 1px solid #f87171; color: #991b1b; padding: 0.75rem 1rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem;" class="dark:bg-red-950/50 dark:border-red-800 dark:text-red-300">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <svg style="width: 1.5rem; height: 1.5rem; color: #ef4444; flex-shrink: 0;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <strong style="font-weight: 700;">Turno Abierto de Fecha Anterior:</strong>
+                                <span style="font-size: 0.85rem;">Abierta el {{ $this->activeSession->opened_at->format('d/m/Y a las H:i') }}. No olvides realizar el cierre contable.</span>
+                            </div>
+                        </div>
+                        <a href="{{ \App\Filament\Resources\CashSessions\CashSessionResource::getUrl('index') }}" style="background: #ef4444; color: white; padding: 0.4rem 0.8rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 600; text-decoration: none; white-space: nowrap;">
+                            Cerrar Caja →
+                        </a>
+                    </div>
+                @endif
+
+                {{-- Barra de Atajos Rápida --}}
+                <div style="background: var(--gray-100); padding: 0.5rem 0.85rem; border-radius: 0.5rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; font-size: 0.75rem; border: 1px solid var(--gray-200);" class="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300">
+                    <span style="font-weight: 600; color: var(--primary-600);" class="dark:text-primary-400">⌨️ Atajos Rápidos:</span>
+                    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                        <span><kbd style="background: white; padding: 0.15rem 0.4rem; border-radius: 0.25rem; border: 1px solid var(--gray-300); font-family: monospace; font-weight: bold;" class="dark:bg-gray-900 dark:border-gray-600">F1</kbd> / <kbd style="background: white; padding: 0.15rem 0.4rem; border-radius: 0.25rem; border: 1px solid var(--gray-300); font-family: monospace; font-weight: bold;" class="dark:bg-gray-900 dark:border-gray-600">Alt+S</kbd> Buscar Prod.</span>
+                        <span><kbd style="background: white; padding: 0.15rem 0.4rem; border-radius: 0.25rem; border: 1px solid var(--gray-300); font-family: monospace; font-weight: bold;" class="dark:bg-gray-900 dark:border-gray-600">F2</kbd> / <kbd style="background: white; padding: 0.15rem 0.4rem; border-radius: 0.25rem; border: 1px solid var(--gray-300); font-family: monospace; font-weight: bold;" class="dark:bg-gray-900 dark:border-gray-600">Alt+C</kbd> Cliente</span>
+                        <span><kbd style="background: white; padding: 0.15rem 0.4rem; border-radius: 0.25rem; border: 1px solid var(--gray-300); font-family: monospace; font-weight: bold;" class="dark:bg-gray-900 dark:border-gray-600">F3</kbd> Limpiar</span>
+                        <span><kbd style="background: white; padding: 0.15rem 0.4rem; border-radius: 0.25rem; border: 1px solid var(--gray-300); font-family: monospace; font-weight: bold;" class="dark:bg-gray-900 dark:border-gray-600">F9</kbd> / <kbd style="background: white; padding: 0.15rem 0.4rem; border-radius: 0.25rem; border: 1px solid var(--gray-300); font-family: monospace; font-weight: bold;" class="dark:bg-gray-900 dark:border-gray-600">Ctrl+Enter</kbd> Cobrar</span>
+                    </div>
+                </div>
+
                 {{-- Buscador y Almacén --}}
                 <div class="pos-search-box">
-                    <input wire:model.live.debounce.300ms="searchQuery" type="text" style="flex: 1;" class="pos-input" placeholder="Buscar productos por nombre o SKU...">
+                    <input id="pos-search-input" wire:model.live.debounce.300ms="searchQuery" type="text" style="flex: 1;" class="pos-input" placeholder="Buscar productos por nombre o SKU... (F1 / Alt+S)">
                     
                     <select wire:model.live="selectedWarehouseId" style="width: 250px;" class="pos-select">
                         @foreach(\App\Models\Warehouse::where('is_active', true)->get() as $wh)
@@ -334,6 +393,7 @@
 
                     {{-- Botón de Cobrar --}}
                     <button 
+                        id="pos-checkout-btn"
                         wire:click="checkout" 
                         wire:loading.attr="disabled"
                         @if(empty($cart)) disabled style="opacity: 0.5; cursor: not-allowed;" @endif
