@@ -38,7 +38,7 @@ export default function RegisterPage() {
       if (!res.ok) throw new Error(data.message || "Error al registrarse");
       
       setAuth(data.user, data.token);
-      router.push("/");
+      router.push("/mi-cuenta");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -60,7 +60,7 @@ export default function RegisterPage() {
       if (!res.ok) throw new Error(data.message || "Error al autenticar con Google");
 
       setAuth(data.user, data.token);
-      router.push("/");
+      router.push("/mi-cuenta");
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
