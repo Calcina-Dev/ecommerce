@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\User;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -145,12 +146,24 @@ class CheckoutController extends Controller
             $userId = auth('sanctum')->id();
             $user = auth('sanctum')->user();
             
-            if ($user && empty($user->phone) && !empty($request->shipping_phone)) {
+            // Si compra como invitado, creamos o vinculamos automáticamente la cuenta por correo
+            if (!$userId && !empty($request->shipping_email)) {
+                $user = User::firstOrCreate(
+                    ['email' => strtolower(trim($request->shipping_email))],
+                    [
+                        'name' => $request->shipping_name ?? explode('@', $request->shipping_email)[0],
+                        'password' => bcrypt(str()->random(16)),
+                        'phone' => $request->shipping_phone,
+                        'role' => 'customer'
+                    ]
+                );
+                $userId = $user->id;
+            } elseif ($user && empty($user->phone) && !empty($request->shipping_phone)) {
                 $user->update(['phone' => $request->shipping_phone]);
             }
 
             $order = Order::create([
-                'user_id' => $userId, // Nullable si es invitado
+                'user_id' => $userId,
                 'order_number' => 'ORD-' . strtoupper(Str::random(8)),
                 'status' => 'pending_payment',
                 'total_amount' => $totalAmount,

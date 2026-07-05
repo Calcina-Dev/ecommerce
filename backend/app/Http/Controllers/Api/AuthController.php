@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Models\User;
 use App\Notifications\OtpNotification;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
@@ -29,8 +29,8 @@ class AuthController extends Controller
         // Generar OTP de 6 dígitos
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        // Guardar en Redis por 5 minutos (300 seg)
-        Redis::setex("otp:{$email}", 300, $otp);
+        // Guardar en Cache por 5 minutos (300 seg)
+        Cache::put("otp:{$email}", $otp, 300);
 
         // Enviar notificación por email
         $user->notify(new OtpNotification($otp));
@@ -51,10 +51,10 @@ class AuthController extends Controller
         $email = $request->email;
         $code = $request->code;
 
-        $storedOtp = Redis::get("otp:{$email}");
+        $storedOtp = Cache::get("otp:{$email}");
 
         if (!$storedOtp || $storedOtp !== $code) {
-            // Master code bypass solo para entorno local si hay fallas con Redis o logs
+            // Master code bypass solo para entorno local si hay fallas con correo o logs
             if (app()->environment('local') && $code === '123456') {
                 // OK
             } else {
@@ -65,7 +65,7 @@ class AuthController extends Controller
         $user = User::where('email', $email)->firstOrFail();
 
         // Limpiar código
-        Redis::del("otp:{$email}");
+        Cache::forget("otp:{$email}");
 
         // Emitir token
         $token = $user->createToken('auth_token')->plainTextToken;
