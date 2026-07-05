@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Leaf } from "lucide-react";
 
 export function HeroModernBlock({ data }: { data: any }) {
@@ -42,9 +43,9 @@ export function HeroModernBlock({ data }: { data: any }) {
             )}
             <div className="flex items-center gap-4 text-sm font-medium text-gray-500">
               <div className="flex -space-x-2">
-                <img className="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=1" alt="User" />
-                <img className="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=2" alt="User" />
-                <img className="w-8 h-8 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=3" alt="User" />
+                <Image width={32} height={32} className="w-8 h-8 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=1" alt="User 1" />
+                <Image width={32} height={32} className="w-8 h-8 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=2" alt="User 2" />
+                <Image width={32} height={32} className="w-8 h-8 rounded-full border-2 border-white object-cover" src="https://i.pravatar.cc/100?img=3" alt="User 3" />
               </div>
               <span>+2,000 clientes felices</span>
             </div>
@@ -59,12 +60,13 @@ export function HeroModernBlock({ data }: { data: any }) {
               <div className="absolute inset-0 bg-gradient-to-tr from-emerald-100 to-teal-50 rounded-full blur-3xl opacity-70 animate-pulse"></div>
             )}
             
-            <img 
+            <Image 
+              fill
               src={data.hero_image 
                 ? (data.hero_image.startsWith('http') ? data.hero_image : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/storage/${data.hero_image}`)
                 : "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?q=80&w=800&auto=format&fit=crop"
               } 
-              alt={data.title_line_1} 
+              alt={data.title_line_1 || "Hero Image"} 
               className={`relative z-10 w-full h-full object-cover rounded-[3rem] shadow-2xl transition-transform duration-700 ease-out ${data.animate_rotation ? 'rotate-3 hover:rotate-0' : ''}`}
             />
             

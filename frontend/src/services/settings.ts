@@ -13,7 +13,7 @@ export interface StoreSettings {
 export async function getStoreSettings(): Promise<StoreSettings | null> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/storefront/settings`, {
-      cache: 'no-store' // Deshabilitamos caché para ver cambios instantáneos
+      next: { revalidate: 60 } // ISR: Caché inteligente con revalidación cada 60 segundos
     });
     if (!res.ok) {
       return null;

@@ -190,6 +190,7 @@ export default function CheckoutPage() {
 
     } catch (err: any) {
       setError(err.message);
+      toast.error(err.message, { duration: 6000 });
       setLoading(false);
     }
   };

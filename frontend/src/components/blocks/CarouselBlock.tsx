@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export function CarouselBlock({ data }: { data: any }) {
@@ -33,11 +34,13 @@ export function CarouselBlock({ data }: { data: any }) {
               className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${isCurrent ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
             >
               {slide.link ? (
-                <Link href={slide.link} className="block w-full h-full">
-                  <img src={imageUrl} alt="Banner" className="w-full h-full object-cover" />
+                <Link href={slide.link} className="block w-full h-full relative">
+                  <Image src={imageUrl} alt="Banner" fill className="object-cover" />
                 </Link>
               ) : (
-                <img src={imageUrl} alt="Banner" className="w-full h-full object-cover" />
+                <div className="w-full h-full relative">
+                  <Image src={imageUrl} alt="Banner" fill className="object-cover" />
+                </div>
               )}
             </div>
           );

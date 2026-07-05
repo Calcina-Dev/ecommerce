@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { CheckCircle2, Package, Truck, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 export default function MiCuentaPage() {
   const router = useRouter();
@@ -47,6 +48,7 @@ export default function MiCuentaPage() {
           }
         });
         if (res.status === 401) {
+          toast.error("Tu sesión ha expirado por seguridad. Por favor, ingresa nuevamente.");
           useAuthStore.getState().logout();
           router.push("/login");
           return;
@@ -79,10 +81,19 @@ export default function MiCuentaPage() {
         },
         body: JSON.stringify(editForm),
       });
+      if (res.status === 401) {
+        toast.error("Tu sesión ha expirado por seguridad. Por favor, ingresa nuevamente.");
+        useAuthStore.getState().logout();
+        router.push("/login");
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         setAuth(data.user, token!);
         setIsEditing(false);
+        toast.success("Perfil actualizado correctamente.");
+      } else {
+        toast.error("No se pudo actualizar el perfil.");
       }
     } catch (err) {
       console.error("Error guardando perfil:", err);
