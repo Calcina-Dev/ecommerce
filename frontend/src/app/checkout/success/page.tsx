@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const orderId = searchParams.get('order_id');
+  const orderId = searchParams.get('order_id') || searchParams.get('order');
   const clearCart = useCartStore(state => state.clearCart);
 
   useEffect(() => {

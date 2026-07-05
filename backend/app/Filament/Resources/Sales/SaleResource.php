@@ -23,7 +23,7 @@ class SaleResource extends Resource
     protected static ?string $modelLabel = 'Venta / POS';
     protected static ?string $pluralModelLabel = 'Ventas / POS';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
     protected static \UnitEnum|string|null $navigationGroup = 'Ventas';
 
     public static function form(Schema $schema): Schema

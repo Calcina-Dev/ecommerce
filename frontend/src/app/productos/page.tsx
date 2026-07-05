@@ -53,6 +53,9 @@ function CatalogContent() {
       if (filters.search && filters.search !== 'undefined') queryParams.append('search', filters.search);
       if (filters.page && !isNaN(Number(filters.page))) queryParams.append('page', filters.page.toString());
       if (filters.onSale) queryParams.append('on_sale', '1');
+      if (filters.minPrice !== undefined && !isNaN(Number(filters.minPrice))) queryParams.append('min_price', filters.minPrice.toString());
+      if (filters.maxPrice !== undefined && !isNaN(Number(filters.maxPrice))) queryParams.append('max_price', filters.maxPrice.toString());
+      if (filters.sortBy) queryParams.append('sort_by', filters.sortBy);
 
       fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/products?${queryParams.toString()}`)
         .then(res => res.json())
@@ -84,6 +87,55 @@ function CatalogContent() {
           <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-100 pt-5">
+        <h3 className="font-bold text-base sm:text-lg mb-3 text-gray-900">Ordenar por</h3>
+        <select
+          value={filters.sortBy || "default"}
+          onChange={(e) => setFilters({ sortBy: e.target.value === "default" ? undefined : e.target.value, page: 1 })}
+          className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-accent focus:border-accent block p-2.5 font-medium transition-colors cursor-pointer"
+        >
+          <option value="default">✨ Destacados / Relevancia</option>
+          <option value="price_asc">💵 Precio: Menor a Mayor</option>
+          <option value="price_desc">💎 Precio: Mayor a Menor</option>
+          <option value="newest">🆕 Más Recientes</option>
+          <option value="name_asc">🔤 Nombre: A - Z</option>
+        </select>
+      </div>
+
+      <div className="border-t border-gray-100 pt-5">
+        <h3 className="font-bold text-base sm:text-lg mb-3 text-gray-900">Rango de Precios (S/)</h3>
+        <div className="grid grid-cols-2 gap-3 items-center">
+          <div>
+            <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Mínimo</label>
+            <input 
+              type="number"
+              min="0"
+              placeholder="0"
+              value={filters.minPrice !== undefined ? filters.minPrice : ""}
+              onChange={(e) => {
+                const val = e.target.value !== "" ? parseFloat(e.target.value) : undefined;
+                setFilters({ minPrice: val, page: 1 });
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:border-accent text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Máximo</label>
+            <input 
+              type="number"
+              min="0"
+              placeholder="500"
+              value={filters.maxPrice !== undefined ? filters.maxPrice : ""}
+              onChange={(e) => {
+                const val = e.target.value !== "" ? parseFloat(e.target.value) : undefined;
+                setFilters({ maxPrice: val, page: 1 });
+              }}
+              className="w-full px-3 py-2 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:border-accent text-sm"
+            />
+          </div>
         </div>
       </div>
 
@@ -153,15 +205,16 @@ function CatalogContent() {
                         </button>
                       )}
                     </div>
-                    {isParentExpanded && hasParentChildren && (
-                      <div className="pl-3 mt-1 space-y-1 border-l-2 border-gray-100 ml-3">
+
+                    {hasParentChildren && isParentExpanded && (
+                      <div className="pl-3 mt-1 space-y-1 border-l-2 border-accent/20 ml-3 animate-in fade-in duration-150">
                         {parent.children.map((child: any) => {
                           const isChildExpanded = !!expandedCats[child.id] || filters.categoryId === child.id;
                           const hasChildChildren = child.children && child.children.length > 0;
                           return (
                             <div key={child.id}>
                               <div className="flex items-center justify-between gap-1">
-                                <button 
+                                <button
                                   onClick={() => {
                                     setFilters({ categoryId: child.id, page: 1 });
                                     setShowMobileFilters(false);
@@ -169,7 +222,7 @@ function CatalogContent() {
                                       setExpandedCats(prev => ({ ...prev, [child.id]: true }));
                                     }
                                   }}
-                                  className={`flex-1 text-left px-2.5 py-1.5 rounded-lg text-xs transition-all font-medium ${filters.categoryId === child.id ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-gray-50 text-gray-600'}`}
+                                  className={`flex-1 text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-all font-medium ${filters.categoryId === child.id ? 'bg-accent/10 text-accent font-bold' : 'hover:bg-gray-100 text-gray-600'}`}
                                 >
                                   {child.name}
                                 </button>
@@ -180,21 +233,25 @@ function CatalogContent() {
                                       e.stopPropagation();
                                       setExpandedCats(prev => ({ ...prev, [child.id]: !isChildExpanded }));
                                     }}
-                                    className={`p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-transform duration-200 ${isChildExpanded ? 'rotate-90 text-accent' : ''}`}
+                                    className={`p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-transform duration-200 ${isChildExpanded ? 'rotate-90 text-accent' : ''}`}
                                   >
                                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                                   </button>
                                 )}
                               </div>
-                              {isChildExpanded && hasChildChildren && (
-                                <div className="pl-3 mt-0.5 space-y-0.5 border-l border-gray-100 ml-2">
+
+                              {hasChildChildren && isChildExpanded && (
+                                <div className="pl-3 mt-1 space-y-1 border-l-2 border-accent/20 ml-2 animate-in fade-in duration-150">
                                   {child.children.map((sub: any) => (
-                                    <button 
+                                    <button
                                       key={sub.id}
-                                      onClick={() => { setFilters({ categoryId: sub.id, page: 1 }); setShowMobileFilters(false); }}
-                                      className={`block w-full text-left px-2 py-1 rounded-md text-[11px] transition-all ${filters.categoryId === sub.id ? 'text-accent font-bold bg-accent/5' : 'hover:text-accent text-gray-400'}`}
+                                      onClick={() => {
+                                        setFilters({ categoryId: sub.id, page: 1 });
+                                        setShowMobileFilters(false);
+                                      }}
+                                      className={`block w-full text-left px-3 py-1 rounded-md text-xs transition-all ${filters.categoryId === sub.id ? 'bg-accent/20 text-accent font-bold' : 'hover:bg-gray-100 text-gray-500'}`}
                                     >
-                                      • {sub.name}
+                                      {sub.name}
                                     </button>
                                   ))}
                                 </div>
@@ -212,7 +269,7 @@ function CatalogContent() {
         </div>
       )}
 
-      {Array.isArray(filterData?.brands) && (
+      {Array.isArray(filterData?.brands) && filterData.brands.length > 0 && (
         <div className="border-t border-gray-100 pt-5">
           <button 
             type="button"
@@ -222,30 +279,40 @@ function CatalogContent() {
             <span>Marcas</span>
             <svg className={`w-5 h-5 text-gray-400 group-hover:text-accent transition-transform duration-200 ${isBrandsExpanded ? 'rotate-180 text-accent' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
           </button>
-
+          
           {isBrandsExpanded && (
-            <div className="space-y-2 animate-in fade-in duration-200">
+            <div className="space-y-3 animate-in fade-in duration-200">
               {filterData.brands.length > 6 && (
-                <div className="relative mb-2">
-                  <input 
-                    type="text" 
-                    placeholder="Buscar marca..." 
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Buscar marca..."
                     value={brandSearch}
                     onChange={(e) => setBrandSearch(e.target.value)}
-                    className="w-full px-3 py-1.5 pl-8 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-accent focus:ring-1 focus:ring-accent/20"
+                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-accent outline-none transition-all"
                   />
-                  <svg className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                  <svg className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                  {brandSearch && (
+                    <button 
+                      type="button" 
+                      onClick={() => setBrandSearch("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               )}
 
-              <button 
-                onClick={() => { setFilters({ brandId: undefined, page: 1 }); setShowMobileFilters(false); }}
-                className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${!filters.brandId ? 'bg-accent text-white font-bold shadow-sm' : 'hover:bg-gray-100 text-gray-700 font-medium'}`}
-              >
-                Todas las marcas
-              </button>
-
-              <div className="space-y-1 max-h-[45vh] overflow-y-auto pr-1 custom-scrollbar">
+              <div className="space-y-1 max-h-52 overflow-y-auto pr-1 custom-scrollbar">
+                <button 
+                  onClick={() => { setFilters({ brandId: undefined, page: 1 }); setShowMobileFilters(false); }}
+                  className={`block w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${!filters.brandId ? 'bg-accent text-white font-bold shadow-sm' : 'hover:bg-gray-100 text-gray-700 font-medium'}`}
+                >
+                  Todas las marcas
+                </button>
                 {filterData.brands
                   .filter((b: any) => !brandSearch || b.name.toLowerCase().includes(brandSearch.toLowerCase()))
                   .slice(0, showAllBrands || brandSearch ? undefined : 6)
@@ -306,9 +373,9 @@ function CatalogContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
               </svg>
               Filtrar y Ordenar
-              {(filters.categoryId || filters.brandId || filters.onSale || filters.search) && (
+              {(filters.categoryId || filters.brandId || filters.onSale || filters.search || filters.minPrice !== undefined || filters.maxPrice !== undefined || filters.sortBy) && (
                 <span className="bg-accent text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow">
-                  {[filters.categoryId, filters.brandId, filters.onSale, filters.search].filter(Boolean).length}
+                  {[filters.categoryId, filters.brandId, filters.onSale, filters.search, filters.minPrice !== undefined || filters.maxPrice !== undefined, filters.sortBy].filter(Boolean).length}
                 </span>
               )}
             </button>
@@ -322,6 +389,30 @@ function CatalogContent() {
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
               Ofertas
             </button>
+          </div>
+
+          {/* Top Bar: Active Filters & Sort Selector (Desktop) */}
+          <div className="hidden lg:flex mb-6 items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+            <div className="text-sm font-semibold text-muted-foreground">
+              {!loading && <span>Mostrando {products.length} productos</span>}
+            </div>
+            <div className="flex items-center gap-3">
+              <label htmlFor="sort-select-desktop" className="text-xs sm:text-sm font-bold text-gray-700 whitespace-nowrap">
+                Ordenar por:
+              </label>
+              <select
+                id="sort-select-desktop"
+                value={filters.sortBy || "default"}
+                onChange={(e) => setFilters({ sortBy: e.target.value === "default" ? undefined : e.target.value, page: 1 })}
+                className="bg-gray-50 border border-gray-200 text-gray-900 text-xs sm:text-sm rounded-xl focus:ring-accent focus:border-accent block p-2 font-medium transition-colors cursor-pointer"
+              >
+                <option value="default">✨ Destacados / Relevancia</option>
+                <option value="price_asc">💵 Precio: Menor a Mayor</option>
+                <option value="price_desc">💎 Precio: Mayor a Menor</option>
+                <option value="newest">🆕 Más Recientes</option>
+                <option value="name_asc">🔤 Nombre: A - Z</option>
+              </select>
+            </div>
           </div>
 
           {loading ? (
@@ -413,7 +504,7 @@ function CatalogContent() {
               <h3 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">No encontramos resultados</h3>
               <p className="mt-2 text-xs sm:text-sm text-gray-500 max-w-sm mx-auto px-4">Prueba con otros términos de búsqueda o quita los filtros actuales para ver más productos.</p>
               <button 
-                onClick={() => setFilters({ search: undefined, categoryId: undefined, brandId: undefined, onSale: undefined, page: 1 })}
+                onClick={() => setFilters({ search: undefined, categoryId: undefined, brandId: undefined, onSale: undefined, minPrice: undefined, maxPrice: undefined, sortBy: undefined, page: 1 })}
                 className="mt-6 px-6 py-2.5 bg-gray-900 text-white font-medium text-xs sm:text-sm rounded-xl hover:bg-gray-800 transition-all active:scale-95 duration-200 shadow-sm"
               >
                 Limpiar todos los filtros
@@ -452,7 +543,7 @@ function CatalogContent() {
               <button
                 type="button"
                 onClick={() => {
-                  setFilters({ search: undefined, categoryId: undefined, brandId: undefined, onSale: undefined, page: 1 });
+                  setFilters({ search: undefined, categoryId: undefined, brandId: undefined, onSale: undefined, minPrice: undefined, maxPrice: undefined, sortBy: undefined, page: 1 });
                   setShowMobileFilters(false);
                 }}
                 className="px-4 py-3 rounded-xl font-bold text-xs sm:text-sm text-gray-600 hover:bg-gray-200/60 transition-colors"

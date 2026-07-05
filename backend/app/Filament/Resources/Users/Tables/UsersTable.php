@@ -52,7 +52,13 @@ class UsersTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                \Filament\Tables\Filters\SelectFilter::make('role')
+                    ->label('Rol')
+                    ->options([
+                        'admin' => 'Administrador',
+                        'employee' => 'Empleado',
+                        'customer' => 'Cliente',
+                    ]),
             ])
             ->recordActions([
                 EditAction::make(),

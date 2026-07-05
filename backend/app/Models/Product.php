@@ -55,12 +55,14 @@ class Product extends Model
             if ($product->getOriginal('slug')) {
                 \Illuminate\Support\Facades\Cache::forget('catalog_detail_v3_' . $product->getOriginal('slug'));
             }
-            \Illuminate\Support\Facades\Cache::flush();
+            \Illuminate\Support\Facades\Cache::forget('catalog_home_v3');
+            \Illuminate\Support\Facades\Cache::forget('catalog_filters_tree_v4');
         });
 
         static::deleted(function ($product) {
             \Illuminate\Support\Facades\Cache::forget('catalog_detail_v3_' . $product->slug);
-            \Illuminate\Support\Facades\Cache::flush();
+            \Illuminate\Support\Facades\Cache::forget('catalog_home_v3');
+            \Illuminate\Support\Facades\Cache::forget('catalog_filters_tree_v4');
         });
     }
 

@@ -37,6 +37,9 @@ class PosPage extends Page implements HasForms
     public float $subtotal = 0;
     public float $total_tax = 0;
     public float $total_amount = 0;
+    public float $discount_amount = 0;
+    public float $cash_received = 0;
+    public float $change_amount = 0;
 
     // Estado del formulario de venta
     public ?array $checkoutData = [];
@@ -328,8 +331,38 @@ class PosPage extends Page implements HasForms
         foreach ($this->cart as $item) {
             $this->total_amount += ($item['price'] * $item['quantity']);
         }
+        $this->total_amount = max(0, $this->total_amount - (float)$this->discount_amount);
         $this->subtotal = round($this->total_amount / 1.18, 2);
         $this->total_tax = round($this->total_amount - $this->subtotal, 2);
+        $this->calculateChange();
+    }
+
+    public function calculateChange()
+    {
+        if ($this->cash_received > $this->total_amount) {
+            $this->change_amount = round($this->cash_received - $this->total_amount, 2);
+        } else {
+            $this->change_amount = 0;
+        }
+    }
+
+    public function updatedDiscountAmount()
+    {
+        $this->calculateTotals();
+    }
+
+    public function updatedCashReceived()
+    {
+        $this->calculateChange();
+    }
+
+    public function clearCart()
+    {
+        $this->cart = [];
+        $this->discount_amount = 0;
+        $this->cash_received = 0;
+        $this->change_amount = 0;
+        $this->calculateTotals();
     }
 
     public function checkout()

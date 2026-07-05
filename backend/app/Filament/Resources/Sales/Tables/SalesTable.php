@@ -72,6 +72,15 @@ class SalesTable
                     ->sortable(),
             ])
             ->filters([
+                \Filament\Tables\Filters\SelectFilter::make('warehouse_id')
+                    ->label('Almacén')
+                    ->relationship('warehouse', 'name'),
+                \Filament\Tables\Filters\SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'CONFIRMED' => 'Confirmado',
+                        'CANCELLED' => 'Anulado',
+                    ]),
                 TrashedFilter::make(),
             ])
             ->recordActions([

@@ -38,6 +38,10 @@ class ProductForm
                 TextInput::make('slug')
                     ->required()
                     ->unique(ignoreRecord: true),
+                TextInput::make('sku')
+                    ->label('SKU / Código')
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(100),
                 RichEditor::make('short_description')
                     ->label('Descripción Breve (Resumen / Extracto)')
                     ->toolbarButtons([
@@ -325,6 +329,9 @@ class ProductForm
                 Toggle::make('is_active')
                     ->label('¿Producto Activo?')
                     ->default(true),
+                Toggle::make('is_featured')
+                    ->label('¿Destacar en el Home?')
+                    ->default(false),
             ]);
     }
 }

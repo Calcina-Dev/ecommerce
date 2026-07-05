@@ -126,12 +126,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Hide scrollbar globally for premium feel */
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  body::-webkit-scrollbar {
-    display: none;
   }
   html {
     @apply font-sans;

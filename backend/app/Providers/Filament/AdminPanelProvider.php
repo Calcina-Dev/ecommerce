@@ -55,6 +55,8 @@ class AdminPanelProvider extends PanelProvider
                 \Filament\Navigation\NavigationGroup::make()
                      ->label('Ventas'),
                 \Filament\Navigation\NavigationGroup::make()
+                     ->label('CRM & Ventas'),
+                \Filament\Navigation\NavigationGroup::make()
                      ->label('Catálogo'),
                 \Filament\Navigation\NavigationGroup::make()
                      ->label('Inventario & Logística'),
@@ -62,6 +64,8 @@ class AdminPanelProvider extends PanelProvider
                      ->label('Compras & Recepciones'),
                 \Filament\Navigation\NavigationGroup::make()
                      ->label('Tesorería y Pagos'),
+                \Filament\Navigation\NavigationGroup::make()
+                     ->label('Analítica y Reportes'),
                 \Filament\Navigation\NavigationGroup::make()
                      ->label('Configuración'),
             ])

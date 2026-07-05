@@ -304,6 +304,10 @@
 
                     {{-- Resumen Totales --}}
                     <div style="border-top: 1px dashed var(--gray-300); padding-top: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem;" class="dark:border-gray-700">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                            <span style="color: var(--gray-600);" class="dark:text-gray-400">Descuento (S/)</span>
+                            <input type="number" step="0.50" min="0" wire:model.live="discount_amount" style="width: 5rem; padding: 0.2rem 0.4rem; text-align: right; border: 1px solid var(--gray-300); border-radius: 0.375rem; font-size: 0.85rem;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="0.00">
+                        </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                             <span style="color: var(--gray-600);" class="dark:text-gray-400">Subtotal</span>
                             <span class="dark:text-white">S/ {{ number_format($subtotal, 2) }}</span>
@@ -316,6 +320,16 @@
                             <span class="dark:text-white">TOTAL A PAGAR</span>
                             <span class="pos-price" style="font-size: 1.3rem;">S/ {{ number_format($total_amount, 2) }}</span>
                         </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--gray-300);" class="dark:border-gray-700">
+                            <span style="color: var(--gray-600);" class="dark:text-gray-400">Efectivo Recibido</span>
+                            <input type="number" step="1.00" min="0" wire:model.live="cash_received" style="width: 6rem; padding: 0.2rem 0.4rem; text-align: right; border: 1px solid var(--gray-300); border-radius: 0.375rem; font-size: 0.85rem;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white" placeholder="0.00">
+                        </div>
+                        @if($cash_received > 0)
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.35rem; font-weight: 600; color: #10b981;">
+                            <span>Vuelto / Cambio</span>
+                            <span>S/ {{ number_format($change_amount, 2) }}</span>
+                        </div>
+                        @endif
                     </div>
 
                     {{-- Botón de Cobrar --}}

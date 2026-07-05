@@ -6,10 +6,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
-const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 
-  (process.env.NODE_ENV === 'development' 
-    ? "744860459189-gr15hataltrla8o1r23tmbpu6oj7pui1.apps.googleusercontent.com" 
-    : "744860459189-ej6h6nan488nk95enrgmr0fjhprcp32l.apps.googleusercontent.com");
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "744860459189-gr15hataltrla8o1r23tmbpu6oj7pui1.apps.googleusercontent.com";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");

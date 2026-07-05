@@ -247,6 +247,7 @@ export default function MiCuentaPage() {
                           </div>
                         </div>
                       ) : (
+                        <>
                         <div className="relative mb-12 mt-4 hidden sm:block">
                           <div className="absolute inset-0 flex items-center" aria-hidden="true">
                             <div className="w-full relative h-[2px]">
@@ -308,6 +309,46 @@ export default function MiCuentaPage() {
                           })}
                           </div>
                         </div>
+
+                        {/* Vertical Timeline - Mobile */}
+                        <div className="sm:hidden my-6 pl-2 space-y-5 relative before:absolute before:inset-0 before:left-[19px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-200 dark:before:bg-zinc-800">
+                          {[
+                            { status: 'pending', label: 'Recibido', date: order.created_at, icon: CheckCircle2, stepNum: 1 },
+                            { status: 'processing', label: 'Procesando', date: order.processing_at, icon: Package, stepNum: 2 },
+                            { status: 'shipped', label: 'Enviado', date: order.shipped_at, icon: Truck, stepNum: 3 },
+                            { status: 'delivered', label: 'Entregado', date: order.delivered_at, icon: Home, stepNum: 4 },
+                          ].map((step, index) => {
+                            const currentStepNum = 
+                              order.status === 'delivered' ? 4 : 
+                              order.status === 'shipped' ? 3 : 
+                              order.status === 'processing' ? 2 : 1;
+                              
+                            const isPastOrCurrent = step.stepNum <= currentStepNum;
+                            const displayDate = step.date || (isPastOrCurrent ? order.updated_at : null);
+                            const IconComponent = step.icon;
+
+                            return (
+                              <div key={step.status} className="flex items-start gap-3.5 relative z-10">
+                                <div className={`h-9 w-9 rounded-full flex items-center justify-center transition-colors duration-300 flex-shrink-0 ${isPastOrCurrent ? 'bg-green-600 text-white shadow-md shadow-green-600/30 ring-4 ring-white dark:ring-zinc-900' : 'bg-gray-200 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500 ring-4 ring-white dark:ring-zinc-900'}`}>
+                                  <IconComponent className="w-4 h-4" />
+                                </div>
+                                <div className="flex-1 pt-1">
+                                  <div className="flex items-center justify-between">
+                                    <h4 className={`text-sm font-bold ${isPastOrCurrent ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-zinc-500'}`}>
+                                      {step.label}
+                                    </h4>
+                                    {isPastOrCurrent && displayDate && (
+                                      <span className="text-[11px] text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-md font-medium">
+                                        {new Date(displayDate).toLocaleDateString('es-PE', { month: 'short', day: 'numeric' })}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        </>
                       )}
                     </div>
                     {/* FIN TIMELINE */}

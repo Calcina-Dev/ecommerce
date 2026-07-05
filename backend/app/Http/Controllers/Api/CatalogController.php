@@ -68,6 +68,36 @@ class CatalogController extends Controller
                       ->whereColumn('compare_at_price', '>', 'price');
             }
 
+            if ($request->filled('min_price') && is_numeric($request->min_price)) {
+                $query->where('price', '>=', $request->min_price);
+            }
+
+            if ($request->filled('max_price') && is_numeric($request->max_price)) {
+                $query->where('price', '<=', $request->max_price);
+            }
+
+            if ($request->filled('sort_by')) {
+                switch ($request->sort_by) {
+                    case 'price_asc':
+                        $query->orderBy('price', 'asc');
+                        break;
+                    case 'price_desc':
+                        $query->orderBy('price', 'desc');
+                        break;
+                    case 'newest':
+                        $query->orderBy('created_at', 'desc');
+                        break;
+                    case 'name_asc':
+                        $query->orderBy('name', 'asc');
+                        break;
+                    default:
+                        $query->orderBy('id', 'desc');
+                        break;
+                }
+            } else {
+                $query->orderBy('id', 'desc');
+            }
+
             return $query->paginate(12)->toArray();
         });
 

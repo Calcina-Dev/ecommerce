@@ -199,7 +199,7 @@ export default function CheckoutPage() {
     try {
       const { KR } = await KRGlue.loadLibrary(
         "https://api.micuentaweb.pe",
-        "18265624:testpublickey_hBeKMJ3VoHvalBJBnNvpMHgWkzrMkjt4m7Oxzo3m8eWK2"
+        process.env.NEXT_PUBLIC_IZIPAY_PUBLIC_KEY || "18265624:testpublickey_hBeKMJ3VoHvalBJBnNvpMHgWkzrMkjt4m7Oxzo3m8eWK2"
       );
 
       await KR.setFormConfig({

@@ -19,6 +19,10 @@ class ProductsTable
     {
         return $table
             ->columns([
+                \Filament\Tables\Columns\ImageColumn::make('primaryImage.image_path')
+                    ->label('Imagen')
+                    ->disk('public')
+                    ->circular(),
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),

@@ -39,11 +39,24 @@ class OrdersTable
                 TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
-                    ->colors([
-                        'warning' => 'pending',
-                        'success' => 'delivered',
-                        'danger' => 'cancelled',
-                    ]),
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending_payment' => 'Pendiente de Pago',
+                        'pending' => 'Pendiente',
+                        'processing' => 'En Preparación',
+                        'shipped' => 'Enviado',
+                        'delivered' => 'Entregado',
+                        'cancelled' => 'Cancelado',
+                        default => $state,
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending_payment' => 'warning',
+                        'pending' => 'info',
+                        'processing' => 'primary',
+                        'shipped' => 'info',
+                        'delivered' => 'success',
+                        'cancelled' => 'danger',
+                        default => 'gray',
+                    }),
                 TextColumn::make('total_amount')
                     ->label('Total')
                     ->money('PEN')

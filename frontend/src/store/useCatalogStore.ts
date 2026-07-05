@@ -8,6 +8,7 @@ interface CatalogFilters {
   search?: string;
   page?: number;
   onSale?: boolean;
+  sortBy?: string;
 }
 
 interface CatalogState {
