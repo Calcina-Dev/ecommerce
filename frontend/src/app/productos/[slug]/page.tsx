@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -184,6 +184,62 @@ function AIOverviewBox({ overviewText, productName }: { overviewText?: string; p
   );
 }
 
+function ZoomableImage({ src, alt }: { src: string; alt: string }) {
+  const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({});
+  const [isZoomed, setIsZoomed] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const { left, top, width, height } = containerRef.current.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+
+    setZoomStyle({
+      transformOrigin: `${x}% ${y}%`,
+      transform: "scale(2.4)",
+    });
+    setIsZoomed(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsZoomed(false);
+    setZoomStyle({
+      transformOrigin: "center center",
+      transform: "scale(1)",
+    });
+  };
+
+  return (
+    <div 
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative w-full h-full cursor-zoom-in overflow-hidden flex items-center justify-center select-none"
+    >
+      <div 
+        className="relative w-full h-full transition-transform duration-150 ease-out pointer-events-none"
+        style={zoomStyle}
+      >
+        <Image 
+          src={src} 
+          alt={alt}
+          fill
+          priority
+          className="object-contain p-6 sm:p-10"
+        />
+      </div>
+      
+      {!isZoomed && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/85 dark:bg-zinc-900/85 backdrop-blur-md px-3.5 py-1.5 rounded-full text-[11px] font-semibold border shadow-sm z-10 text-muted-foreground flex items-center gap-1.5 pointer-events-none transition-opacity duration-300">
+          <svg className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>
+          <span>Pasa el puntero para ampliar</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const slug = params.slug;
@@ -289,28 +345,26 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
           {/* Gallery */}
           <div className="space-y-4">
-            <div className="relative aspect-square rounded-3xl overflow-hidden bg-white dark:bg-white border border-gray-100 dark:border-zinc-800/80 group shadow-sm p-4 sm:p-8">
-              <Image 
+            <div className="relative aspect-square rounded-3xl overflow-hidden bg-white dark:bg-white border border-gray-100 dark:border-zinc-800/80 group shadow-sm">
+              <ZoomableImage 
                 src={images[activeIdx] || images[0]} 
                 alt={product.name}
-                fill
-                className="object-contain p-6 sm:p-10 transition-all duration-300"
               />
               {images.length > 1 && (
                 <>
                   <button 
                     onClick={() => setActiveIdx((prev) => (prev > 0 ? prev - 1 : images.length - 1))}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-md border shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105 hover:bg-background z-10 font-bold"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-md border shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105 hover:bg-background z-20 font-bold"
                   >
                     ←
                   </button>
                   <button 
                     onClick={() => setActiveIdx((prev) => (prev < images.length - 1 ? prev + 1 : 0))}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-md border shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105 hover:bg-background z-10 font-bold"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-md border shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105 hover:bg-background z-20 font-bold"
                   >
                     →
                   </button>
-                  <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold border shadow-sm z-10">
+                  <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold border shadow-sm z-20">
                     {activeIdx + 1} / {images.length}
                   </div>
                 </>
