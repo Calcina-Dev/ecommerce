@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, KeyRound, ArrowRight, ShieldCheck, CheckCircle2, RefreshCw, Sparkles, ArrowLeft } from "lucide-react";
+import { Mail, Lock, KeyRound, ArrowRight, ShieldCheck, CheckCircle2, RefreshCw, Sparkles, ArrowLeft, AlertCircle } from "lucide-react";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 
   (process.env.NODE_ENV === 'development' 
@@ -202,7 +202,7 @@ export default function LoginPage() {
               animate={{ opacity: 1, scale: 1 }} 
               className="bg-destructive/10 text-destructive p-3.5 rounded-2xl text-xs sm:text-sm mb-6 text-center font-semibold border border-destructive/20 flex items-center justify-center gap-2"
             >
-              <span>⚠️</span>
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </motion.div>
           )}
