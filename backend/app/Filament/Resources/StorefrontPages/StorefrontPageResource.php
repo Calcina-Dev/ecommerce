@@ -18,7 +18,11 @@ class StorefrontPageResource extends Resource
 {
     protected static ?string $model = StorefrontPage::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;
+    protected static \UnitEnum|string|null $navigationGroup = 'Configuración';
+    protected static ?string $navigationLabel = 'Páginas Web (Tienda)';
+    protected static ?string $modelLabel = 'Página Web';
+    protected static ?string $pluralModelLabel = 'Páginas Web (Tienda)';
 
     public static function form(Schema $schema): Schema
     {
