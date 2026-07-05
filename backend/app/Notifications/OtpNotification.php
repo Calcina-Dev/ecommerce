@@ -37,12 +37,8 @@ class OtpNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->subject('Tu código de acceso')
-                    ->greeting('¡Hola!')
-                    ->line('Tu código de un solo uso (OTP) para iniciar sesión es:')
-                    ->line(new \Illuminate\Support\HtmlString('<strong style="font-size: 24px;">' . $this->code . '</strong>'))
-                    ->line('Este código expirará en 5 minutos.')
-                    ->line('Si no solicitaste este código, puedes ignorar este correo.');
+                    ->subject('Tu código de seguridad para iniciar sesión - Compra Saludable')
+                    ->view('emails.otp', ['code' => $this->code, 'notifiable' => $notifiable]);
     }
 
     /**
