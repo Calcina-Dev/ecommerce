@@ -65,12 +65,7 @@ function formatAIText(text: string): string {
     if (/^(🎯|🧪|🛡️|⚡|✨|PERFIL|EXPLICACIÓN|SEGURIDAD|INGREDIENTES|ADVERTENCIAS|CONSERVACIÓN)/i.test(line) && !line.includes(':')) {
       let cleanTitle = line.replace(/^(🎯|🧪|🛡️|⚡|✨|[\uFFFD\?]|•|-|\*)\s*/g, '').trim();
       
-      let badgeIcon = '✨';
-      if (/PERFIL|MODO/i.test(cleanTitle)) badgeIcon = '🎯';
-      else if (/INGREDIENTES|SINERGIA|EXPLICACIÓN/i.test(cleanTitle)) badgeIcon = '🧪';
-      else if (/SEGURIDAD|ADVERTENCIAS|CONSERVACIÓN/i.test(cleanTitle)) badgeIcon = '🛡️';
-
-      return `<div class="${idx > 0 ? 'mt-5' : 'mt-1'} mb-2.5 font-extrabold text-xs sm:text-sm uppercase tracking-wider text-emerald-900 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-500/30 shadow-sm flex items-center gap-2"><span>${badgeIcon}</span> <span>${cleanTitle}</span></div>`;
+      return `<div class="${idx > 0 ? 'mt-5' : 'mt-1'} mb-2.5 font-extrabold text-xs sm:text-sm uppercase tracking-wider text-emerald-900 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-500/30 shadow-sm flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> <span>${cleanTitle}</span></div>`;
     }
 
     return `<p class="mb-2.5 text-foreground/80 leading-relaxed pl-1">${line}</p>`;
@@ -82,19 +77,19 @@ function AIOverviewBox({ overviewText, productName }: { overviewText?: string; p
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
 
-  const textToType = overviewText || `🎯 PERFIL Y MODO DE EMPLEO
+  const textToType = overviewText || `PERFIL Y MODO DE EMPLEO
 • ¿Para qué sirve?: Respaldo integral para el equilibrio metabólico, energía celular y bienestar general.
 • ¿Para quién es ideal?: Adultos con ritmo de vida exigente que buscan apoyo diario y optimización biológica.
 • Activos clave por porción: Fórmula de alta biodisponibilidad estandarizada de grado clínico.
 • ¿Cómo tomarlo?: Tomar 1 porción diaria con abundante agua, preferentemente junto a una comida principal para facilitar la digestión y absorción.
 • Certificaciones y dietas: 100% Vegano • Sin Gluten • Libre de OGM • Calidad GMP Auditada.
 
-🧪 EXPLICACIÓN DE INGREDIENTES Y SINERGIA
+EXPLICACIÓN DE INGREDIENTES Y SINERGIA
 • Mecanismo de acción: Los ingredientes activos actúan a nivel celular como mensajeros secundarios, favoreciendo la señalización metabólica y la absorción de nutrientes.
 • Sinergia de la fórmula: Combinación equilibrada en proporciones fisiológicas exactas para potenciar la eficacia mutua y evitar la saturación de los receptores.
 • Precaución: Monitorear la tolerancia individual durante los primeros 3 días de uso.
 
-🛡️ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN
+SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN
 • Advertencia médica: Consultar con un profesional de la salud antes de usar si está embarazada, en período de lactancia, toma medicamentos o tiene alguna condición médica.
 • Conservación: Almacenar en un lugar fresco, seco y alejado de la luz solar directa para preservar la potencia del lote.`;
 
@@ -133,7 +128,7 @@ function AIOverviewBox({ overviewText, productName }: { overviewText?: string; p
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
           <span className="text-xs sm:text-sm font-black tracking-wider uppercase text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-            ✨ AI Overview · Síntesis Inteligente
+            Resumen de Especificaciones
           </span>
         </div>
         <button 

@@ -97,11 +97,11 @@ function CatalogContent() {
           onChange={(e) => setFilters({ sortBy: e.target.value === "default" ? undefined : e.target.value, page: 1 })}
           className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-accent focus:border-accent block p-2.5 font-medium transition-colors cursor-pointer"
         >
-          <option value="default">✨ Destacados / Relevancia</option>
-          <option value="price_asc">💵 Precio: Menor a Mayor</option>
-          <option value="price_desc">💎 Precio: Mayor a Menor</option>
-          <option value="newest">🆕 Más Recientes</option>
-          <option value="name_asc">🔤 Nombre: A - Z</option>
+          <option value="default">Destacados / Relevancia</option>
+          <option value="price_asc">Precio: Menor a Mayor</option>
+          <option value="price_desc">Precio: Mayor a Menor</option>
+          <option value="newest">Más Recientes</option>
+          <option value="name_asc">Nombre: A - Z</option>
         </select>
       </div>
 
@@ -406,11 +406,11 @@ function CatalogContent() {
                 onChange={(e) => setFilters({ sortBy: e.target.value === "default" ? undefined : e.target.value, page: 1 })}
                 className="bg-gray-50 border border-gray-200 text-gray-900 text-xs sm:text-sm rounded-xl focus:ring-accent focus:border-accent block p-2 font-medium transition-colors cursor-pointer"
               >
-                <option value="default">✨ Destacados / Relevancia</option>
-                <option value="price_asc">💵 Precio: Menor a Mayor</option>
-                <option value="price_desc">💎 Precio: Mayor a Menor</option>
-                <option value="newest">🆕 Más Recientes</option>
-                <option value="name_asc">🔤 Nombre: A - Z</option>
+                <option value="default">Destacados / Relevancia</option>
+                <option value="price_asc">Precio: Menor a Mayor</option>
+                <option value="price_desc">Precio: Mayor a Menor</option>
+                <option value="newest">Más Recientes</option>
+                <option value="name_asc">Nombre: A - Z</option>
               </select>
             </div>
           </div>

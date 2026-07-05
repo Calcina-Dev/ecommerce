@@ -67,8 +67,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     return (
       <div className="bg-background min-h-screen flex items-center justify-center">
         <div className="max-w-md mx-auto px-6 py-16 text-center">
-          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">
-            📦
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-3">Producto no disponible</h2>
           <p className="text-muted-foreground mb-8 text-sm leading-relaxed">
