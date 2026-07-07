@@ -87,6 +87,7 @@ class CatalogSeeder extends Seeder
             'is_featured' => true,
             'brand_id' => $optimum->id,
             'category_id' => $proteinas->id,
+            'keywords' => 'masa muscular, recuperación, proteínas, fuerza, regeneración muscular, gimnasio, deporte',
         ]);
         ProductImage::create([
             'product_id' => $p1->id,
@@ -107,6 +108,7 @@ class CatalogSeeder extends Seeder
             'is_featured' => true,
             'brand_id' => $optimum->id,
             'category_id' => $creatinas->id,
+            'keywords' => 'dolor muscular, fatiga, fuerza, recuperación muscular, calambres, energía, músculos, explosividad',
         ]);
         ProductImage::create([
             'product_id' => $p2->id,
@@ -126,6 +128,7 @@ class CatalogSeeder extends Seeder
             'is_featured' => false,
             'brand_id' => $optimum->id,
             'category_id' => $aminoacidos->id,
+            'keywords' => 'dolor muscular, recuperación, fatiga muscular, catabolismo, agujetas, resistencia, desinflamante muscular, energía, enfoque',
         ]);
         ProductImage::create([
             'product_id' => $p3->id,
@@ -224,6 +227,7 @@ class CatalogSeeder extends Seeder
             'is_featured' => false,
             'brand_id' => $muscletech->id,
             'category_id' => $creatinas->id,
+            'keywords' => 'dolor muscular, fatiga muscular, recuperación, calambres, fuerza, resistencia, músculos',
         ]);
         ProductImage::create([
             'product_id' => $p8->id,
@@ -283,6 +287,7 @@ class CatalogSeeder extends Seeder
             'is_featured' => false,
             'brand_id' => $optimum->id,
             'category_id' => $aminoacidos->id,
+            'keywords' => 'dolor muscular, recuperación post entrenamiento, catabolismo, agujetas, fatiga muscular, aminoácidos',
         ]);
         ProductImage::create([
             'product_id' => $p11->id,
@@ -309,9 +314,19 @@ class CatalogSeeder extends Seeder
         ];
 
         for ($i = 12; $i <= 41; $i++) {
-            $name = $prefixes[array_rand($prefixes)] . ' ' . $suffixes[array_rand($suffixes)] . ' (' . $sizes[array_rand($sizes)] . ')';
+            $prefix = $prefixes[array_rand($prefixes)];
+            $name = $prefix . ' ' . $suffixes[array_rand($suffixes)] . ' (' . $sizes[array_rand($sizes)] . ')';
             $basePrice = rand(40, 350) + 0.90;
             
+            $kw = 'salud, bienestar, deporte, nutrición, suplemento';
+            if (str_contains($prefix, 'Creatin') || str_contains($prefix, 'BCAA') || str_contains($prefix, 'Glutamin') || str_contains($prefix, 'Magnesio') || str_contains($prefix, 'Colágeno') || str_contains($prefix, 'Pre-Workout') || str_contains($prefix, 'ZMA')) {
+                $kw = 'dolor muscular, fatiga muscular, recuperación, calambres, articulaciones, regeneración muscular, alivio, energía, inflamación, descanso';
+            } elseif (str_contains($prefix, 'Whey') || str_contains($prefix, 'Protein') || str_contains($prefix, 'Gainer') || str_contains($prefix, 'Casein') || str_contains($prefix, 'Isolate')) {
+                $kw = 'masa muscular, proteínas, crecimiento muscular, regeneración, fuerza, gimnasio, nutrición deportiva';
+            } elseif (str_contains($prefix, 'Multi') || str_contains($prefix, 'Omega') || str_contains($prefix, 'Vitamina') || str_contains($prefix, 'Ashwagandha') || str_contains($prefix, 'Tribulus')) {
+                $kw = 'defensas, sistema inmune, vitalidad, energía, salud diaria, bienestar general, estrés, descanso';
+            }
+
             $p = Product::create([
                 'name' => $name,
                 'slug' => \Illuminate\Support\Str::slug($name) . '-' . $i,
@@ -324,6 +339,7 @@ class CatalogSeeder extends Seeder
                 'is_featured' => rand(0, 4) === 0, // 20% probabilidad de ser destacado
                 'brand_id' => Brand::inRandomOrder()->first()->id,
                 'category_id' => Category::inRandomOrder()->first()->id,
+                'keywords' => $kw,
             ]);
             
             ProductImage::create([

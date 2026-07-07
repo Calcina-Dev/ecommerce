@@ -24,7 +24,7 @@ class ProductsTable
                     ->disk('public')
                     ->circular(),
                 TextColumn::make('name')
-                    ->searchable()
+                    ->searchable(['name', 'keywords', 'sku'])
                     ->sortable(),
                 TextColumn::make('category.name')
                     ->searchable()

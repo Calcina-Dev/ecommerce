@@ -54,6 +54,12 @@ class ProductForm
                         'attachFiles', 'blockquote', 'bold', 'bulletList', 'codeBlock', 'h2', 'h3', 'italic', 'link', 'orderedList', 'redo', 'strike', 'underline', 'undo',
                     ])
                     ->columnSpanFull(),
+                Textarea::make('keywords')
+                    ->label('🔍 Palabras Clave / Tags de Búsqueda (Búsqueda interna & SEO)')
+                    ->placeholder('Ej: dolor muscular, articulaciones, espalda, inflamación, calambres, artritis, desinflamante')
+                    ->helperText('Escribe palabras clave, síntomas o sinónimos separados por comas. Cuando un cliente busque términos como "dolor muscular" en la tienda, este producto aparecerá en los resultados.')
+                    ->rows(3)
+                    ->columnSpanFull(),
                 \Filament\Schemas\Components\Section::make('✨ Generador y Resumen Inteligente IA (AI Overview)')
                     ->description('Caja 1: Prompt / Estructura base (puedes editarla). Pulsa el botón para generar. Caja 2: Resultado final que se guardará en BD y se mostrará en vivo en la web.')
                     ->schema([

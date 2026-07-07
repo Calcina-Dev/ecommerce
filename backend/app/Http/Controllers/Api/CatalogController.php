@@ -63,7 +63,30 @@ class CatalogController extends Controller
             }
 
             if ($request->filled('search') && $request->search !== 'undefined') {
-                $query->where('name', 'ilike', '%' . $request->search . '%');
+                $searchTerm = trim($request->search);
+                $words = array_filter(explode(' ', $searchTerm), fn($w) => mb_strlen($w) >= 3);
+
+                $query->where(function ($q) use ($searchTerm, $words) {
+                    // Búsqueda por frase completa en nombre, keywords y descripciones
+                    $q->where('name', 'ilike', '%' . $searchTerm . '%')
+                      ->orWhere('keywords', 'ilike', '%' . $searchTerm . '%')
+                      ->orWhere('short_description', 'ilike', '%' . $searchTerm . '%')
+                      ->orWhere('description', 'ilike', '%' . $searchTerm . '%');
+
+                    // Si hay múltiples palabras (ej: "dolor muscular"), permitir coincidencia combinada (todas las palabras presentes)
+                    if (count($words) > 1) {
+                        $q->orWhere(function ($subQ) use ($words) {
+                            foreach ($words as $word) {
+                                $subQ->where(function ($wQ) use ($word) {
+                                    $wQ->where('name', 'ilike', '%' . $word . '%')
+                                       ->orWhere('keywords', 'ilike', '%' . $word . '%')
+                                       ->orWhere('short_description', 'ilike', '%' . $word . '%')
+                                       ->orWhere('description', 'ilike', '%' . $word . '%');
+                                });
+                            }
+                        });
+                    }
+                });
             }
 
             if ($request->boolean('on_sale')) {
