@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
@@ -7,12 +8,23 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 
 export function CartSheet() {
-  const { items, isOpen, setIsOpen, removeItem, updateQuantity, totalPrice, totalItems } = useCartStore();
+  const { items, isOpen, setIsOpen, removeItem, updateQuantity, totalPrice, totalItems, validateCart, stockWarnings } = useCartStore();
+
+  useEffect(() => {
+    if (isOpen && items.length > 0) {
+      validateCart();
+    }
+  }, [isOpen, items.length, validateCart]);
 
   const FREE_SHIPPING_THRESHOLD = 150;
   const currentTotal = totalPrice();
   const progress = Math.min(100, (currentTotal / FREE_SHIPPING_THRESHOLD) * 100);
   const amountNeeded = Math.max(0, FREE_SHIPPING_THRESHOLD - currentTotal);
+
+  const hasOutOfStock = items.some((item) => {
+    const warning = stockWarnings[item.id];
+    return warning && (!warning.available || warning.stock === 0);
+  });
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -98,6 +110,25 @@ export function CartSheet() {
                     <div>
                       <h4 className="font-medium text-sm leading-tight line-clamp-2">{item.name}</h4>
                       <p className="font-bold mt-1">S/ {parseFloat(item.price).toFixed(2)}</p>
+                      
+                      {stockWarnings[item.id] && (
+                        <div className="mt-1 space-y-1">
+                          {(!stockWarnings[item.id].available || stockWarnings[item.id].stock === 0) ? (
+                            <span className="inline-block bg-red-100 text-red-700 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-red-200">
+                              Sin Stock Disponible
+                            </span>
+                          ) : stockWarnings[item.id].stock < item.quantity ? (
+                            <span className="inline-block bg-amber-100 text-amber-800 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-amber-200">
+                              Solo quedan {stockWarnings[item.id].stock} unidades
+                            </span>
+                          ) : null}
+                          {stockWarnings[item.id].priceChanged && (
+                            <span className="inline-block bg-blue-100 text-blue-800 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-blue-200">
+                              Precio actualizado
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center border rounded-lg overflow-hidden h-8">
@@ -135,11 +166,22 @@ export function CartSheet() {
               <span className="font-medium text-muted-foreground">Subtotal</span>
               <span className="text-xl font-bold">S/ {totalPrice().toFixed(2)}</span>
             </div>
-            <Link href="/checkout" onClick={() => setIsOpen(false)}>
-              <Button size="lg" className="w-full rounded-2xl h-14 text-lg shadow-sm hover:shadow-md transition-all active:scale-95 duration-200 ease-[var(--spring-easing)] font-semibold">
-                Proceder al Pago
-              </Button>
-            </Link>
+            {hasOutOfStock ? (
+              <div className="space-y-2">
+                <p className="text-xs text-red-600 font-medium text-center">
+                  Elimina los productos sin stock para poder continuar.
+                </p>
+                <Button size="lg" disabled className="w-full rounded-2xl h-14 text-lg font-semibold opacity-60">
+                  Proceder al Pago
+                </Button>
+              </div>
+            ) : (
+              <Link href="/checkout" onClick={() => setIsOpen(false)}>
+                <Button size="lg" className="w-full rounded-2xl h-14 text-lg shadow-sm hover:shadow-md transition-all active:scale-95 duration-200 ease-[var(--spring-easing)] font-semibold">
+                  Proceder al Pago
+                </Button>
+              </Link>
+            )}
           </div>
         )}
       </SheetContent>

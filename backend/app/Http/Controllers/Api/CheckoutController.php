@@ -104,7 +104,7 @@ class CheckoutController extends Controller
 
             // 1. Validar productos y calcular total real desde Base de Datos
             foreach ($request->items as $item) {
-                $product = Product::findOrFail($item['id']);
+                $product = Product::lockForUpdate()->findOrFail($item['id']);
                 
                 // Asegurar que hay stock (opcional en MVP, pero buena práctica)
                 if ($product->stock < $item['quantity']) {
@@ -186,7 +186,7 @@ class CheckoutController extends Controller
 
             $order = Order::create([
                 'user_id' => $userId,
-                'order_number' => 'ORD-' . strtoupper(Str::random(8)),
+                'order_number' => $this->generateUniqueOrderNumber(),
                 'status' => 'pending_payment',
                 'total_amount' => $totalAmount,
                 'shipping_name' => $request->shipping_name,
@@ -243,8 +243,11 @@ class CheckoutController extends Controller
                 ], 201);
             }
 
-            // Fallback a Mercado Pago
-            $mpAccessToken = env('MERCADOPAGO_ACCESS_TOKEN', 'TEST-7590855325992440-060820-21a719c8f8c47a544c80302ed1918a22-140228811');
+            // Fallback a Mercado Pago (solo si está configurado en entorno)
+            $mpAccessToken = env('MERCADOPAGO_ACCESS_TOKEN');
+            if (empty($mpAccessToken)) {
+                throw new \Exception('La pasarela de pago seleccionada no está disponible en este momento.');
+            }
             
             $mpItems = array_map(function($item) {
                 return [
@@ -402,5 +405,20 @@ class CheckoutController extends Controller
                 'line' => $e->getLine()
             ], 500);
         }
+    }
+
+    /**
+     * Genera un número de orden único con verificación de colisión.
+     */
+    private function generateUniqueOrderNumber(): string
+    {
+        $maxAttempts = 10;
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            $orderNumber = 'ORD-' . strtoupper(Str::random(8));
+            if (!Order::where('order_number', $orderNumber)->exists()) {
+                return $orderNumber;
+            }
+        }
+        return 'ORD-' . strtoupper(Str::random(6)) . '-' . now()->format('His');
     }
 }

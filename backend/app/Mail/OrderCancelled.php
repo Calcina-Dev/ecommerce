@@ -8,10 +8,11 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 use App\Models\Order;
 
-class OrderCancelled extends Mailable
+class OrderCancelled extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

@@ -46,6 +46,21 @@ class OrderController extends Controller
             return response()->json(['message' => 'Order not found'], 404);
         }
 
-        return response()->json($order);
+        // Filtrar PII: no exponer dirección exacta, teléfono ni DNI en endpoint público
+        $safeOrder = $order->toArray();
+        unset(
+            $safeOrder['shipping_phone'],
+            $safeOrder['shipping_address'],
+            $safeOrder['shipping_postal_code'],
+            $safeOrder['dni'],
+            $safeOrder['ruc'],
+            $safeOrder['user_id'],
+            $safeOrder['total_cost'],
+            $safeOrder['document_series'],
+            $safeOrder['document_number']
+        );
+        $safeOrder['shipping_location'] = trim(($order->shipping_district ?? '') . ', ' . ($order->shipping_province ?? '') . ', ' . ($order->shipping_department ?? ''), ', ');
+
+        return response()->json($safeOrder);
     }
 }

@@ -213,6 +213,16 @@ export default function CheckoutPage() {
     setError("");
 
     try {
+      // Verificar stock en tiempo real antes de procesar el pago o crear la orden
+      const { validateCart } = useCartStore.getState();
+      const stockOk = await validateCart();
+      if (!stockOk) {
+        toast.error("Algunos productos de tu carrito tienen problemas de stock o precio. Revisa tu bolsa antes de continuar.");
+        setLoading(false);
+        setProcessingPayment(false);
+        return;
+      }
+
       if ((saveNewAddress || selectedAddressId === null) && useAuthStore.getState().token) {
         try {
           await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/user/addresses`, {

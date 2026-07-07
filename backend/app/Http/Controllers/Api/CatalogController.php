@@ -145,4 +145,43 @@ class CatalogController extends Controller
 
         return response()->json($data);
     }
+
+    /**
+     * Verificar stock y precios actualizados para un lote de productos del carrito.
+     */
+    public function checkStock(Request $request)
+    {
+        $request->validate([
+            'product_ids' => 'required|array|min:1|max:50',
+            'product_ids.*' => 'integer|exists:products,id',
+        ]);
+
+        $products = Product::whereIn('id', $request->product_ids)
+            ->select('id', 'name', 'slug', 'price', 'stock', 'is_active')
+            ->get()
+            ->keyBy('id');
+
+        $result = [];
+        foreach ($request->product_ids as $productId) {
+            $product = $products->get($productId);
+            if ($product) {
+                $result[] = [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => (string) $product->price,
+                    'stock' => $product->stock,
+                    'is_active' => $product->is_active,
+                    'available' => $product->is_active && $product->stock > 0,
+                ];
+            } else {
+                $result[] = [
+                    'id' => $productId,
+                    'available' => false,
+                    'stock' => 0,
+                ];
+            }
+        }
+
+        return response()->json($result);
+    }
 }

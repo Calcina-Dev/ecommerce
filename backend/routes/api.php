@@ -15,7 +15,7 @@ use App\Http\Controllers\Api\FavoriteController;
 
 Route::get('/storefront/settings', [StoreSettingController::class, 'index']);
 Route::get('/storefront/pages/{slug}', [StorefrontPageController::class, 'show']);
-Route::get('/orders/tracking/{order_number}', [OrderController::class, 'tracking']);
+Route::get('/orders/tracking/{order_number}', [OrderController::class, 'tracking'])->middleware('throttle:15,1');
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -39,14 +39,14 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::middleware('throttle:5,1')->group(function () {
+        Route::post('/register', [AuthController::class, 'register']);
+        Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/request-otp', [AuthController::class, 'requestOtp']);
+        Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+    });
+
     Route::post('/google', [AuthController::class, 'googleLogin']);
-    
-    // Antiguos (OTP)
-    Route::post('/request-otp', [AuthController::class, 'requestOtp']);
-    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
-    
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
 
@@ -55,13 +55,19 @@ Route::prefix('catalog')->group(function () {
     Route::get('/products', [CatalogController::class, 'products']);
     Route::get('/filters', [CatalogController::class, 'filters']);
     Route::get('/products/{slug}', [CatalogController::class, 'productDetail']);
+    Route::post('/check-stock', [CatalogController::class, 'checkStock']);
 });
 
-Route::post('/checkout/validate-coupon', [CheckoutController::class, 'validateCoupon']);
-Route::post('/checkout', [CheckoutController::class, 'checkout']);
-Route::post('/checkout/verify-izipay', [CheckoutController::class, 'verifyIzipay']);
-Route::post('/webhooks/mercadopago', [MercadoPagoWebhookController::class, 'handleWebhook']);
-Route::post('/webhooks/izipay', [IzipayWebhookController::class, 'handleWebhook']);
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('/checkout/validate-coupon', [CheckoutController::class, 'validateCoupon']);
+    Route::post('/checkout', [CheckoutController::class, 'checkout']);
+    Route::post('/checkout/verify-izipay', [CheckoutController::class, 'verifyIzipay']);
+});
+
+Route::middleware('throttle:30,1')->group(function () {
+    Route::post('/webhooks/mercadopago', [MercadoPagoWebhookController::class, 'handleWebhook']);
+    Route::post('/webhooks/izipay', [IzipayWebhookController::class, 'handleWebhook']);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/debug-logs', function (Request $request) {
