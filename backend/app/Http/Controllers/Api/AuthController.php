@@ -131,48 +131,56 @@ class AuthController extends Controller
             'credential' => 'required|string',
         ]);
 
-        // Verificar token con Google
-        $response = \Illuminate\Support\Facades\Http::get('https://oauth2.googleapis.com/tokeninfo', [
-            'id_token' => $request->credential
-        ]);
+        try {
+            // Verificar token con Google
+            $response = \Illuminate\Support\Facades\Http::get('https://oauth2.googleapis.com/tokeninfo', [
+                'id_token' => $request->credential
+            ]);
 
-        if (!$response->successful()) {
-            return response()->json(['message' => 'Token de Google inválido.'], 401);
-        }
+            if (!$response->successful()) {
+                return response()->json(['message' => 'Token de Google inválido o expirado. Por favor intenta iniciar sesión nuevamente.'], 401);
+            }
 
-        $googleUser = $response->json();
+            $googleUser = $response->json();
 
-        // Validar que el token sea para nuestro cliente (Opcional pero recomendado si tienes client_id)
-        // if ($googleUser['aud'] !== env('GOOGLE_CLIENT_ID')) { ... }
+            if (empty($googleUser['email'])) {
+                return response()->json(['message' => 'El token de Google no proporcionó un correo electrónico válido.'], 400);
+            }
 
-        $user = User::where('email', $googleUser['email'])->first();
+            $user = User::where('email', $googleUser['email'])->first();
 
-        if ($user) {
-            // Actualizar si ya existía pero no tenía google_id
-            if (!$user->google_id) {
-                $user->update([
+            if ($user) {
+                // Actualizar si ya existía pero no tenía google_id
+                if (!$user->google_id) {
+                    $user->update([
+                        'google_id' => $googleUser['sub'],
+                        'avatar' => $googleUser['picture'] ?? null,
+                    ]);
+                }
+            } else {
+                // Crear nuevo usuario
+                $user = User::create([
+                    'name' => $googleUser['name'] ?? 'Usuario Google',
+                    'email' => $googleUser['email'],
                     'google_id' => $googleUser['sub'],
                     'avatar' => $googleUser['picture'] ?? null,
+                    'role' => 'customer',
                 ]);
             }
-        } else {
-            // Crear nuevo usuario
-            $user = User::create([
-                'name' => $googleUser['name'],
-                'email' => $googleUser['email'],
-                'google_id' => $googleUser['sub'],
-                'avatar' => $googleUser['picture'] ?? null,
-                'role' => 'customer',
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'message' => 'Autenticado con Google correctamente',
+                'user' => $user,
+                'token' => $token,
             ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error en googleLogin: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return response()->json([
+                'message' => 'Error interno en el servidor al procesar Google Login: ' . $e->getMessage()
+            ], 500);
         }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Autenticado con Google correctamente',
-            'user' => $user,
-            'token' => $token,
-        ]);
     }
 
     public function logout(Request $request)

@@ -102,20 +102,26 @@ export default function LoginPage() {
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
       setLoading(true);
+      setError("");
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/auth/google`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({ credential: credentialResponse.credential }),
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        throw new Error(`Error de conexión o respuesta no válida del servidor (HTTP ${res.status}). Verifica tu conexión.`);
+      }
 
       if (!res.ok) throw new Error(data.message || "Error al autenticar con Google");
 
       setAuth(data.user, data.token);
       router.push("/mi-cuenta");
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Error al iniciar sesión con Google");
       setLoading(false);
     }
   };
