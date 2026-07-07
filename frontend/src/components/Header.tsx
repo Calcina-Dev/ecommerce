@@ -490,6 +490,9 @@ export function Header() {
 
                   {/* Mapa Interactivo Leaflet para seleccionar la dirección */}
                   <AddressMapSelector
+                    selectedDepartment={newAddrForm.department}
+                    selectedProvince={newAddrForm.province}
+                    selectedDistrict={newAddrForm.district}
                     onSelectLocation={(loc) => {
                       setNewAddrForm((prev) => ({
                         ...prev,
@@ -768,6 +771,9 @@ export function Header() {
 
                     {/* Mapa interactivo visible directamente en el selector general */}
                     <AddressMapSelector
+                      selectedDepartment={locDept}
+                      selectedProvince={locProv}
+                      selectedDistrict={locDist}
                       onSelectLocation={(loc) => {
                         if (loc.department) setLocDept(loc.department);
                         if (loc.province) setLocProv(loc.province);

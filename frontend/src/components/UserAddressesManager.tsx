@@ -273,6 +273,9 @@ export function UserAddressesManager() {
             </h3>
             <form onSubmit={handleSave} className="space-y-4">
               <AddressMapSelector
+                selectedDepartment={form.department}
+                selectedProvince={form.province}
+                selectedDistrict={form.district}
                 onSelectLocation={(loc) => {
                   setForm((prev) => ({
                     ...prev,

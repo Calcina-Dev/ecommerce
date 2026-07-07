@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { MapPin, Navigation, Loader2 } from "lucide-react";
+import ubigeosData from "@/data/ubigeos_peru.json";
 
 interface AddressMapSelectorProps {
   onSelectLocation: (data: {
@@ -15,12 +16,97 @@ interface AddressMapSelectorProps {
   }) => void;
   initialLat?: number;
   initialLng?: number;
+  selectedDepartment?: string;
+  selectedProvince?: string;
+  selectedDistrict?: string;
 }
+
+const cleanStr = (s?: string) => {
+  if (!s) return "";
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // remover tildes y acentos
+    .replace(/\b(provincia|distrito|departamento|region|región|de|del|la|las|el|los|metropolitan|province|district|city|town|village|state|county)\b/gi, "")
+    .replace(/[^a-z0-9]/g, "")
+    .trim();
+};
+
+const matchUbigeo = (addr: any, fallbackName?: string) => {
+  const allDepts = Array.from(new Set(ubigeosData.map((u: any) => u.department)));
+  const deptCandidates = [addr.state, addr.region, fallbackName, "Lima"].map(cleanStr).filter(Boolean);
+  
+  let matchedDept = "Lima";
+  for (const d of allDepts) {
+    const cd = cleanStr(d);
+    if (deptCandidates.some(c => c === cd || c.includes(cd) || cd.includes(c))) {
+      matchedDept = d;
+      break;
+    }
+  }
+
+  const provsForDept = Array.from(new Set(ubigeosData.filter((u: any) => u.department === matchedDept).map((u: any) => u.province)));
+  const provCandidates = [addr.state_district, addr.county, addr.city, addr.region, addr.state, fallbackName].map(cleanStr).filter(Boolean);
+  
+  let matchedProv = provsForDept[0] || "Lima";
+  for (const p of provsForDept) {
+    const cp = cleanStr(p);
+    if (provCandidates.some(c => c === cp || c.includes(cp) || cp.includes(c))) {
+      matchedProv = p;
+      break;
+    }
+  }
+
+  const distsForProv = Array.from(new Set(ubigeosData.filter((u: any) => u.department === matchedDept && u.province === matchedProv).map((u: any) => u.district)));
+  const distCandidates = [addr.suburb, addr.city_district, addr.town, addr.village, addr.quarter, addr.neighbourhood, addr.city, fallbackName].map(cleanStr).filter(Boolean);
+
+  let matchedDist = distsForProv[0] || "Lima";
+  for (const d of distsForProv) {
+    const cd = cleanStr(d);
+    if (distCandidates.some(c => c === cd || c.includes(cd) || cd.includes(c))) {
+      matchedDist = d;
+      break;
+    }
+  }
+
+  return {
+    department: matchedDept,
+    province: matchedProv,
+    district: matchedDist,
+  };
+};
+
+const CITY_COORDS: Record<string, [number, number]> = {
+  "chepen": [-7.2244, -79.4328],
+  "trujillo": [-8.1159, -79.0299],
+  "lima": [-12.0464, -77.0428],
+  "limacentro": [-12.0464, -77.0428],
+  "miraflores": [-12.1111, -77.0316],
+  "sanisidro": [-12.0971, -77.0350],
+  "surco": [-12.1450, -76.9900],
+  "chiclayo": [-6.7714, -79.8409],
+  "arequipa": [-16.4090, -71.5375],
+  "piura": [-5.1945, -80.6328],
+  "cusco": [-13.5319, -71.9675],
+  "cajamarca": [-7.1638, -78.5003],
+  "huancayo": [-12.0651, -75.2049],
+  "iquitos": [-3.7491, -73.2538],
+  "tacna": [-18.0056, -70.2483],
+  "puno": [-15.8402, -70.0219],
+  "chimbote": [-9.0853, -78.5783],
+  "ica": [-14.0678, -75.7286],
+  "pucallpa": [-8.3791, -74.5539],
+  "pacasmayo": [-7.4006, -79.5714],
+  "guadalupe": [-7.2483, -79.4719],
+};
 
 export function AddressMapSelector({
   onSelectLocation,
   initialLat = -12.0464, // Lima por defecto
   initialLng = -77.0428,
+  selectedDepartment,
+  selectedProvince,
+  selectedDistrict,
 }: AddressMapSelectorProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -29,37 +115,45 @@ export function AddressMapSelector({
   const [loadingGeo, setLoadingGeo] = useState(false);
   const [selectedText, setSelectedText] = useState<string>("Mueve el pin o haz clic en el mapa para seleccionar tu dirección exacta");
 
-  const reverseGeocode = async (lat: number, lng: number) => {
+  const reverseGeocode = async (lat: number, lng: number, fallbackName?: string) => {
     setLoadingGeo(true);
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
       );
+      let addr: any = {};
+      let fullStreet = fallbackName || "Dirección en mapa";
+
       if (res.ok) {
         const data = await res.json();
-        const addr = data.address || {};
-        
+        addr = data.address || {};
         const road = addr.road || addr.pedestrian || addr.suburb || addr.neighbourhood || "";
         const houseNumber = addr.house_number || "";
-        const fullStreet = `${road} ${houseNumber}`.trim() || data.display_name?.split(",")[0] || "Dirección en mapa";
-        
-        const district = addr.suburb || addr.city_district || addr.town || addr.city || "Lima";
-        const province = addr.state_district || addr.county || addr.city || "Lima";
-        const department = addr.state || "Lima";
-
-        setSelectedText(`${fullStreet}, ${district}`);
-        onSelectLocation({
-          address: fullStreet,
-          district: district,
-          province: province,
-          department: department,
-          lat,
-          lng,
-        });
+        fullStreet = `${road} ${houseNumber}`.trim() || data.display_name?.split(",")[0] || fallbackName || "Dirección en mapa";
       }
+
+      const matched = matchUbigeo(addr, fallbackName);
+      setSelectedText(`${fullStreet}, ${matched.district}`);
+      onSelectLocation({
+        address: fullStreet,
+        district: matched.district,
+        province: matched.province,
+        department: matched.department,
+        lat,
+        lng,
+      });
     } catch (err) {
       console.error("Error en geocodificación:", err);
-      setSelectedText(`Coordenadas: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      const matched = matchUbigeo({}, fallbackName);
+      setSelectedText(`${fallbackName || "Ubicación"}, ${matched.district}`);
+      onSelectLocation({
+        address: fallbackName || "Ubicación seleccionada",
+        district: matched.district,
+        province: matched.province,
+        department: matched.department,
+        lat,
+        lng,
+      });
     } finally {
       setLoadingGeo(false);
     }
@@ -112,13 +206,33 @@ export function AddressMapSelector({
     });
 
     // Geocodificación inicial
-    reverseGeocode(initialLat, initialLng);
+    reverseGeocode(initialLat, initialLng, selectedDistrict || selectedProvince);
 
     return () => {
       map.remove();
       mapInstanceRef.current = null;
     };
   }, []);
+
+  // Sincronizar cuando el usuario cambia los selects de afuera
+  useEffect(() => {
+    if (!mapInstanceRef.current || !markerRef.current) return;
+    const keyDist = cleanStr(selectedDistrict);
+    const keyProv = cleanStr(selectedProvince);
+    const keyDept = cleanStr(selectedDepartment);
+    
+    const coords = CITY_COORDS[keyDist] || CITY_COORDS[keyProv] || CITY_COORDS[keyDept];
+    if (coords) {
+      const currentPos = markerRef.current.getLatLng();
+      // Solo mover si está razonablemente lejos para evitar bucles infinitos
+      if (Math.abs(currentPos.lat - coords[0]) > 0.01 || Math.abs(currentPos.lng - coords[1]) > 0.01) {
+        const newLatLng = new L.LatLng(coords[0], coords[1]);
+        markerRef.current.setLatLng(newLatLng);
+        mapInstanceRef.current.setView(newLatLng, 15);
+        reverseGeocode(coords[0], coords[1], selectedDistrict || selectedProvince);
+      }
+    }
+  }, [selectedDistrict, selectedProvince, selectedDepartment]);
 
   const handleUseGPS = () => {
     if (!navigator.geolocation) {
@@ -149,7 +263,7 @@ export function AddressMapSelector({
       const newLatLng = new L.LatLng(lat, lng);
       markerRef.current.setLatLng(newLatLng);
       mapInstanceRef.current.setView(newLatLng, 15);
-      reverseGeocode(lat, lng);
+      reverseGeocode(lat, lng, name);
     }
   };
 
@@ -175,7 +289,7 @@ export function AddressMapSelector({
         <span className="text-muted-foreground font-medium shrink-0">Zonas rápidas:</span>
         <button
           type="button"
-          onClick={() => handleQuickCity(-7.2244, -79.4328, "Chepén")}
+          onClick={() => handleQuickCity(-7.2244, -79.4328, "Chepen")}
           className="px-2.5 py-1 bg-background hover:bg-muted border rounded-lg font-semibold transition-colors shrink-0"
         >
           Chepén
@@ -189,7 +303,7 @@ export function AddressMapSelector({
         </button>
         <button
           type="button"
-          onClick={() => handleQuickCity(-12.0464, -77.0428, "Lima Centro")}
+          onClick={() => handleQuickCity(-12.0464, -77.0428, "Lima")}
           className="px-2.5 py-1 bg-background hover:bg-muted border rounded-lg font-semibold transition-colors shrink-0"
         >
           Lima Centro
