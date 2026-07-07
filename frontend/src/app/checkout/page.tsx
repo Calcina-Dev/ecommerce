@@ -404,11 +404,15 @@ export default function CheckoutPage() {
 
       {/* Modal Overlay Personalizado para Izipay */}
       {showIzipayForm && (
-        <div className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+        <div 
+          onClick={() => setShowIzipayForm(false)}
+          className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto cursor-pointer"
+        >
           <div 
             id="izipay-modal-content"
             tabIndex={-1}
-            className="bg-white rounded-3xl p-5 sm:p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-300 my-6 sm:my-auto outline-none"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl p-5 sm:p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-300 my-6 sm:my-auto outline-none cursor-default"
           >
             <button 
               onClick={() => {

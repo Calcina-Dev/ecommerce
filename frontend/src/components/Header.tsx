@@ -464,9 +464,12 @@ export function Header() {
 
       {/* Modal de Ubicación (Estilo Mercado Libre) - Renderizado vía Portal al Body para evitar recortes por Header/backdrop-blur */}
       {isClient && showLocationModal && createPortal(
-        <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div 
+          onClick={() => setShowLocationModal(false)}
+          className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-pointer"
+        >
           <div 
-            className="bg-background text-foreground rounded-3xl max-w-md w-full shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200"
+            className="bg-background text-foreground rounded-3xl max-w-md w-full shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200 cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del Modal - Estilo Limpio y Minimalista de la Tienda */}
