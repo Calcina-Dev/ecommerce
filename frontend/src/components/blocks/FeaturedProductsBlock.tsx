@@ -60,7 +60,7 @@ export function FeaturedProductsBlock({ data }: { data: any }) {
           
           <div 
             ref={scrollContainerRef}
-            className="flex overflow-x-auto gap-4 sm:gap-6 pt-6 pb-10 -mx-6 px-6 snap-x snap-mandatory hide-scrollbar scroll-smooth"
+            className="flex overflow-x-auto gap-4 sm:gap-6 pt-6 pb-10 -mx-4 sm:-mx-6 px-4 sm:px-6 snap-x snap-mandatory hide-scrollbar scroll-smooth"
           >
             {data.products.map((product: any) => (
               <div key={product.id} className="min-w-[280px] sm:min-w-[300px] w-full max-w-[320px] snap-start shrink-0">

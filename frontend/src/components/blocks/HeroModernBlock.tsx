@@ -6,10 +6,10 @@ export function HeroModernBlock({ data }: { data: any }) {
   return (
     <section className="relative w-full overflow-hidden bg-transparent">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-100/40 via-background to-background pointer-events-none"></div>
-      <div className="max-w-7xl mx-auto px-6 pt-20 pb-24 lg:pt-32 lg:pb-40 relative z-10 flex flex-col lg:flex-row items-center gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-16 sm:pt-20 sm:pb-24 lg:pt-32 lg:pb-40 relative z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
         
         {/* Texto Principal */}
-        <div className="flex-1 space-y-8 text-center lg:text-left">
+        <div className="flex-1 space-y-6 sm:space-y-8 text-center lg:text-left">
           {data.badge && (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm font-semibold">
               <span className="relative flex h-2 w-2">
@@ -20,7 +20,7 @@ export function HeroModernBlock({ data }: { data: any }) {
             </div>
           )}
           
-          <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tighter text-gray-900 leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight sm:tracking-tighter text-gray-900 leading-[1.15] sm:leading-[1.1]">
             {data.title_line_1} <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
               {data.title_line_2}
@@ -72,13 +72,13 @@ export function HeroModernBlock({ data }: { data: any }) {
             
             {/* Tarjeta Flotante (Glassmorphism) */}
             {(data.floating_card_title || data.floating_card_subtitle) && (
-              <div className="absolute -bottom-6 -left-6 z-20 bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl p-4 flex items-center gap-4">
-                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
-                  <Leaf className="w-6 h-6" />
+              <div className="absolute -bottom-4 sm:-bottom-6 left-2 sm:-left-6 z-20 bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl p-3 sm:p-4 flex items-center gap-3 sm:gap-4 max-w-[90%] sm:max-w-none">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Leaf className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  {data.floating_card_title && <p className="text-sm font-bold text-gray-900">{data.floating_card_title}</p>}
-                  {data.floating_card_subtitle && <p className="text-xs text-gray-500">{data.floating_card_subtitle}</p>}
+                  {data.floating_card_title && <p className="text-xs sm:text-sm font-bold text-gray-900 line-clamp-1">{data.floating_card_title}</p>}
+                  {data.floating_card_subtitle && <p className="text-[10px] sm:text-xs text-gray-500 line-clamp-1">{data.floating_card_subtitle}</p>}
                 </div>
               </div>
             )}

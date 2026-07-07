@@ -192,11 +192,11 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-gray-100 dark:border-zinc-800 transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4 sm:gap-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-8">
         
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
-          <span className="text-2xl font-black tracking-tight text-foreground group-hover:text-accent transition-colors duration-300 ease-[var(--spring-easing)]">
+        <Link href="/" className="flex items-center gap-1.5 flex-shrink-0 group">
+          <span className="text-xl sm:text-2xl font-black tracking-tight text-foreground group-hover:text-accent transition-colors duration-300 ease-[var(--spring-easing)]">
             COMPRA<span className="text-accent">SALUDABLE</span>
           </span>
         </Link>
@@ -320,25 +320,25 @@ export function Header() {
             <Link href="/rastrear-pedido" className="hover:text-accent transition-colors active:scale-95 duration-200 ease-[var(--spring-easing)] inline-block">Rastrear Pedido</Link>
           </nav>
 
-          <div className="flex items-center gap-3 border-l border-gray-200 dark:border-zinc-800 pl-6">
+          <div className="flex items-center gap-1 sm:gap-3 border-l border-gray-200 dark:border-zinc-800 pl-1.5 sm:pl-6">
             {!isClient ? (
               <div className="w-16 h-6 animate-shimmer rounded"></div>
             ) : user ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 sm:gap-3">
                 <Link href="/mi-cuenta" className="text-sm font-medium hover:text-accent transition-all active:scale-90 duration-200 ease-[var(--spring-easing)]">
-                  <svg className="w-6 h-6 text-gray-700 dark:text-zinc-300 hover:text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-zinc-300 hover:text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                   </svg>
                 </Link>
                 <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-red-500 transition-all active:scale-90 duration-200 ease-[var(--spring-easing)]" title="Cerrar sesión">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                   </svg>
                 </button>
               </div>
             ) : (
-              <Link href="/login" className="flex items-center gap-2 hover:text-accent transition-all active:scale-95 duration-200 ease-[var(--spring-easing)]">
-                <svg className="w-6 h-6 text-gray-700 dark:text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Link href="/login" className="flex items-center gap-1 sm:gap-2 hover:text-accent transition-all active:scale-95 duration-200 ease-[var(--spring-easing)]">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                 </svg>
                 <span className="text-sm font-medium hidden sm:block">Ingresar</span>
@@ -348,11 +348,11 @@ export function Header() {
             {/* Botón de Favoritos ❤️ */}
             <Link 
               href="/favoritos"
-              className="relative p-2 ml-1 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-all active:scale-90 duration-200 ease-[var(--spring-easing)] flex items-center group"
+              className="relative p-1.5 sm:p-2 ml-0.5 sm:ml-1 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-all active:scale-90 duration-200 ease-[var(--spring-easing)] flex items-center group"
               title="Mis Favoritos / Lista de Deseos"
             >
               <div className="relative">
-                <Heart className="w-6 h-6 text-gray-700 dark:text-zinc-300 group-hover:text-rose-500 transition-colors" />
+                <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-zinc-300 group-hover:text-rose-500 transition-colors" />
                 {isClient && favoriteItems.length > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm">
                     {favoriteItems.length}
@@ -363,10 +363,10 @@ export function Header() {
 
             <button 
               onClick={() => setIsOpen(true)}
-              className="relative p-2 ml-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-all active:scale-90 duration-200 ease-[var(--spring-easing)] flex items-center gap-2 group"
+              className="relative p-1.5 sm:p-2 ml-0.5 sm:ml-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-all active:scale-90 duration-200 ease-[var(--spring-easing)] flex items-center gap-2 group"
             >
               <div className="relative">
-                <svg className="w-6 h-6 text-gray-700 dark:text-zinc-300 group-hover:text-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-zinc-300 group-hover:text-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                 </svg>
                 {isClient && totalItems() > 0 && (

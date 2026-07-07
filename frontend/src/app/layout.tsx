@@ -31,11 +31,11 @@ export default async function RootLayout({
   return (
     <html
       lang="es"
-      className="h-full antialiased"
+      className="h-full antialiased overflow-x-hidden max-w-full"
     >
-      <body className={`${poppins.className} min-h-full flex flex-col bg-background`}>
+      <body className={`${poppins.className} min-h-full flex flex-col bg-background overflow-x-hidden max-w-full`}>
         <Header />
-        <div vaul-drawer-wrapper="" className="flex-1 flex flex-col bg-background pt-16 pb-16 md:pb-0">
+        <div vaul-drawer-wrapper="" className="flex-1 flex flex-col bg-background pb-20 md:pb-0 overflow-x-hidden w-full max-w-full">
           <CartSheet />
           {children}
           <WhatsAppButton settings={settings} />
