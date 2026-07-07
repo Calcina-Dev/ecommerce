@@ -22,9 +22,18 @@ class OrdersMapWidget extends Widget
         $dateTo = $this->filters['date_to'] ?? null;
 
         $query = DB::table('orders')
-            ->select('shipping_city', DB::raw('COUNT(id) as total_orders'), DB::raw('SUM(total_amount) as total_revenue'))
-            ->whereNotNull('shipping_city')
-            ->where('shipping_city', '!=', '');
+            ->select(
+                DB::raw("COALESCE(NULLIF(shipping_department, ''), NULLIF(shipping_city, '')) as department"),
+                DB::raw('COUNT(id) as total_orders'),
+                DB::raw('SUM(total_amount) as total_revenue')
+            )
+            ->where(function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereNotNull('shipping_department')->where('shipping_department', '!=', '');
+                })->orWhere(function ($sub) {
+                    $sub->whereNotNull('shipping_city')->where('shipping_city', '!=', '');
+                });
+            });
 
         if ($period === 'week') {
             $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
@@ -41,15 +50,31 @@ class OrdersMapWidget extends Widget
             }
         }
 
-        $ordersByCity = $query->groupBy('shipping_city')->get();
+        $ordersByDep = $query->groupBy(DB::raw("COALESCE(NULLIF(shipping_department, ''), NULLIF(shipping_city, ''))"))->get();
 
-        // Convert to a dictionary with uppercase city names for easier matching in JS
+        // Convert to a dictionary with uppercase department names without accents for easier matching in JS
         $mapData = [];
-        foreach ($ordersByCity as $order) {
-            $mapData[strtoupper(trim($order->shipping_city))] = [
-                'orders' => $order->total_orders,
-                'revenue' => $order->total_revenue
-            ];
+        $unwanted = [
+            'Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U',
+            'À' => 'A', 'È' => 'E', 'Ì' => 'I', 'Ò' => 'O', 'Ù' => 'U',
+            'Ä' => 'A', 'Ë' => 'E', 'Ï' => 'I', 'Ö' => 'O', 'Ü' => 'U',
+            'Â' => 'A', 'Ê' => 'E', 'Î' => 'I', 'Ô' => 'O', 'Û' => 'U',
+        ];
+
+        foreach ($ordersByDep as $order) {
+            if ($order->department) {
+                $depKey = strtoupper(trim($order->department));
+                $depKey = strtr($depKey, $unwanted);
+
+                if (!isset($mapData[$depKey])) {
+                    $mapData[$depKey] = [
+                        'orders' => 0,
+                        'revenue' => 0,
+                    ];
+                }
+                $mapData[$depKey]['orders'] += $order->total_orders;
+                $mapData[$depKey]['revenue'] += $order->total_revenue;
+            }
         }
 
         return [

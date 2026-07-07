@@ -23,9 +23,21 @@ class OrdersByCityTable extends BaseWidget
         $dateTo = $this->filters['date_to'] ?? null;
 
         $subquery = DB::table('orders')
-            ->select(DB::raw('MIN(id) as id'), 'shipping_city', DB::raw('COUNT(id) as total_orders'), DB::raw('SUM(total_amount) as total_revenue'))
-            ->whereNotNull('shipping_city')
-            ->where('shipping_city', '!=', '');
+            ->select(
+                DB::raw('MIN(id) as id'),
+                DB::raw("COALESCE(NULLIF(shipping_district, ''), NULLIF(shipping_city, ''), NULLIF(shipping_department, '')) as shipping_city"),
+                DB::raw('COUNT(id) as total_orders'),
+                DB::raw('SUM(total_amount) as total_revenue')
+            )
+            ->where(function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereNotNull('shipping_district')->where('shipping_district', '!=', '');
+                })->orWhere(function ($sub) {
+                    $sub->whereNotNull('shipping_city')->where('shipping_city', '!=', '');
+                })->orWhere(function ($sub) {
+                    $sub->whereNotNull('shipping_department')->where('shipping_department', '!=', '');
+                });
+            });
 
         if ($period === 'week') {
             $subquery->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
@@ -42,7 +54,7 @@ class OrdersByCityTable extends BaseWidget
             }
         }
 
-        $subquery->groupBy('shipping_city');
+        $subquery->groupBy(DB::raw("COALESCE(NULLIF(shipping_district, ''), NULLIF(shipping_city, ''), NULLIF(shipping_department, ''))"));
 
         return $table
             ->heading('Envíos por Ciudad')

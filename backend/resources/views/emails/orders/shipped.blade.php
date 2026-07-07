@@ -31,7 +31,7 @@
                             <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 24px; margin-bottom: 32px;">
                                 <h3 style="color: #16a34a; margin: 0 0 16px; font-size: 16px; font-weight: 700;">Detalles de Envío</h3>
                                 <p style="margin: 0 0 12px; font-size: 15px; color: #1f2937;">
-                                    <strong>Dirección:</strong> {{ $order->shipping_address }}, {{ $order->shipping_city }}
+                                    <strong>Dirección:</strong> {{ $order->shipping_address }}@if($order->shipping_district), {{ $order->shipping_district }}@elseif($order->shipping_city), {{ $order->shipping_city }}@endif@if($order->shipping_province), {{ $order->shipping_province }}@endif@if($order->shipping_department), {{ $order->shipping_department }}@endif
                                 </p>
                                 @if($order->shippingMethod)
                                 <p style="margin: 0 0 12px; font-size: 15px; color: #1f2937;">

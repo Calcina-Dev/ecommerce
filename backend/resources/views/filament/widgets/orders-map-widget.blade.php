@@ -5,7 +5,6 @@
         </h2>
 
         <div
-            wire:ignore
             x-data="{
                 mapData: @js($mapData),
                 map: null,
@@ -31,6 +30,20 @@
                     }
                 },
 
+                updateMapStyles() {
+                    this.maxOrders = 0;
+                    for (const city in this.mapData) {
+                        if (this.mapData[city].orders > this.maxOrders) {
+                            this.maxOrders = this.mapData[city].orders;
+                        }
+                    }
+                    if (this.geojsonLayer) {
+                        this.geojsonLayer.eachLayer((layer) => {
+                            this.geojsonLayer.resetStyle(layer);
+                        });
+                    }
+                },
+
                 initMap() {
                     // Check if map container exists and is not already initialized
                     if (!this.$refs.mapElement || this.map !== null) return;
@@ -43,12 +56,7 @@
                         maxZoom: 20
                     }).addTo(this.map);
 
-                    this.maxOrders = 0;
-                    for (const city in this.mapData) {
-                        if (this.mapData[city].orders > this.maxOrders) {
-                            this.maxOrders = this.mapData[city].orders;
-                        }
-                    }
+                    this.updateMapStyles();
 
                     // Tooltip Info Control
                     this.info = L.control();
@@ -127,8 +135,12 @@
                     });
                 }
             }"
+            x-effect="
+                mapData = @js($mapData);
+                updateMapStyles();
+            "
         >
-            <div x-ref="mapElement" style="height: 400px; width: 100%; border-radius: 0.5rem; z-index: 1;"></div>
+            <div x-ref="mapElement" wire:ignore style="height: 400px; width: 100%; border-radius: 0.5rem; z-index: 1;"></div>
         </div>
     </x-filament::section>
 </x-filament-widgets::widget>
