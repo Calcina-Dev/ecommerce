@@ -75,37 +75,6 @@ function CatalogContent() {
   const renderFilterContent = () => (
     <div className="space-y-6 text-left">
       <div>
-        <h3 className="font-bold text-base sm:text-lg mb-3 text-gray-900">Buscar</h3>
-        <div className="relative">
-          <input 
-            type="text" 
-            placeholder="Ej. Vitamina C..." 
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white focus:border-accent focus:ring-2 focus:ring-accent/20 text-sm transition-all"
-            value={filters.search || ""}
-            onChange={(e) => setFilters({ search: e.target.value || undefined, page: 1 })}
-          />
-          <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </div>
-      </div>
-
-      <div className="border-t border-gray-100 pt-5">
-        <h3 className="font-bold text-base sm:text-lg mb-3 text-gray-900">Ordenar por</h3>
-        <select
-          value={filters.sortBy || "default"}
-          onChange={(e) => setFilters({ sortBy: e.target.value === "default" ? undefined : e.target.value, page: 1 })}
-          className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-accent focus:border-accent block p-2.5 font-medium transition-colors cursor-pointer"
-        >
-          <option value="default">Destacados / Relevancia</option>
-          <option value="price_asc">Precio: Menor a Mayor</option>
-          <option value="price_desc">Precio: Mayor a Menor</option>
-          <option value="newest">Más Recientes</option>
-          <option value="name_asc">Nombre: A - Z</option>
-        </select>
-      </div>
-
-      <div className="border-t border-gray-100 pt-5">
         <h3 className="font-bold text-base sm:text-lg mb-3 text-gray-900">Rango de Precios (S/)</h3>
         <div className="grid grid-cols-2 gap-3 items-center">
           <div>
@@ -405,8 +374,8 @@ function CatalogContent() {
             )}
           </div>
 
-          {/* Top Bar: Active Filters & Sort Selector (Desktop) */}
-          <div className="hidden lg:flex mb-6 items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+          {/* Top Bar: Active Filters & Sort Selector */}
+          <div className="flex flex-col sm:flex-row mb-6 items-start sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
             <div className="text-sm font-semibold text-muted-foreground">
               {!loading && <span>Mostrando {products.length} productos</span>}
             </div>
