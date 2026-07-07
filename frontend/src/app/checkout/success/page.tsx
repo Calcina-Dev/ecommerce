@@ -19,7 +19,7 @@ function SuccessContent() {
       clearCart();
       toast.success('¡Compra realizada con éxito!', {
         id: 'success-toast',
-        duration: 5000,
+        duration: 2500,
       });
 
       // Lanza confeti festivo desde los costados superiores

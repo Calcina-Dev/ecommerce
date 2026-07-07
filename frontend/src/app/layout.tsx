@@ -42,7 +42,7 @@ export default async function RootLayout({
           <Footer settings={settings} />
         </div>
         <MobileTabBar />
-        <Toaster position="bottom-center" closeButton duration={4000} toastOptions={{ style: { borderRadius: '12px' } }} richColors />
+        <Toaster position="bottom-center" closeButton duration={2000} toastOptions={{ style: { borderRadius: '12px' } }} richColors />
       </body>
     </html>
   );

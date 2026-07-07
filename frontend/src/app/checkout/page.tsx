@@ -280,7 +280,7 @@ export default function CheckoutPage() {
 
     } catch (err: any) {
       setError(err.message);
-      toast.error(err.message, { duration: 6000 });
+      toast.error(err.message, { duration: 2500 });
       setLoading(false);
       setProcessingPayment(false);
     }
@@ -330,14 +330,14 @@ export default function CheckoutPage() {
         } else {
            const tx = paymentData?.clientAnswer?.transactions?.[0];
            const errorMsg = tx?.detailedErrorMessage || paymentData?.clientAnswer?.errorMessage || "El pago no fue procesado o fue denegado.";
-           toast.error(`Pago rechazado: ${errorMsg}`, { duration: 6000 });
+           toast.error(`Pago rechazado: ${errorMsg}`, { duration: 2500 });
         }
         return false; 
       });
 
       KR.onError(async (errorData: any) => {
         const errorMsg = errorData?.detailedErrorMessage || errorData?.errorMessage || "Revise los datos de su tarjeta e intente nuevamente.";
-        toast.error(`Error: ${errorMsg}`, { duration: 5000 });
+        toast.error(`Error: ${errorMsg}`, { duration: 2500 });
       });
 
       // Show form in our custom modal
