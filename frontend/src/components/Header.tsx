@@ -761,10 +761,19 @@ export function Header() {
                     <div className="flex items-center gap-2">
                       <span className="text-base">🗺️</span>
                       <div>
-                        <h4 className="font-black text-sm text-foreground">Selecciona tu ubicación o zona de envío</h4>
-                        <p className="text-xs text-muted-foreground">Elige tu distrito para ver la disponibilidad y cálculo exacto</p>
+                        <h4 className="font-black text-sm text-foreground">Selecciona tu ubicación o zona de envío en el mapa</h4>
+                        <p className="text-xs text-muted-foreground">Mueve el pin en el mapa o elige en las listas para ver costos y tiempos exactos</p>
                       </div>
                     </div>
+
+                    {/* Mapa interactivo visible directamente en el selector general */}
+                    <AddressMapSelector
+                      onSelectLocation={(loc) => {
+                        if (loc.department) setLocDept(loc.department);
+                        if (loc.province) setLocProv(loc.province);
+                        if (loc.district) setLocDist(loc.district);
+                      }}
+                    />
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                       <div>
