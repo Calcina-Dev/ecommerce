@@ -220,8 +220,8 @@ export function Header() {
           </div>
         </div>
 
-        {/* Search Bar Desktop with Autocomplete */}
-        <div ref={searchContainerRef} className="flex-1 max-w-xl mx-auto hidden md:block relative">
+        {/* Search Bar Desktop with Autocomplete - WIDE & PREMIUM */}
+        <div ref={searchContainerRef} className="flex-1 max-w-2xl mx-4 lg:mx-8 hidden md:block relative">
           <form 
             onSubmit={(e) => {
               e.preventDefault();
@@ -230,7 +230,7 @@ export function Header() {
                 router.push(`/productos?search=${encodeURIComponent(searchQuery.trim())}`);
               }
             }} 
-            className="relative"
+            className="relative flex items-center"
           >
             <input 
               type="text" 
@@ -243,83 +243,33 @@ export function Header() {
                 if (e.key === "Escape") setShowSuggestions(false);
               }}
               placeholder="¿Qué estás buscando hoy?" 
-              className="w-full bg-gray-100 dark:bg-zinc-800 border-transparent focus:bg-white dark:focus:bg-zinc-900 focus:border-accent focus:ring-2 focus:ring-accent/20 rounded-full py-2.5 pl-6 pr-12 text-sm transition-all text-foreground"
+              className="w-full bg-gray-100/90 dark:bg-zinc-800/90 border border-gray-200/80 dark:border-zinc-700/80 hover:bg-white dark:hover:bg-zinc-800 hover:border-gray-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-900 focus:border-accent focus:ring-4 focus:ring-accent/15 rounded-full py-2.5 pl-5 pr-28 text-sm transition-all duration-200 text-foreground placeholder:text-gray-400 dark:placeholder:text-zinc-500 shadow-sm"
             />
-            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-accent transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            {searchQuery && (
+              <button 
+                type="button" 
+                onClick={() => setSearchQuery("")} 
+                className="absolute right-24 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200 transition-colors"
+                title="Limpiar búsqueda"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            )}
+            <button 
+              type="submit" 
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-full shadow-sm flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
+              <span>Buscar</span>
             </button>
           </form>
           {renderSuggestionsDropdown()}
         </div>
 
-        {/* Navigation & Actions */}
-        <div className="flex items-center gap-6 flex-shrink-0">
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-gray-600 dark:text-zinc-300">
-            <div 
-              className="relative py-2"
-              onMouseEnter={() => setShowMenu(true)}
-              onMouseLeave={() => setShowMenu(false)}
-            >
-              <Link href="/productos" className="flex items-center gap-1 hover:text-accent transition-colors py-1">
-                Categorías
-                <svg className={`w-4 h-4 transition-transform duration-200 ${showMenu ? 'rotate-180 text-accent' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </Link>
-
-              {showMenu && categoriesTree.length > 0 && (
-                <div className="absolute top-full -left-24 w-[700px] bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 p-6 z-50 grid grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-2 duration-200">
-                  {categoriesTree.map((parent: any) => (
-                    <div key={parent.id} className="space-y-2.5">
-                      <Link 
-                        href={`/productos?category=${parent.id}`} 
-                        onClick={() => setShowMenu(false)}
-                        className="font-bold text-gray-900 dark:text-white hover:text-accent transition-colors block text-base border-b border-gray-100 dark:border-zinc-800 pb-2 flex items-center justify-between group/link"
-                      >
-                        <span>{parent.name}</span>
-                        <span className="text-xs text-accent opacity-0 group-hover/link:opacity-100 transition-opacity">Ver todo →</span>
-                      </Link>
-                      {parent.children && parent.children.length > 0 && (
-                        <ul className="space-y-2 pt-0.5">
-                          {parent.children.map((child: any) => (
-                            <li key={child.id}>
-                              <Link 
-                                href={`/productos?category=${child.id}`}
-                                onClick={() => setShowMenu(false)}
-                                className="text-sm text-gray-600 dark:text-zinc-400 hover:text-accent transition-all block pl-1 hover:translate-x-1 duration-150 font-medium"
-                              >
-                                {child.name}
-                              </Link>
-                              {child.children && child.children.length > 0 && (
-                                <ul className="pl-3 space-y-1 mt-1 border-l-2 border-accent/20">
-                                  {child.children.map((sub: any) => (
-                                    <li key={sub.id}>
-                                      <Link 
-                                        href={`/productos?category=${sub.id}`}
-                                        onClick={() => setShowMenu(false)}
-                                        className="text-xs text-gray-400 hover:text-accent transition-colors block py-0.5"
-                                      >
-                                        {sub.name}
-                                      </Link>
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <Link href="/productos?ofertas=true" className="hover:text-accent text-red-500 transition-colors active:scale-95 duration-200 ease-[var(--spring-easing)] inline-block">Ofertas</Link>
-            <Link href="/rastrear-pedido" className="hover:text-accent transition-colors active:scale-95 duration-200 ease-[var(--spring-easing)] inline-block">Rastrear Pedido</Link>
-          </nav>
-
+        {/* Actions (User, Heart, Cart) */}
+        <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
           <div className="flex items-center gap-1 sm:gap-3 border-l border-gray-200 dark:border-zinc-800 pl-1.5 sm:pl-6">
             {!isClient ? (
               <div className="w-16 h-6 animate-shimmer rounded"></div>
@@ -380,8 +330,95 @@ export function Header() {
         </div>
       </div>
 
+      {/* Secondary Navigation Bar (Estilo Mercado Libre / Amazon) */}
+      <div className="hidden md:block bg-gray-50/80 dark:bg-zinc-900/80 border-t border-gray-100 dark:border-zinc-800/80">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 h-10 flex items-center justify-between text-xs sm:text-sm font-semibold text-gray-600 dark:text-zinc-300">
+          <nav className="flex items-center gap-6 lg:gap-8">
+            <div 
+              className="relative py-2"
+              onMouseEnter={() => setShowMenu(true)}
+              onMouseLeave={() => setShowMenu(false)}
+            >
+              <Link href="/productos" className="flex items-center gap-1.5 text-foreground hover:text-accent transition-colors font-bold py-1">
+                <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+                Categorías
+                <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${showMenu ? 'rotate-180 text-accent' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </Link>
+
+              {showMenu && categoriesTree.length > 0 && (
+                <div className="absolute top-full left-0 w-[700px] bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 p-6 z-50 grid grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-2 duration-200">
+                  {categoriesTree.map((parent: any) => (
+                    <div key={parent.id} className="space-y-2.5">
+                      <Link 
+                        href={`/productos?category=${parent.id}`} 
+                        onClick={() => setShowMenu(false)}
+                        className="font-bold text-gray-900 dark:text-white hover:text-accent transition-colors block text-base border-b border-gray-100 dark:border-zinc-800 pb-2 flex items-center justify-between group/link"
+                      >
+                        <span>{parent.name}</span>
+                        <span className="text-xs text-accent opacity-0 group-hover/link:opacity-100 transition-opacity">Ver todo →</span>
+                      </Link>
+                      {parent.children && parent.children.length > 0 && (
+                        <ul className="space-y-2 pt-0.5">
+                          {parent.children.map((child: any) => (
+                            <li key={child.id}>
+                              <Link 
+                                href={`/productos?category=${child.id}`}
+                                onClick={() => setShowMenu(false)}
+                                className="text-sm text-gray-600 dark:text-zinc-400 hover:text-accent transition-all block pl-1 hover:translate-x-1 duration-150 font-medium"
+                              >
+                                {child.name}
+                              </Link>
+                              {child.children && child.children.length > 0 && (
+                                <ul className="pl-3 space-y-1 mt-1 border-l-2 border-accent/20">
+                                  {child.children.map((sub: any) => (
+                                    <li key={sub.id}>
+                                      <Link 
+                                        href={`/productos?category=${sub.id}`}
+                                        onClick={() => setShowMenu(false)}
+                                        className="text-xs text-gray-400 hover:text-accent transition-colors block py-0.5"
+                                      >
+                                        {sub.name}
+                                      </Link>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link href="/productos?ofertas=true" className="hover:text-accent text-red-500 transition-colors font-bold flex items-center gap-1">
+              <span>🔥</span> Ofertas
+            </Link>
+            <Link href="/rastrear-pedido" className="hover:text-accent transition-colors">Rastrear Pedido</Link>
+          </nav>
+
+          <div className="flex items-center gap-4 text-xs text-muted-foreground font-medium">
+            <span className="flex items-center gap-1.5">
+              <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              Compra 100% Segura
+            </span>
+            <span className="hidden lg:inline text-gray-300 dark:text-zinc-700">|</span>
+            <span className="hidden lg:flex items-center gap-1">
+              <svg className="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              Envío Rápido y Garantizado
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Mobile Search Bar with Autocomplete */}
-      <div ref={mobileSearchContainerRef} className="md:hidden px-4 pb-3 pt-1 border-t border-gray-100 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 relative">
+      <div ref={mobileSearchContainerRef} className="md:hidden px-3 pb-3 pt-1.5 border-t border-gray-100 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 relative shadow-sm">
         <form 
           onSubmit={(e) => {
             e.preventDefault();
@@ -390,7 +427,7 @@ export function Header() {
               router.push(`/productos?search=${encodeURIComponent(searchQuery.trim())}`);
             }
           }} 
-          className="relative"
+          className="relative flex items-center"
         >
           <input 
             type="text" 
@@ -403,16 +440,22 @@ export function Header() {
               if (e.key === "Escape") setShowSuggestions(false);
             }}
             placeholder="¿Qué estás buscando hoy?" 
-            className="w-full bg-gray-100/90 dark:bg-zinc-800/90 border border-gray-200/60 dark:border-zinc-700/60 focus:bg-white dark:focus:bg-zinc-900 focus:border-accent focus:ring-2 focus:ring-accent/20 rounded-2xl py-2 pl-9 pr-10 text-xs transition-all text-foreground shadow-inner"
+            className="w-full bg-gray-100/90 dark:bg-zinc-800/90 border border-gray-200/80 dark:border-zinc-700/80 focus:bg-white dark:focus:bg-zinc-900 focus:border-accent focus:ring-2 focus:ring-accent/20 rounded-full py-2.5 pl-9 pr-20 text-sm transition-all text-foreground shadow-inner placeholder:text-gray-400"
           />
           <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
           {searchQuery && (
-            <button type="button" onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            <button type="button" onClick={() => setSearchQuery("")} className="absolute right-14 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
           )}
+          <button 
+            type="submit" 
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3.5 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs rounded-full shadow-sm flex items-center transition-all"
+          >
+            <span>Buscar</span>
+          </button>
         </form>
         {renderSuggestionsDropdown()}
       </div>
