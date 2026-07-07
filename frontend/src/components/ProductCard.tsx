@@ -7,6 +7,12 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { CheckCircle2, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 
+const isVideoUrl = (url?: string | null) => {
+  if (!url) return false;
+  const clean = url.split('?')[0].toLowerCase();
+  return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.ogg') || clean.endsWith('.mov') || clean.includes('video/');
+};
+
 interface Product {
   id: number;
   name: string;
@@ -40,20 +46,25 @@ export function ProductCard({ product }: { product: Product }) {
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const added = await toggleItem({
+    
+    const imageUrl = product.primary_image?.image_url 
+      ? (product.primary_image.image_url.startsWith('http')
+          ? product.primary_image.image_url
+          : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/storage/${product.primary_image.image_url}`)
+      : null;
+
+    const success = await toggleItem({
       id: product.id,
       name: product.name,
-      price: product.price,
-      image_url: product.primary_image?.image_url || null,
       slug: product.slug,
+      price: product.price,
+      image_url: imageUrl,
     });
-    if (added) {
-      toast.success("Añadido a tus favoritos ❤️", {
-        description: `${product.name} fue guardado en tu lista de deseos.`,
-      });
-    } else {
-      toast("Eliminado de favoritos", {
-        description: `${product.name} fue quitado de tu lista.`,
+
+    if (success) {
+      toast.success(isFav ? "Eliminado de favoritos" : "¡Agregado a favoritos! ❤️", {
+        description: isFav ? `${product.name} fue removido de tu lista.` : `${product.name} fue guardado en tu lista de deseos.`,
+        duration: 2500,
       });
     }
   };
@@ -84,6 +95,8 @@ export function ProductCard({ product }: { product: Product }) {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // Evitar navegación al detalle
+    e.stopPropagation();
+    
     addItem({
       id: product.id,
       name: product.name,
@@ -100,6 +113,9 @@ export function ProductCard({ product }: { product: Product }) {
     });
   };
 
+  const currentMediaSrc = allImages[currentIdx] || imageUrl;
+  const isCurrentVideo = isVideoUrl(currentMediaSrc);
+
   return (
     <motion.div 
       whileHover={{ y: -6, scale: 1.01, transition: { type: "spring", stiffness: 400, damping: 25 } }}
@@ -111,12 +127,29 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="absolute inset-0 z-30 pointer-events-none rounded-2xl bg-gradient-to-tr from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-[var(--spring-easing)] mix-blend-overlay"></div>
 
       <Link href={`/productos/${product.slug}`} className="relative aspect-[4/5] bg-white dark:bg-white overflow-hidden rounded-t-2xl block p-4 group/slider border-b border-gray-100 dark:border-zinc-800/80" style={{ transform: 'translateZ(0)' }}>
-        <Image
-          src={allImages[currentIdx] || imageUrl}
-          alt={product.name}
-          fill
-          className="object-contain p-5 sm:p-6 transition-transform duration-500 group-hover:scale-105"
-        />
+        {isCurrentVideo ? (
+          <div className="relative w-full h-full flex items-center justify-center bg-slate-900 overflow-hidden rounded-xl">
+            <video
+              src={currentMediaSrc}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover opacity-85"
+            />
+            <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow z-10">
+              <svg className="w-2.5 h-2.5 fill-current text-emerald-400" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <span>VIDEO</span>
+            </div>
+          </div>
+        ) : (
+          <Image
+            src={currentMediaSrc}
+            alt={product.name}
+            fill
+            className="object-contain p-5 sm:p-6 transition-transform duration-500 group-hover:scale-105"
+          />
+        )}
 
         {allImages.length > 1 && (
           <>

@@ -165,10 +165,32 @@ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN
   );
 }
 
+const isVideoUrl = (url?: string | null) => {
+  if (!url) return false;
+  const clean = url.split('?')[0].toLowerCase();
+  return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.ogg') || clean.endsWith('.mov') || clean.includes('video/');
+};
+
 function ZoomableImage({ src, alt }: { src: string; alt: string }) {
   const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({});
   const [isZoomed, setIsZoomed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  if (isVideoUrl(src)) {
+    return (
+      <div className="relative w-full h-full flex items-center justify-center bg-black/5 dark:bg-black/40 overflow-hidden">
+        <video 
+          src={src} 
+          controls 
+          autoPlay 
+          muted 
+          loop 
+          playsInline 
+          className="w-full h-full object-contain max-h-[550px]"
+        />
+      </div>
+    );
+  }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
@@ -273,15 +295,27 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </div>
             {images.length > 1 && (
               <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
-                {images.map((img: string, idx: number) => (
-                  <div 
-                    key={idx} 
-                    onClick={() => setActiveIdx(idx)}
-                    className={`relative w-20 h-20 rounded-xl overflow-hidden bg-white dark:bg-white border border-gray-100 dark:border-zinc-800 flex-shrink-0 cursor-pointer transition-all duration-200 p-1.5 ${activeIdx === idx ? 'ring-2 ring-emerald-600 border-emerald-600 scale-95 opacity-100 shadow-md' : 'opacity-60 hover:opacity-100'}`}
-                  >
-                    <Image src={img} alt="" fill className="object-contain p-1.5" />
-                  </div>
-                ))}
+                {images.map((img: string, idx: number) => {
+                  const isVideo = isVideoUrl(img);
+                  return (
+                    <div 
+                      key={idx} 
+                      onClick={() => setActiveIdx(idx)}
+                      className={`relative w-20 h-20 rounded-xl overflow-hidden bg-white dark:bg-white border border-gray-100 dark:border-zinc-800 flex-shrink-0 cursor-pointer transition-all duration-200 p-1.5 ${activeIdx === idx ? 'ring-2 ring-emerald-600 border-emerald-600 scale-95 opacity-100 shadow-md' : 'opacity-60 hover:opacity-100'}`}
+                    >
+                      {isVideo ? (
+                        <div className="w-full h-full bg-slate-900 rounded-lg flex flex-col items-center justify-center text-white relative overflow-hidden">
+                          <video src={img} className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none" />
+                          <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow z-10">
+                            <svg className="w-3.5 h-3.5 ml-0.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                          </div>
+                        </div>
+                      ) : (
+                        <Image src={img} alt="" fill className="object-contain p-1.5" />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

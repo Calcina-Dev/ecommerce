@@ -249,8 +249,8 @@ class ProductForm
                             $fail('El Precio Anterior debe ser MAYOR al Precio Actual para que se considere una oferta.');
                         }
                     }),
-                \Filament\Schemas\Components\Section::make('Galería e Imágenes del Producto')
-                    ->description('Las imágenes deben tener al menos 400 x 400 pixeles (recomendado 1000 x 1000 o superior). Fondos de color permitidos: gris, blanco, azul, marrón o transparente. Puedes agregar varias imágenes a la vez y arrastrar las miniaturas para reordenarlas. La primera imagen de la lista será siempre la principal (★ Principal).')
+                \Filament\Schemas\Components\Section::make('Galería de Imágenes y Videos del Producto')
+                    ->description('Puedes subir imágenes (recomendado 1000 x 1000 px o superior) y videos cortos de demostración (MP4, WebM, MOV hasta 30 MB). Puedes agregar varios archivos a la vez y arrastrar las miniaturas para reordenarlos. El primer archivo de la lista será siempre la portada principal (★ Principal).')
                     ->schema([
                         \Filament\Forms\Components\FileUpload::make('gallery_images')
                             ->hiddenLabel()
@@ -258,7 +258,8 @@ class ProductForm
                             ->reorderable()
                             ->appendFiles()
                             ->maxFiles(8)
-                            ->image()
+                            ->acceptedFileTypes(['image/*', 'video/mp4', 'video/webm', 'video/quicktime', 'video/ogg'])
+                            ->maxSize(30720)
                             ->disk('public')
                             ->directory('products')
                             ->visibility('public')
