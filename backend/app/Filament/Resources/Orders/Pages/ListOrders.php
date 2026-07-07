@@ -23,8 +23,10 @@ class ListOrders extends ListRecords
         return [
             'Activas' => \Filament\Schemas\Components\Tabs\Tab::make()
                 ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', '!=', 'pending_payment')),
+            'Pendientes de Pago' => \Filament\Schemas\Components\Tabs\Tab::make()
+                ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', 'pending_payment')->where('created_at', '>=', now()->subHours(1))),
             'Carritos Abandonados' => \Filament\Schemas\Components\Tabs\Tab::make()
-                ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', 'pending_payment')),
+                ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', 'pending_payment')->where('created_at', '<', now()->subHours(1))),
             'Todas' => \Filament\Schemas\Components\Tabs\Tab::make(),
         ];
     }

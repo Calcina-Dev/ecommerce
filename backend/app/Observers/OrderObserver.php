@@ -70,23 +70,22 @@ class OrderObserver
      */
     public function updated(Order $order): void
     {
-        if ($order->isDirty('status') || $order->isDirty('payment_status')) {
-            $wasPaidOrProcessing = in_array($order->getOriginal('status'), ['processing', 'shipped', 'delivered']) || $order->getOriginal('payment_status') === 'paid';
+        if ($order->wasChanged('status') || $order->wasChanged('payment_status')) {
             $isPaidOrProcessing = in_array($order->status, ['processing', 'shipped', 'delivered']) || $order->payment_status === 'paid';
 
-            if ($order->isDirty('status')) {
+            if ($order->wasChanged('status')) {
                 \App\Models\OrderNote::create([
                     'order_id' => $order->id,
                     'user_id' => auth()->id(),
-                    'content' => "El estado del pedido cambió de '" . ($order->getOriginal('status') ?? 'nuevo') . "' a '{$order->status}'.",
+                    'content' => "El estado del pedido cambió a '{$order->status}'.",
                     'type' => 'system',
                 ]);
             }
 
-            if ($isPaidOrProcessing && !$wasPaidOrProcessing) {
+            if ($isPaidOrProcessing && empty($order->document_number)) {
                 $this->assignDocumentNumber($order);
                 $this->deductStock($order);
-            } elseif ($order->status === 'cancelled' && $wasPaidOrProcessing) {
+            } elseif ($order->status === 'cancelled' && $order->wasChanged('status')) {
                 $this->restoreStock($order);
             }
 
@@ -94,19 +93,19 @@ class OrderObserver
             if ($order->shipping_email) {
                 try {
                     // Verificar si se acaba de pagar o pasar a processing
-                    $becamePaid = ($order->payment_status === 'paid' && $order->getOriginal('payment_status') !== 'paid')
-                               || ($order->status === 'processing' && $order->getOriginal('status') !== 'processing');
+                    $becamePaid = ($order->wasChanged('payment_status') && $order->payment_status === 'paid')
+                                || ($order->wasChanged('status') && $order->status === 'processing');
 
                     if ($becamePaid) {
                         Mail::to($order->shipping_email)->send(new OrderPaid($order));
                         Log::info("Email de pago/confirmación enviado a {$order->shipping_email} para orden {$order->order_number}");
-                    } elseif ($order->status === 'shipped' && $order->getOriginal('status') !== 'shipped') {
+                    } elseif ($order->wasChanged('status') && $order->status === 'shipped') {
                         Mail::to($order->shipping_email)->send(new OrderShipped($order));
                         Log::info("Email de envío enviado a {$order->shipping_email} para orden {$order->order_number}");
-                    } elseif ($order->status === 'delivered' && $order->getOriginal('status') !== 'delivered') {
+                    } elseif ($order->wasChanged('status') && $order->status === 'delivered') {
                         Mail::to($order->shipping_email)->send(new OrderCompleted($order));
                         Log::info("Email de entrega enviado a {$order->shipping_email} para orden {$order->order_number}");
-                    } elseif ($order->status === 'cancelled' && $order->getOriginal('status') !== 'cancelled') {
+                    } elseif ($order->wasChanged('status') && $order->status === 'cancelled') {
                         Mail::to($order->shipping_email)->send(new OrderCancelled($order));
                         Log::info("Email de cancelación enviado a {$order->shipping_email} para orden {$order->order_number}");
                     }
@@ -122,7 +121,7 @@ class OrderObserver
             }
         }
 
-        if ($order->isDirty('payment_status')) {
+        if ($order->wasChanged('payment_status')) {
             \App\Models\OrderNote::create([
                 'order_id' => $order->id,
                 'user_id' => auth()->id(),

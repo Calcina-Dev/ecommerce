@@ -31,7 +31,7 @@ class SaleObserver
 
     public function updated(Sale $sale): void
     {
-        if ($sale->isDirty('status')) {
+        if ($sale->wasChanged('status')) {
             if ($sale->status === 'CONFIRMED') {
                 $this->deductStock($sale);
             } elseif ($sale->status === 'CANCELLED') {

@@ -212,9 +212,9 @@ class CheckoutController extends Controller
 
             DB::commit();
 
-            // 4. Enviar notificación a los administradores solo si la orden ya nació pagada
+            // 4. Enviar notificación a los administradores de la creación de la orden web
             $admins = \App\Models\User::whereIn('role', ['admin', 'employee'])->get();
-            if ($admins->count() > 0 && $order->payment_status === 'paid') {
+            if ($admins->count() > 0) {
                 \Filament\Notifications\Notification::make()
                     ->title('¡Nueva Venta Web!')
                     ->body("Orden {$order->order_number} por S/ " . number_format($order->total_amount, 2))
