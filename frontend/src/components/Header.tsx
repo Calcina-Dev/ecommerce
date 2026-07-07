@@ -11,6 +11,9 @@ import { useAddressStore } from "@/store/useAddressStore";
 import { Heart, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import ubigeosData from "@/data/ubigeos_peru.json";
+import dynamic from "next/dynamic";
+
+const AddressMapSelector = dynamic(() => import("@/components/AddressMapSelector").then(mod => mod.AddressMapSelector), { ssr: false });
 
 export function Header() {
   const { user, logout } = useAuthStore();
@@ -414,35 +417,61 @@ export function Header() {
         {renderSuggestionsDropdown()}
       </div>
 
-      {/* Mercado Libre Style Location Modal (Rendered via createPortal to document.body to avoid header backdrop/sticky CSS clipping) */}
+      {/* Barra de Navegación Rápida / Categorías */}
+      <nav className="bg-[#111827] text-white border-t border-white/10 text-xs font-extrabold">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-11 overflow-x-auto no-scrollbar py-1">
+            <div className="flex items-center gap-6 shrink-0">
+              <Link href="/productos" className="hover:text-accent transition-colors flex items-center gap-1.5">
+                <span className="text-accent">⚡</span> Todo el Catálogo
+              </Link>
+              {categoriesTree.slice(0, 6).map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/productos?category_slug=${cat.slug}`}
+                  className="hover:text-accent transition-colors whitespace-nowrap"
+                >
+                  {cat.name}
+                </Link>
+              ))}
+              <Link href="/rastrear-pedido" className="hover:text-accent transition-colors flex items-center gap-1 text-emerald-400">
+                📦 Rastrear Pedido
+              </Link>
+            </div>
+            
+            <div className="hidden lg:flex items-center gap-4 text-gray-400 font-semibold text-[11px]">
+              <span>📞 Soporte 24/7</span>
+              <span>🛡️ Garantía de Compra</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Modal de Ubicación (Estilo Mercado Libre) - Renderizado vía Portal al Body para evitar recortes por Header/backdrop-blur */}
       {isClient && showLocationModal && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 animate-in zoom-in-95 duration-200 my-auto">
-            {/* Header */}
-            <div className="p-5 bg-gradient-to-r from-accent/10 via-emerald-500/10 to-transparent border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center shadow-md flex-shrink-0">
-                  <MapPin className="w-5 h-5" />
-                </div>
+        <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div 
+            className="bg-background text-foreground rounded-3xl max-w-md w-full shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header del Modal */}
+            <div className="bg-[#fff059] px-6 py-4 flex items-center justify-between text-[#111827]">
+              <div className="flex items-center gap-2.5">
+                <MapPin className="w-6 h-6 text-[#111827] shrink-0" />
                 <div>
-                  <h3 className="font-black text-base sm:text-lg text-foreground leading-tight">Elige dónde recibir tus compras</h3>
-                  <p className="text-xs text-muted-foreground">Podrás ver costos y tiempos de entrega exactos en tu zona</p>
+                  <h3 className="font-black text-base leading-tight">Elige dónde recibir tus compras</h3>
+                  <p className="text-[11px] font-semibold text-[#111827]/70">Podrás ver costos y tiempos de envío exactos</p>
                 </div>
               </div>
-              <button 
-                type="button"
-                onClick={() => {
-                  setShowLocationModal(false);
-                  setIsAddingAddress(false);
-                }}
-                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 text-gray-500 hover:text-foreground flex items-center justify-center transition-colors font-bold"
+              <button
+                onClick={() => { setShowLocationModal(false); setIsAddingAddress(false); }}
+                className="w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center font-bold transition-colors"
               >
                 ✕
               </button>
             </div>
 
-            {/* Body */}
-            <div className="p-6 max-h-[75vh] overflow-y-auto space-y-6">
+            <div className="p-6 max-h-[80vh] overflow-y-auto">
               {isAddingAddress ? (
                 <div className="space-y-4 animate-in fade-in duration-200">
                   <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-3">
@@ -451,13 +480,26 @@ export function Header() {
                       Nueva dirección de envío
                     </h4>
                     <button 
-                      type="button" 
+                      type="button"
                       onClick={() => setIsAddingAddress(false)}
                       className="text-xs font-bold text-muted-foreground hover:text-foreground underline"
                     >
                       ← Volver al listado
                     </button>
                   </div>
+
+                  {/* Mapa Interactivo Leaflet para seleccionar la dirección */}
+                  <AddressMapSelector
+                    onSelectLocation={(loc) => {
+                      setNewAddrForm((prev) => ({
+                        ...prev,
+                        address: loc.address || prev.address,
+                        district: loc.district || prev.district,
+                        province: loc.province || prev.province,
+                        department: loc.department || prev.department,
+                      }));
+                    }}
+                  />
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
                     <div>

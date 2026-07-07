@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -19,16 +20,9 @@ function SuccessContent() {
       toast.success('¡Compra realizada con éxito!', {
         id: 'success-toast',
         duration: 5000,
-        position: 'top-center',
-        icon: '🎉',
       });
 
-      // Disparar celebración con confeti en la pantalla
-      confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.6 }
-      });
+      // Lanza confeti festivo desde los costados superiores
       setTimeout(() => {
         confetti({
           particleCount: 80,
@@ -58,15 +52,19 @@ function SuccessContent() {
           <div className="absolute bottom-8 right-1/4 w-3 h-3 bg-white rounded-full animate-ping delay-500"></div>
         </div>
 
-        {/* Lottie Animation Success Confetti (f5PdexvrBK) */}
+        {/* Lottie Animation Success Confetti */}
         <div className="w-56 h-56 sm:w-64 sm:h-64 mx-auto mb-2 relative flex items-center justify-center">
-          <iframe 
-            src="https://embed.lottiefiles.com/animation/f5PdexvrBK" 
-            className="w-full h-full border-0 pointer-events-none scale-125 sm:scale-150"
-            allowFullScreen
-            scrolling="no"
-            title="Success Confetti Animation"
+          <DotLottieReact
+            src="/animations/confetti.json"
+            loop
+            autoplay
+            className="w-full h-full absolute inset-0 pointer-events-none scale-125 sm:scale-150"
           />
+          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-white text-[#22c55e] flex items-center justify-center shadow-2xl animate-bounce">
+            <svg className="w-16 h-16 sm:w-20 sm:h-20 stroke-[3.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 tracking-tight">

@@ -5,6 +5,9 @@ import { useAddressStore } from "@/store/useAddressStore";
 import { toast } from "sonner";
 import { Plus, MapPin, Check, Trash2, Edit2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import dynamic from "next/dynamic";
+
+const AddressMapSelector = dynamic(() => import("@/components/AddressMapSelector").then(mod => mod.AddressMapSelector), { ssr: false });
 
 export interface UserAddress {
   id: number;
@@ -269,6 +272,17 @@ export function UserAddressesManager() {
               {editingId ? "Editar Dirección" : "Nueva Dirección"}
             </h3>
             <form onSubmit={handleSave} className="space-y-4">
+              <AddressMapSelector
+                onSelectLocation={(loc) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    address: loc.address || prev.address,
+                    district: loc.district || prev.district,
+                    province: loc.province || prev.province,
+                    department: loc.department || prev.department,
+                  }));
+                }}
+              />
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold mb-1">Alias / Nombre de lugar</label>
