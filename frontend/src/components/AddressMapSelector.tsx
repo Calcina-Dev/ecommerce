@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin, Navigation, Loader2 } from "lucide-react";
+import { MapPin, Navigation, Loader2, Search, X, CheckCircle2 } from "lucide-react";
 import ubigeosData from "@/data/ubigeos_peru.json";
 
 interface AddressMapSelectorProps {
@@ -111,9 +111,50 @@ export function AddressMapSelector({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const [loadingGeo, setLoadingGeo] = useState(false);
-  const [selectedText, setSelectedText] = useState<string>("Mueve el pin o haz clic en el mapa para seleccionar tu dirección exacta");
+  const [selectedText, setSelectedText] = useState<string>("Mueve el pin o busca tu dirección en el mapa");
+  
+  // Estado para la barra de búsqueda y autocompletado
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Cerrar sugerencias al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Autocompletado en vivo de Nominatim cuando escribe (debounce)
+  useEffect(() => {
+    if (!searchQuery || searchQuery.trim().length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery + ", Peru")}&countrycodes=pe&addressdetails=1&limit=5`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data || []);
+          setShowSuggestions(true);
+        }
+      } catch (err) {
+        console.error("Error en autocompletado:", err);
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const reverseGeocode = async (lat: number, lng: number, fallbackName?: string) => {
     setLoadingGeo(true);
@@ -156,6 +197,57 @@ export function AddressMapSelector({
       });
     } finally {
       setLoadingGeo(false);
+    }
+  };
+
+  const handleSearch = async (e?: React.FormEvent, queryText?: string) => {
+    if (e) e.preventDefault();
+    const q = queryText || searchQuery;
+    if (!q.trim()) return;
+
+    setLoadingGeo(true);
+    setShowSuggestions(false);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ", Peru")}&countrycodes=pe&addressdetails=1&limit=5`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const first = data[0];
+          const lat = parseFloat(first.lat);
+          const lon = parseFloat(first.lon);
+          
+          if (mapInstanceRef.current && markerRef.current) {
+            const newLatLng = new L.LatLng(lat, lon);
+            markerRef.current.setLatLng(newLatLng);
+            mapInstanceRef.current.setView(newLatLng, 16);
+            reverseGeocode(lat, lon, q);
+          }
+        } else {
+          alert("No encontramos esa dirección exacta. Intenta con el nombre de tu calle, urbanización o distrito.");
+        }
+      }
+    } catch (err) {
+      console.error("Error buscando dirección:", err);
+    } finally {
+      setLoadingGeo(false);
+    }
+  };
+
+  const handleSelectSuggestion = (sug: any) => {
+    const lat = parseFloat(sug.lat);
+    const lon = parseFloat(sug.lon);
+    const shortName = sug.display_name?.split(",")[0] || searchQuery;
+    setSearchQuery(shortName);
+    setShowSuggestions(false);
+    setSuggestions([]);
+
+    if (mapInstanceRef.current && markerRef.current) {
+      const newLatLng = new L.LatLng(lat, lon);
+      markerRef.current.setLatLng(newLatLng);
+      mapInstanceRef.current.setView(newLatLng, 16);
+      reverseGeocode(lat, lon, shortName);
     }
   };
 
@@ -268,77 +360,148 @@ export function AddressMapSelector({
   };
 
   return (
-    <div className="space-y-2.5 my-3 bg-muted/30 p-3 rounded-2xl border border-border">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-          <MapPin className="w-4 h-4 text-primary" />
-          Selecciona tu ubicación en el mapa:
-        </span>
+    <div className="space-y-4 my-2 bg-white dark:bg-zinc-900 p-4 sm:p-5 rounded-3xl border border-gray-200/80 dark:border-zinc-800 shadow-sm transition-all text-left">
+      {/* Encabezado e Instrucciones */}
+      <div className="flex items-center justify-between gap-2 border-b border-gray-100 dark:border-zinc-800 pb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent shrink-0">
+            <MapPin className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="font-extrabold text-sm text-foreground">Buscador interactivo de ubicación</h4>
+            <p className="text-[11px] text-muted-foreground">Busca tu dirección o mueve el pin para calcular costos exactos</p>
+          </div>
+        </div>
         <button
           type="button"
           onClick={handleUseGPS}
-          className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity"
+          className="text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-3 py-2 rounded-xl font-bold flex items-center gap-1.5 shadow-2xs transition-all shrink-0"
+          title="Detectar mi ubicación satelital"
         >
           <Navigation className="w-3.5 h-3.5" />
-          Usar mi GPS actual
+          <span className="hidden sm:inline">Usar mi GPS</span>
+          <span className="sm:hidden">GPS</span>
         </button>
+      </div>
+
+      {/* Barra de Búsqueda Estilo Mercado Libre */}
+      <div ref={searchRef} className="relative w-full">
+        <form onSubmit={(e) => handleSearch(e)} className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="🔍 Escribe tu calle, avenida, urbanización o lugar (Ej: Av. Larco 123, Trujillo)..."
+              className="w-full pl-10 pr-9 py-2.5 bg-gray-50 dark:bg-zinc-800/80 border border-gray-200 dark:border-zinc-700 rounded-2xl text-xs sm:text-sm font-semibold text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-accent focus:bg-white dark:focus:bg-zinc-900 transition-all shadow-inner"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(""); setSuggestions([]); setShowSuggestions(false); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="px-5 py-2.5 bg-accent hover:bg-accent/90 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-sm transition-all shrink-0 flex items-center gap-1.5"
+          >
+            Buscar
+          </button>
+        </form>
+
+        {/* Dropdown de Sugerencias de Autocompletado */}
+        {showSuggestions && suggestions.length > 0 && (
+          <div className="absolute z-50 left-0 right-0 mt-1.5 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl shadow-xl overflow-hidden divide-y divide-gray-100 dark:divide-zinc-700 max-h-60 overflow-y-auto">
+            <div className="px-3 py-1.5 bg-muted/50 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              Sugerencias en Perú
+            </div>
+            {suggestions.map((sug, idx) => (
+              <div
+                key={idx}
+                onClick={() => handleSelectSuggestion(sug)}
+                className="p-3 hover:bg-accent/5 dark:hover:bg-accent/10 cursor-pointer transition-colors flex items-start gap-2.5 text-left"
+              >
+                <MapPin className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                <div className="flex-1 truncate">
+                  <p className="text-xs font-bold text-foreground truncate">
+                    {sug.display_name?.split(",")[0]}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    {sug.display_name}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Botones rápidos de ciudades/zonas populares */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
-        <span className="text-muted-foreground font-medium shrink-0">Zonas rápidas:</span>
+        <span className="text-muted-foreground font-semibold shrink-0">Ciudades rápidas:</span>
         <button
           type="button"
           onClick={() => handleQuickCity(-7.2244, -79.4328, "Chepen")}
-          className="px-2.5 py-1 bg-background hover:bg-muted border rounded-lg font-semibold transition-colors shrink-0"
+          className="px-2.5 py-1 bg-gray-100/80 dark:bg-zinc-800 hover:bg-accent hover:text-white border border-gray-200/60 dark:border-zinc-700 rounded-xl font-bold transition-all shrink-0 cursor-pointer"
         >
-          Chepén
+          📍 Chepén
         </button>
         <button
           type="button"
           onClick={() => handleQuickCity(-8.1159, -79.0299, "Trujillo")}
-          className="px-2.5 py-1 bg-background hover:bg-muted border rounded-lg font-semibold transition-colors shrink-0"
+          className="px-2.5 py-1 bg-gray-100/80 dark:bg-zinc-800 hover:bg-accent hover:text-white border border-gray-200/60 dark:border-zinc-700 rounded-xl font-bold transition-all shrink-0 cursor-pointer"
         >
-          Trujillo
+          📍 Trujillo
         </button>
         <button
           type="button"
           onClick={() => handleQuickCity(-12.0464, -77.0428, "Lima")}
-          className="px-2.5 py-1 bg-background hover:bg-muted border rounded-lg font-semibold transition-colors shrink-0"
+          className="px-2.5 py-1 bg-gray-100/80 dark:bg-zinc-800 hover:bg-accent hover:text-white border border-gray-200/60 dark:border-zinc-700 rounded-xl font-bold transition-all shrink-0 cursor-pointer"
         >
-          Lima Centro
+          📍 Lima
         </button>
         <button
           type="button"
           onClick={() => handleQuickCity(-6.7714, -79.8409, "Chiclayo")}
-          className="px-2.5 py-1 bg-background hover:bg-muted border rounded-lg font-semibold transition-colors shrink-0"
+          className="px-2.5 py-1 bg-gray-100/80 dark:bg-zinc-800 hover:bg-accent hover:text-white border border-gray-200/60 dark:border-zinc-700 rounded-xl font-bold transition-all shrink-0 cursor-pointer"
         >
-          Chiclayo
+          📍 Chiclayo
         </button>
         <button
           type="button"
           onClick={() => handleQuickCity(-16.409, -71.5375, "Arequipa")}
-          className="px-2.5 py-1 bg-background hover:bg-muted border rounded-lg font-semibold transition-colors shrink-0"
+          className="px-2.5 py-1 bg-gray-100/80 dark:bg-zinc-800 hover:bg-accent hover:text-white border border-gray-200/60 dark:border-zinc-700 rounded-xl font-bold transition-all shrink-0 cursor-pointer"
         >
-          Arequipa
+          📍 Arequipa
         </button>
       </div>
 
       {/* Contenedor del Mapa */}
       <div
         ref={mapContainerRef}
-        className="w-full h-52 sm:h-60 rounded-xl overflow-hidden border-2 border-primary/20 shadow-inner z-10 relative bg-zinc-100 dark:bg-zinc-800"
+        className="w-full h-56 sm:h-64 rounded-2xl overflow-hidden border-2 border-accent/20 shadow-inner z-10 relative bg-zinc-100 dark:bg-zinc-800"
       />
 
-      {/* Barra de estado / Dirección detectada */}
-      <div className="flex items-center gap-2 bg-background p-2.5 rounded-xl border text-xs">
-        {loadingGeo ? (
-          <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />
-        ) : (
-          <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0">📍 Detectado:</span>
-        )}
-        <span className="font-medium text-foreground truncate flex-1">
-          {loadingGeo ? "Buscando nombre de la calle y distrito..." : selectedText}
+      {/* Barra de estado / Dirección detectada (Estilo confirmación de zona) */}
+      <div className="flex items-center justify-between gap-3 bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 p-3 rounded-2xl text-xs shadow-2xs">
+        <div className="flex items-center gap-2 truncate">
+          {loadingGeo ? (
+            <Loader2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-spin shrink-0" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          )}
+          <span className="font-extrabold text-emerald-700 dark:text-emerald-300 shrink-0">Ubicación elegida:</span>
+          <span className="font-bold text-foreground truncate">
+            {loadingGeo ? "Sincronizando dirección y distrito..." : selectedText}
+          </span>
+        </div>
+        <span className="text-[10px] bg-white/80 dark:bg-zinc-800 text-emerald-700 dark:text-emerald-300 font-extrabold px-2 py-0.5 rounded-lg border border-emerald-500/20 shrink-0 hidden sm:inline">
+          ✓ Envíos habilitados
         </span>
       </div>
     </div>

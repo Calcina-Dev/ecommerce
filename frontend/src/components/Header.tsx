@@ -760,15 +760,7 @@ export function Header() {
                   )}
 
                   {/* Sección 2: Selector Interactivo de Ubigeo / Distrito (Estilo Mercado Libre Mapa/Zona) */}
-                  <div className="bg-muted/30 p-5 rounded-3xl border border-gray-200/80 dark:border-zinc-800 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🗺️</span>
-                      <div>
-                        <h4 className="font-black text-sm text-foreground">Selecciona tu ubicación o zona de envío en el mapa</h4>
-                        <p className="text-xs text-muted-foreground">Mueve el pin en el mapa o elige en las listas para ver costos y tiempos exactos</p>
-                      </div>
-                    </div>
-
+                  <div className="space-y-4">
                     {/* Mapa interactivo visible directamente en el selector general */}
                     <AddressMapSelector
                       selectedDepartment={locDept}
