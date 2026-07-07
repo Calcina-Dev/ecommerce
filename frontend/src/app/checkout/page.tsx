@@ -345,6 +345,23 @@ export default function CheckoutPage() {
       await KR.showForm("#izipay-form-container");
       setIzipayLoading(false);
       
+      // Enfocar y centrar suavemente el modal y el campo de tarjeta al abrirse
+      setTimeout(() => {
+        const modalContent = document.getElementById("izipay-modal-content");
+        if (modalContent) {
+          modalContent.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          modalContent.focus({ preventScroll: true });
+        }
+
+        // Buscar el primer input o iframe dentro de Izipay para darle focus
+        const krInput = document.querySelector(
+          '#izipay-form-container input:not([type="hidden"]), .kr-pan input, input[name="kr-pan"], #izipay-form-container iframe'
+        ) as HTMLElement;
+        if (krInput && typeof krInput.focus === 'function') {
+          krInput.focus();
+        }
+      }, 350);
+      
       
     } catch (error) {
       console.error("Izipay loading error", error);
@@ -378,7 +395,11 @@ export default function CheckoutPage() {
       {/* Modal Overlay Personalizado para Izipay */}
       {showIzipayForm && (
         <div className="fixed inset-0 z-[9999] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl p-5 sm:p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-300 my-6 sm:my-auto">
+          <div 
+            id="izipay-modal-content"
+            tabIndex={-1}
+            className="bg-white rounded-3xl p-5 sm:p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-300 my-6 sm:my-auto outline-none"
+          >
             <button 
               onClick={() => {
                 setShowIzipayForm(false);
