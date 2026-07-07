@@ -677,7 +677,7 @@ export function Header() {
                         <span className="w-2 h-2 rounded-full bg-accent"></span>
                         Mis direcciones guardadas
                       </p>
-                      <div className="grid grid-cols-1 gap-2.5">
+                      <div className="grid grid-cols-1 gap-3">
                         {savedAddresses.map((addr) => {
                           const isSel = selectedAddress?.id === addr.id;
                           return (
@@ -690,31 +690,71 @@ export function Header() {
                                 });
                                 setShowLocationModal(false);
                               }}
-                              className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-3 ${
-                                isSel 
-                                  ? "border-accent bg-accent/5 shadow-sm" 
-                                  : "border-gray-200 dark:border-zinc-800 hover:border-gray-300 bg-background"
+                              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer ${
+                                isSel
+                                  ? "border-emerald-500 bg-white dark:bg-zinc-900 ring-1 ring-emerald-500 shadow-sm"
+                                  : "border-gray-200 hover:border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-900"
                               }`}
                             >
-                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 ${
-                                isSel ? "border-accent bg-accent text-white" : "border-gray-300"
-                              }`}>
-                                {isSel && <span className="w-2 h-2 rounded-full bg-white"></span>}
-                              </div>
-                              <div className="flex-1 text-left">
+                              <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-black text-xs uppercase px-2 py-0.5 rounded-md bg-muted text-foreground">
+                                  <span className="bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1 rounded-full text-xs font-bold">
                                     {addr.alias || "Casa"}
                                   </span>
                                   {addr.is_default && (
-                                    <span className="text-amber-500 text-xs font-bold flex items-center gap-0.5">
+                                    <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
                                       ★ Predeterminada
                                     </span>
                                   )}
                                 </div>
-                                <p className="font-bold text-sm text-foreground mt-1">{addr.recipient_name} <span className="font-normal text-muted-foreground">({addr.phone})</span></p>
-                                <p className="text-xs text-muted-foreground mt-0.5">{addr.address}</p>
-                                <p className="text-[11px] text-muted-foreground/80 mt-0.5 font-medium">{addr.district}, {addr.province}, {addr.department}</p>
+                                {isSel && (
+                                  <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>
+                                  </div>
+                                )}
+                              </div>
+
+                              <p className="text-base font-bold text-gray-900 dark:text-white mt-3 text-left">{addr.recipient_name}</p>
+                              
+                              <div className="flex items-start gap-2 mt-2 text-sm text-gray-600 dark:text-gray-300 text-left">
+                                <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                <div>
+                                  <p>{addr.address}</p>
+                                  <p className="text-gray-500 dark:text-gray-400">{addr.district}, {addr.province}</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 mt-2 text-sm font-medium text-gray-700 dark:text-gray-300 text-left">
+                                <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                                <span>{addr.phone}</span>
+                              </div>
+
+                              <div className="border-t border-gray-200 dark:border-zinc-800 mt-4 pt-4 flex items-center justify-between">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedAddress(addr);
+                                    toast.success("¡Ubicación actualizada!", {
+                                      description: `Tus compras se calcularán para envío a ${addr.alias || 'tu dirección'}.`,
+                                    });
+                                    setShowLocationModal(false);
+                                  }}
+                                  className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-gray-100 font-semibold text-sm py-2 px-5 rounded-xl transition-all shadow-sm"
+                                >
+                                  Usar esta dirección
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowLocationModal(false);
+                                    router.push("/mi-cuenta");
+                                  }}
+                                  className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium text-sm px-4 py-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-all"
+                                >
+                                  Editar
+                                </button>
                               </div>
                             </div>
                           );
