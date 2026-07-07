@@ -15,6 +15,7 @@ export default function CheckoutPage() {
   const { user } = useAuthStore();
 
   const [loading, setLoading] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     shipping_name: "",
@@ -147,6 +148,7 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setProcessingPayment(true);
     setError("");
 
     try {
@@ -181,17 +183,19 @@ export default function CheckoutPage() {
       else if (data.payment_method === 'izipay' && data.form_token) {
         setIzipayFormToken(data.form_token);
         setOrderCreated(data.order_number);
+        setProcessingPayment(false);
         setShowIzipayForm(true);
         initIzipay(data.form_token, data.order_number);
       } else {
         clearCart();
-        router.push(`/checkout/success?order=${data.order_number}`);
+        router.push(`/checkout/success?order=${data.order_number}&email=${encodeURIComponent(formData.shipping_email)}`);
       }
 
     } catch (err: any) {
       setError(err.message);
       toast.error(err.message, { duration: 6000 });
       setLoading(false);
+      setProcessingPayment(false);
     }
   };
 
@@ -211,6 +215,8 @@ export default function CheckoutPage() {
       KR.onSubmit(async (paymentData: any) => {
         if (paymentData.clientAnswer.orderStatus === "PAID") {
           try {
+            setShowIzipayForm(false);
+            setProcessingPayment(true);
             // Avisar al backend localmente para que marque como pagado
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/checkout/verify-izipay`, {
               method: 'POST',
@@ -222,13 +228,15 @@ export default function CheckoutPage() {
             });
             
             if (res.ok) {
-              router.push(`/checkout/success?order_id=${orderNumber}&status=approved`);
+              router.push(`/checkout/success?order_id=${orderNumber}&status=approved&email=${encodeURIComponent(formData.shipping_email)}`);
             } else {
+              setProcessingPayment(false);
               const errData = await res.json().catch(() => ({}));
               console.error('Backend rejected payment verification:', errData);
               toast.error("No se pudo validar el pago en el servidor.");
             }
           } catch (e) {
+            setProcessingPayment(false);
             console.error('Error verifying locally', e);
             toast.error("Error de conexión al validar el pago.");
           }
@@ -311,6 +319,35 @@ export default function CheckoutPage() {
           </div>
         </div>
       )}
+
+      {/* Modal / Overlay de Procesando Pago (Estilo input_file_0) */}
+      {(loading || processingPayment) && !showIzipayForm && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl p-10 max-w-md w-full shadow-2xl flex flex-col items-center text-center relative overflow-hidden animate-in zoom-in-95 duration-300">
+            {/* Ícono superior */}
+            <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-6 shadow-inner">
+              <svg className="w-10 h-10 text-gray-700 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+
+            <h3 className="text-2xl font-extrabold text-gray-900 mb-2 tracking-tight">¡Ya falta poco!</h3>
+            <p className="text-gray-600 text-base font-medium mb-8">Estamos procesando tu pago</p>
+
+            {/* Barra multicolor animada */}
+            <div className="w-full max-w-[280px] flex gap-1.5 overflow-hidden">
+              <div className="h-2 flex-1 rounded-full bg-[#FBBF24] animate-[pulse_1.2s_ease-in-out_infinite]"></div>
+              <div className="h-2 flex-1 rounded-full bg-[#3B82F6] animate-[pulse_1.2s_ease-in-out_0.2s_infinite]"></div>
+              <div className="h-2 flex-1 rounded-full bg-[#EF4444] animate-[pulse_1.2s_ease-in-out_0.4s_infinite]"></div>
+              <div className="h-2 flex-1 rounded-full bg-[#10B981] animate-[pulse_1.2s_ease-in-out_0.6s_infinite]"></div>
+              <div className="h-2 flex-1 rounded-full bg-[#FBBF24] animate-[pulse_1.2s_ease-in-out_0.8s_infinite]"></div>
+            </div>
+            
+            <p className="text-xs text-gray-400 mt-6 font-medium animate-pulse">Por favor, no cierres ni recargues esta ventana...</p>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-10">
         
         {/* Formulario */}
