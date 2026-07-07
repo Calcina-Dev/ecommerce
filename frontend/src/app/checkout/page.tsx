@@ -334,13 +334,13 @@ export default function CheckoutPage() {
             <h3 className="text-2xl font-extrabold text-gray-900 mb-2 tracking-tight">¡Ya falta poco!</h3>
             <p className="text-gray-600 text-base font-medium mb-8">Estamos procesando tu pago</p>
 
-            {/* Barra multicolor animada */}
+            {/* Barra animada con colores de la marca (Verde, Carbón y Menta) */}
             <div className="w-full max-w-[280px] flex gap-1.5 overflow-hidden">
-              <div className="h-2 flex-1 rounded-full bg-[#FBBF24] animate-[pulse_1.2s_ease-in-out_infinite]"></div>
-              <div className="h-2 flex-1 rounded-full bg-[#3B82F6] animate-[pulse_1.2s_ease-in-out_0.2s_infinite]"></div>
-              <div className="h-2 flex-1 rounded-full bg-[#EF4444] animate-[pulse_1.2s_ease-in-out_0.4s_infinite]"></div>
-              <div className="h-2 flex-1 rounded-full bg-[#10B981] animate-[pulse_1.2s_ease-in-out_0.6s_infinite]"></div>
-              <div className="h-2 flex-1 rounded-full bg-[#FBBF24] animate-[pulse_1.2s_ease-in-out_0.8s_infinite]"></div>
+              <div className="h-2 flex-1 rounded-full bg-[#111827] animate-[pulse_1.2s_ease-in-out_infinite]"></div>
+              <div className="h-2 flex-1 rounded-full bg-[#047857] animate-[pulse_1.2s_ease-in-out_0.2s_infinite]"></div>
+              <div className="h-2 flex-1 rounded-full bg-[#10b981] animate-[pulse_1.2s_ease-in-out_0.4s_infinite]"></div>
+              <div className="h-2 flex-1 rounded-full bg-[#34d399] animate-[pulse_1.2s_ease-in-out_0.6s_infinite]"></div>
+              <div className="h-2 flex-1 rounded-full bg-[#111827] animate-[pulse_1.2s_ease-in-out_0.8s_infinite]"></div>
             </div>
             
             <p className="text-xs text-gray-400 mt-6 font-medium animate-pulse">Por favor, no cierres ni recargues esta ventana...</p>

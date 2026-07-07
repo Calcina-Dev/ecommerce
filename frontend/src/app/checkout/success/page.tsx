@@ -28,11 +28,11 @@ function SuccessContent() {
     <div className="min-h-[85vh] bg-gray-100 flex flex-col justify-between">
       {/* Sección Superior: Verde Celebración (Estilo input_file_1) */}
       <div className="bg-[#4ade80] text-gray-950 py-16 px-6 text-center relative overflow-hidden shadow-sm">
-        {/* Partículas festivas flotantes (Confetti CSS) */}
+        {/* Partículas festivas flotantes de la marca */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-8 left-10 w-3 h-3 bg-yellow-300 rounded-full animate-ping"></div>
-          <div className="absolute top-12 right-16 w-3 h-3 bg-blue-500 rounded-full animate-ping delay-300"></div>
-          <div className="absolute bottom-10 left-1/4 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping delay-700"></div>
+          <div className="absolute top-8 left-10 w-3 h-3 bg-white rounded-full animate-ping"></div>
+          <div className="absolute top-12 right-16 w-3 h-3 bg-[#14532d] rounded-full animate-ping delay-300"></div>
+          <div className="absolute bottom-10 left-1/4 w-2.5 h-2.5 bg-[#111827] rounded-full animate-ping delay-700"></div>
           <div className="absolute bottom-8 right-1/4 w-3 h-3 bg-white rounded-full animate-ping delay-500"></div>
         </div>
 
