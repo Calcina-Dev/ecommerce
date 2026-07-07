@@ -4,6 +4,8 @@ namespace App\Observers;
 
 use App\Models\Order;
 use App\Services\InventoryService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class OrderObserver
 {
@@ -69,15 +71,26 @@ class OrderObserver
             // Email Notifications for status changes
             if ($order->shipping_email) {
                 try {
-                    if ($order->status === 'shipped' && $order->getOriginal('status') !== 'shipped') {
-                        \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderShipped($order));
+                    if ($order->status === 'processing' && $order->getOriginal('status') !== 'processing') {
+                        Mail::to($order->shipping_email)->send(new \App\Mail\OrderPaid($order));
+                        Log::info("Email de confirmación enviado a {$order->shipping_email} para orden {$order->order_number}");
+                    } elseif ($order->status === 'shipped' && $order->getOriginal('status') !== 'shipped') {
+                        Mail::to($order->shipping_email)->send(new \App\Mail\OrderShipped($order));
+                        Log::info("Email de envío enviado a {$order->shipping_email} para orden {$order->order_number}");
                     } elseif ($order->status === 'delivered' && $order->getOriginal('status') !== 'delivered') {
-                        \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderCompleted($order));
+                        Mail::to($order->shipping_email)->send(new \App\Mail\OrderCompleted($order));
+                        Log::info("Email de entrega enviado a {$order->shipping_email} para orden {$order->order_number}");
                     } elseif ($order->status === 'cancelled' && $order->getOriginal('status') !== 'cancelled') {
-                        \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderCancelled($order));
+                        Mail::to($order->shipping_email)->send(new \App\Mail\OrderCancelled($order));
+                        Log::info("Email de cancelación enviado a {$order->shipping_email} para orden {$order->order_number}");
                     }
                 } catch (\Throwable $e) {
-                    error_log("Failed to send order status email: " . $e->getMessage());
+                    Log::error("Failed to send order status email for order {$order->order_number}: " . $e->getMessage(), [
+                        'order_id' => $order->id,
+                        'status' => $order->status,
+                        'email' => $order->shipping_email,
+                        'trace' => $e->getTraceAsString(),
+                    ]);
                 }
             }
         }
@@ -91,10 +104,19 @@ class OrderObserver
             ]);
 
             if ($order->payment_status === 'paid' && $order->shipping_email) {
-                try {
-                    \Illuminate\Support\Facades\Mail::to($order->shipping_email)->send(new \App\Mail\OrderPaid($order));
-                } catch (\Throwable $e) {
-                    error_log("Failed to send paid email: " . $e->getMessage());
+                // El email de pago ya se envía al cambiar a 'processing' arriba,
+                // solo enviamos aquí si el status no cambió (pago manual sin cambiar estado)
+                if (!$order->isDirty('status')) {
+                    try {
+                        Mail::to($order->shipping_email)->send(new \App\Mail\OrderPaid($order));
+                        Log::info("Email de pago enviado a {$order->shipping_email} para orden {$order->order_number}");
+                    } catch (\Throwable $e) {
+                        Log::error("Failed to send paid email for order {$order->order_number}: " . $e->getMessage(), [
+                            'order_id' => $order->id,
+                            'email' => $order->shipping_email,
+                            'trace' => $e->getTraceAsString(),
+                        ]);
+                    }
                 }
             }
         }

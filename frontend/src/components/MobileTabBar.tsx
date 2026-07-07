@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, ShoppingBag, User } from "lucide-react";
+import { Home, Search, ShoppingBag, User, Truck } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { motion } from "framer-motion";
 
@@ -15,6 +15,7 @@ export function MobileTabBar() {
   const tabs = [
     { name: "Inicio", href: "/", icon: Home },
     { name: "Catálogo", href: "/productos", icon: Search },
+    { name: "Rastrear", href: "/rastrear-pedido", icon: Truck },
     { name: "Carrito", href: "/checkout", icon: ShoppingBag, badge: cartCount },
     { name: "Cuenta", href: "/mi-cuenta", icon: User },
   ];
