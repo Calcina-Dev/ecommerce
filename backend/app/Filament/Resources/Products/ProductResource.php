@@ -72,4 +72,34 @@ class ProductResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
+    public static function syncGalleryImages(Product $product, array $imageUrls): void
+    {
+        $imageUrls = array_values(array_filter($imageUrls)); // Ensure clean 0-indexed array without empty values
+
+        if (empty($imageUrls)) {
+            $product->images()->delete();
+            return;
+        }
+
+        // Delete removed images
+        $product->images()->whereNotIn('image_url', $imageUrls)->delete();
+
+        // Update or create images in the specified order
+        foreach ($imageUrls as $index => $url) {
+            $img = $product->images()->where('image_url', $url)->first();
+            if ($img) {
+                $img->update([
+                    'is_primary' => ($index === 0),
+                    'sort_order' => $index,
+                ]);
+            } else {
+                $product->images()->create([
+                    'image_url' => $url,
+                    'is_primary' => ($index === 0),
+                    'sort_order' => $index,
+                ]);
+            }
+        }
+    }
 }

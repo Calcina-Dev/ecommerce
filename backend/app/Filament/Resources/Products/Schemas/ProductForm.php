@@ -249,40 +249,23 @@ class ProductForm
                             $fail('El Precio Anterior debe ser MAYOR al Precio Actual para que se considere una oferta.');
                         }
                     }),
-                \Filament\Forms\Components\Placeholder::make('current_images_preview')
-                    ->label('Imágenes Activas del Producto')
-                    ->content(function (?Model $record) {
-                        if (!$record || $record->images->isEmpty()) {
-                            return new \Illuminate\Support\HtmlString('<span style="color: #6b7280; font-style: italic;">No hay imágenes registradas para este producto.</span>');
-                        }
-                        $html = '<div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 4px;">';
-                        foreach ($record->images as $img) {
-                            $url = asset('storage/' . $img->image_url);
-                            $badge = $img->is_primary ? '<span style="position: absolute; top: 6px; left: 6px; background: #10b981; color: white; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">★ Principal</span>' : '';
-                            $html .= '<div style="position: relative; border: 1px solid #e5e7eb; border-radius: 12px; padding: 8px; background: #f9fafb; display: flex; flex-direction: column; align-items: center; width: 140px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);"><img src="' . $url . '" style="height: 120px; width: 120px; object-fit: contain; border-radius: 8px; background: white;" />' . $badge . '<div style="font-size: 11px; color: #4b5563; text-align: center; margin-top: 6px; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' . basename($img->image_url) . '">' . basename($img->image_url) . '</div></div>';
-                        }
-                        $html .= '</div>';
-                        return new \Illuminate\Support\HtmlString($html);
-                    })
-                    ->columnSpanFull(),
-                \Filament\Forms\Components\Repeater::make('images')
-                    ->relationship('images')
+                \Filament\Schemas\Components\Section::make('Galería e Imágenes del Producto')
+                    ->description('Las imágenes deben tener al menos 400 x 400 pixeles (recomendado 1000 x 1000 o superior). Fondos de color permitidos: gris, blanco, azul, marrón o transparente. Puedes agregar varias imágenes a la vez y arrastrar las miniaturas para reordenarlas. La primera imagen de la lista será siempre la principal (★ Principal).')
                     ->schema([
-                        \Filament\Forms\Components\FileUpload::make('image_url')
-                            ->label('Archivo de Imagen')
+                        \Filament\Forms\Components\FileUpload::make('gallery_images')
+                            ->hiddenLabel()
+                            ->multiple()
+                            ->reorderable()
+                            ->appendFiles()
+                            ->maxFiles(8)
                             ->image()
                             ->disk('public')
-                            ->visibility('public')
                             ->directory('products')
-                            ->required(),
-                        \Filament\Forms\Components\Toggle::make('is_primary')
-                            ->label('¿Es principal?')
-                            ->default(false),
+                            ->visibility('public')
+                            ->panelLayout('grid')
+                            ->columnSpanFull(),
                     ])
-                    ->defaultItems(0)
-                    ->columns(2)
-                    ->columnSpanFull()
-                    ->label('Agregar / Editar Imágenes'),
+                    ->columnSpanFull(),
                 \Filament\Forms\Components\Placeholder::make('stock_info')
                     ->label('Stock Actual')
                     ->content('El stock ahora se gestiona automáticamente por Almacén a través de Recepciones y Transferencias.')
