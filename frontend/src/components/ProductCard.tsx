@@ -110,31 +110,6 @@ export function ProductCard({ product }: { product: Product }) {
       {/* Glare Effect */}
       <div className="absolute inset-0 z-30 pointer-events-none rounded-2xl bg-gradient-to-tr from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-[var(--spring-easing)] mix-blend-overlay"></div>
 
-      {/* Badges */}
-      <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
-        {product.compare_at_price && parseFloat(product.compare_at_price) > parseFloat(product.price) && (
-          <span className="bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wider uppercase flex items-center gap-1.5 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            Oferta
-          </span>
-        )}
-      </div>
-
-      {/* Favorite Heart Button */}
-      <motion.button
-        whileTap={{ scale: 0.7 }}
-        whileHover={{ scale: 1.1 }}
-        onClick={handleToggleFavorite}
-        className={`absolute top-3 right-3 z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors ${
-          isFav 
-            ? "bg-rose-500 text-white" 
-            : "bg-white/90 dark:bg-zinc-800/90 text-gray-400 hover:text-rose-500 dark:text-zinc-400 dark:hover:text-rose-400"
-        }`}
-        title={isFav ? "Quitar de favoritos" : "Añadir a favoritos"}
-      >
-        <Heart className={`w-4 h-4 ${isFav ? "fill-white" : ""}`} />
-      </motion.button>
-
       <Link href={`/productos/${product.slug}`} className="relative aspect-[4/5] bg-white dark:bg-white overflow-hidden rounded-t-2xl block p-4 group/slider border-b border-gray-100 dark:border-zinc-800/80" style={{ transform: 'translateZ(0)' }}>
         <Image
           src={allImages[currentIdx] || imageUrl}
@@ -170,6 +145,31 @@ export function ProductCard({ product }: { product: Product }) {
           </>
         )}
       </Link>
+
+      {/* Badges */}
+      <div className="absolute top-3 left-3 z-50 flex flex-col gap-2 pointer-events-none">
+        {product.compare_at_price && parseFloat(product.compare_at_price) > parseFloat(product.price) && (
+          <span className="bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wider uppercase flex items-center gap-1.5 shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Oferta
+          </span>
+        )}
+      </div>
+
+      {/* Favorite Heart Button */}
+      <motion.button
+        whileTap={{ scale: 0.7 }}
+        whileHover={{ scale: 1.1 }}
+        onClick={handleToggleFavorite}
+        className={`absolute top-3 right-3 z-50 w-8 h-8 rounded-full flex items-center justify-center shadow-md border transition-all ${
+          isFav 
+            ? "bg-rose-500 border-rose-600 text-white shadow-rose-500/30 scale-105" 
+            : "bg-white/95 dark:bg-zinc-800/95 border-gray-200 dark:border-zinc-700 text-gray-400 hover:text-rose-500 dark:text-zinc-400 dark:hover:text-rose-400 hover:scale-110 shadow-sm"
+        }`}
+        title={isFav ? "Quitar de favoritos" : "Añadir a favoritos"}
+      >
+        <Heart className={`w-4 h-4 transition-transform ${isFav ? "fill-white scale-110" : ""}`} />
+      </motion.button>
 
       {/* Hover Quick Action - Desktop Only */}
       <div className="absolute bottom-36 left-0 right-0 px-4 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hidden md:block z-20">

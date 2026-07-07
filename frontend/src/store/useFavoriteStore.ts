@@ -23,15 +23,15 @@ export const useFavoriteStore = create<FavoriteState>()(
     (set, get) => ({
       items: [],
       isFavorite: (id) => {
-        return get().items.some((item) => item.id === id);
+        return get().items.some((item) => Number(item.id) === Number(id));
       },
       toggleItem: async (item) => {
         const state = get();
-        const exists = state.items.some((i) => i.id === item.id);
+        const exists = state.items.some((i) => Number(i.id) === Number(item.id));
         const token = useAuthStore.getState().token;
 
         if (exists) {
-          set({ items: state.items.filter((i) => i.id !== item.id) });
+          set({ items: state.items.filter((i) => Number(i.id) !== Number(item.id)) });
           if (token) {
             try {
               await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/favorites/toggle/${item.id}`, {
@@ -66,7 +66,7 @@ export const useFavoriteStore = create<FavoriteState>()(
       },
       removeItem: async (id) => {
         set((state) => ({
-          items: state.items.filter((item) => item.id !== id),
+          items: state.items.filter((item) => Number(item.id) !== Number(id)),
         }));
         const token = useAuthStore.getState().token;
         if (token) {
