@@ -480,47 +480,83 @@ export default function CheckoutPage() {
             {/* Mercado Libre Style Address Selector */}
             {savedAddresses.length > 0 ? (
               <div className="mb-8 pb-6 border-b border-border/80">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Mis direcciones guardadas (Estilo Mercado Libre)
-                  </p>
-                  <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                    ⚡ Selección automática activa
-                  </span>
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">Dirección de entrega</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Usaremos esta dirección para calcular tu envío.</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <div className="grid grid-cols-1 gap-4 mb-4">
                   {savedAddresses.map((addr) => (
                     <div
                       key={addr.id}
                       onClick={() => handleSelectAddress(addr)}
-                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                      className={`p-5 rounded-2xl border transition-all cursor-pointer ${
                         selectedAddressId === addr.id
-                          ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20 shadow-sm"
-                          : "border-border hover:border-gray-400 bg-background"
+                          ? "border-emerald-500 bg-white dark:bg-zinc-900 ring-1 ring-emerald-500 shadow-sm"
+                          : "border-gray-200 hover:border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-900"
                       }`}
                     >
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-black text-xs uppercase px-2.5 py-0.5 rounded-md bg-gray-900 text-white dark:bg-white dark:text-gray-900">
-                              {addr.alias || "Casa"}
-                            </span>
-                            {addr.is_default && (
-                              <span className="text-amber-500 text-[11px] font-extrabold flex items-center gap-0.5">
-                                ★ Predeterminada
-                              </span>
-                            )}
-                          </div>
-                          {selectedAddressId === addr.id && (
-                            <span className="text-emerald-600 dark:text-emerald-400 font-black text-xs flex items-center gap-1 bg-emerald-100 dark:bg-emerald-900/50 px-2 py-0.5 rounded-full">
-                              ✓ Envío aquí
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1 rounded-full text-xs font-bold">
+                            {addr.alias || "Casa"}
+                          </span>
+                          {addr.is_default && (
+                            <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                              ★ Predeterminada
                             </span>
                           )}
                         </div>
-                        <p className="font-bold text-sm text-foreground mt-1.5">{addr.recipient_name} <span className="font-normal text-muted-foreground">({addr.phone})</span></p>
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5 font-medium">{addr.address}</p>
-                        <p className="text-[11px] text-muted-foreground/80 mt-0.5">{addr.district}, {addr.province}</p>
+                        {selectedAddressId === addr.id && (
+                          <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>
+                          </div>
+                        )}
+                      </div>
+
+                      <p className="text-base font-bold text-gray-900 dark:text-white mt-3">{addr.recipient_name}</p>
+                      
+                      <div className="flex items-start gap-2 mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <div>
+                          <p>{addr.address}</p>
+                          <p className="text-gray-500 dark:text-gray-400">{addr.district}, {addr.province}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 mt-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                        <span>{addr.phone}</span>
+                      </div>
+
+                      <div className="border-t border-gray-200 dark:border-zinc-800 mt-4 pt-4 flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => handleSelectAddress(addr)}
+                          className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-gray-100 font-semibold text-sm py-2.5 px-6 rounded-xl transition-all shadow-sm"
+                        >
+                          Usar esta dirección
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFormData(prev => ({
+                              ...prev,
+                              shipping_address: addr.address || "",
+                              shipping_department: addr.department || "",
+                              shipping_province: addr.province || "",
+                              shipping_district: addr.district || "",
+                              shipping_phone: addr.phone || "",
+                              shipping_name: addr.recipient_name || prev.shipping_name,
+                            }));
+                            setSelectedAddressId(addr.id);
+                            const el = document.getElementById("checkout-form");
+                            if (el) el.scrollIntoView({ behavior: "smooth" });
+                          }}
+                          className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium text-sm px-4 py-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-all"
+                        >
+                          Editar
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -537,7 +573,7 @@ export default function CheckoutPage() {
                         shipping_postal_code: "",
                       }));
                     }}
-                    className={`p-4 rounded-2xl border-2 border-dashed cursor-pointer transition-all flex flex-col items-center justify-center text-center min-h-[110px] ${
+                    className={`p-4 rounded-2xl border-2 border-dashed cursor-pointer transition-all flex flex-col items-center justify-center text-center min-h-[90px] ${
                       selectedAddressId === null
                         ? "border-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/10 text-emerald-600 dark:text-emerald-400 font-bold shadow-sm"
                         : "border-border hover:border-gray-400 text-muted-foreground"

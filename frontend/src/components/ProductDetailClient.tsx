@@ -11,12 +11,10 @@ function cleanDescriptionText(text: string | null) {
   if (!text) return "";
   
   let clean = text.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\\/g, '');
-  clean = clean.replace(/\p{Extended_Pictographic}/gu, '');
-  clean = clean.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '');
   clean = clean.replace(/\s+data-[a-z-]+="[^"]*"/gi, '');
   clean = clean.replace(/\s+data-[a-z-]+='[^']*'/gi, '');
 
-  if (/<(p|ul|ol|li|strong|b|em|i|h[1-6]|div|br|span|a|table|blockquote)[\s>]/i.test(clean)) {
+  if (/<(p|ul|ol|li|strong|b|em|i|h[1-6]|div|br|span|a|table|blockquote|u|del|s)[\s>]/i.test(clean) || clean.includes('</p>') || clean.includes('</div>') || clean.includes('</li>') || clean.includes('</h1>') || clean.includes('</ul>') || clean.includes('</ol>')) {
     return clean;
   }
 
@@ -304,22 +302,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
               )}
             </div>
 
-            <div 
-              className="text-lg text-foreground/80 mb-6 leading-relaxed prose prose-sm sm:prose-base dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: cleanDescriptionText(product.short_description) || "Descripción breve no disponible." }}
-            />
-
-            {/* AI Overview Box with Streaming Typewriter Effect */}
-            <AIOverviewBox overviewText={product.ai_overview} productName={product.name} />
-
+            {/* Action Bar (Quantity Selector + Add to Cart / Agotado + Heart button) - Placed before short description */}
             <div className="space-y-6 mb-8">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
                 {/* Quantity Selector */}
-                <div className="flex items-center border border-border/80 rounded-2xl h-14 px-3 bg-muted/20">
+                <div className="flex items-center border border-gray-200 dark:border-zinc-700 rounded-2xl h-14 px-3 bg-white dark:bg-zinc-900 shadow-sm">
                   <button
                     type="button"
                     onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                    className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-muted font-bold text-lg text-foreground transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 font-bold text-lg text-foreground transition-colors"
                   >
                     -
                   </button>
@@ -329,7 +320,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <button
                     type="button"
                     onClick={() => setQuantity(prev => prev + 1)}
-                    className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-muted font-bold text-lg text-foreground transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 font-bold text-lg text-foreground transition-colors"
                   >
                     +
                   </button>
@@ -339,7 +330,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   whileTap={{ scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   disabled={product.stock !== undefined && product.stock <= 0}
-                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap text-lg font-bold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 disabled:bg-gray-400 rounded-2xl h-14 shadow-lg shadow-primary/20"
+                  className={`flex-1 inline-flex items-center justify-center whitespace-nowrap text-base sm:text-lg font-bold rounded-2xl h-14 transition-all px-4 ${
+                    (product.stock !== undefined && product.stock <= 0)
+                      ? "bg-gray-300 dark:bg-zinc-700 text-white dark:text-gray-300 cursor-not-allowed pointer-events-none shadow-none"
+                      : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-gray-100 shadow-lg shadow-slate-900/10"
+                  }`}
                   onClick={() => {
                     addItem({
                       id: product.id,
@@ -387,60 +382,68 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   className={`h-14 w-14 rounded-2xl border flex items-center justify-center transition-colors shadow-sm flex-shrink-0 ${
                     isFav 
                       ? "bg-rose-500 border-rose-500 text-white" 
-                      : "border-border/80 bg-background hover:bg-rose-50 dark:hover:bg-rose-950/30 text-muted-foreground hover:text-rose-500 dark:hover:text-rose-400"
+                      : "border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-gray-600 dark:text-gray-400 hover:text-rose-500 dark:hover:text-rose-400"
                   }`}
                   title={isFav ? "Quitar de favoritos" : "Añadir a favoritos"}
                 >
                   <Heart className={`w-6 h-6 ${isFav ? "fill-white" : ""}`} />
                 </motion.button>
               </div>
-              
-              {/* Premium Clinical Trust Signals (Configurable & Editable per product) */}
-              {(() => {
-                const activeBadges = [
-                  product.show_gmp_badge !== false && (
-                    <div key="gmp" className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
-                      <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">
-                        {product.badge_1_title || "Laboratorio"}
-                      </span>
-                      <span className="text-[11px] text-muted-foreground font-medium">
-                        {product.badge_1_subtitle || "Grado Clínico GMP"}
-                      </span>
-                    </div>
-                  ),
-                  product.show_fefo_badge !== false && (
-                    <div key="fefo" className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
-                      <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">
-                        {product.badge_2_title || "Trazabilidad"}
-                      </span>
-                      <span className="text-[11px] text-muted-foreground font-medium">
-                        {product.badge_2_subtitle || "Lote Auditado FEFO"}
-                      </span>
-                    </div>
-                  ),
-                  product.show_shipping_badge !== false && (
-                    <div key="shipping" className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
-                      <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">
-                        {product.badge_3_title || "Despacho"}
-                      </span>
-                      <span className="text-[11px] text-muted-foreground font-medium">
-                        {product.badge_3_subtitle || "Envío Seguro Nacional"}
-                      </span>
-                    </div>
-                  ),
-                ].filter(Boolean);
-
-                if (activeBadges.length === 0) return null;
-
-                const gridCols = activeBadges.length === 1 ? 'grid-cols-1' : activeBadges.length === 2 ? 'grid-cols-2' : 'grid-cols-3';
-
-                return (
-                  <div className={`grid ${gridCols} gap-3 pt-6 border-t border-border/60 mt-6 mb-8`}>
-                    {activeBadges}
-                  </div>
-                );
-              })()}
             </div>
+
+            <div 
+              className="text-lg text-foreground/80 mb-6 leading-relaxed prose prose-sm sm:prose-base dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: cleanDescriptionText(product.short_description) || "Descripción breve no disponible." }}
+            />
+
+            {/* AI Overview Box with Streaming Typewriter Effect */}
+            <AIOverviewBox overviewText={product.ai_overview} productName={product.name} />
+
+            {/* Premium Clinical Trust Signals (Configurable & Editable per product) */}
+            {(() => {
+              const activeBadges = [
+                product.show_gmp_badge !== false && (
+                  <div key="gmp" className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
+                    <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">
+                      {product.badge_1_title || "Laboratorio"}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-medium">
+                      {product.badge_1_subtitle || "Grado Clínico GMP"}
+                    </span>
+                  </div>
+                ),
+                product.show_fefo_badge !== false && (
+                  <div key="fefo" className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
+                    <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">
+                      {product.badge_2_title || "Trazabilidad"}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-medium">
+                      {product.badge_2_subtitle || "Lote Auditado FEFO"}
+                    </span>
+                  </div>
+                ),
+                product.show_shipping_badge !== false && (
+                  <div key="shipping" className="flex flex-col items-center justify-center text-center p-3 rounded-2xl bg-muted/30 border border-border/60">
+                    <span className="text-[11px] font-extrabold tracking-wider uppercase text-foreground mb-0.5">
+                      {product.badge_3_title || "Despacho"}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-medium">
+                      {product.badge_3_subtitle || "Envío Seguro Nacional"}
+                    </span>
+                  </div>
+                ),
+              ].filter(Boolean);
+
+              if (activeBadges.length === 0) return null;
+
+              const gridCols = activeBadges.length === 1 ? 'grid-cols-1' : activeBadges.length === 2 ? 'grid-cols-2' : 'grid-cols-3';
+
+              return (
+                <div className={`grid ${gridCols} gap-3 pt-6 border-t border-border/60 mt-6 mb-8`}>
+                  {activeBadges}
+                </div>
+              );
+            })()}
 
             <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
               <h3 className="text-xl font-bold tracking-tight mb-4 text-foreground">Información Clínica y Beneficios</h3>

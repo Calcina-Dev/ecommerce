@@ -199,66 +199,73 @@ export function UserAddressesManager() {
           <Button onClick={openNewModal} variant="outline" className="rounded-xl">Agregar Dirección</Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {addresses.map((addr) => (
             <div
               key={addr.id}
-              className={`relative bg-background p-5 rounded-2xl border transition-all ${
+              className={`p-5 rounded-2xl border transition-all ${
                 addr.is_default 
-                  ? "border-emerald-500 ring-2 ring-emerald-500/20 shadow-sm" 
-                  : "border-border hover:border-gray-400 dark:hover:border-zinc-700"
+                  ? "border-emerald-500 bg-white dark:bg-zinc-900 ring-1 ring-emerald-500 shadow-sm" 
+                  : "border-gray-200 hover:border-gray-300 dark:border-zinc-800 bg-white dark:bg-zinc-900"
               }`}
             >
-              <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-sm uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-muted text-foreground">
+                  <span className="bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1 rounded-full text-xs font-bold">
                     {addr.alias || "Casa"}
                   </span>
                   {addr.is_default && (
-                    <span className="bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-emerald-500 text-emerald-500" />
-                      Predeterminada
+                    <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                      ★ Predeterminada
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => openEditModal(addr)}
-                    className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
-                    title="Editar"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(addr.id)}
-                    className="p-1.5 text-muted-foreground hover:text-rose-500 rounded-lg hover:bg-muted transition-colors"
-                    title="Eliminar"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-1 text-sm text-foreground/90">
-                <p className="font-bold">{addr.recipient_name} <span className="text-muted-foreground font-normal">({addr.phone})</span></p>
-                <p className="leading-snug">{addr.address}</p>
-                {addr.reference && <p className="text-xs text-muted-foreground italic">Ref: {addr.reference}</p>}
-                <p className="text-xs text-muted-foreground pt-1 border-t border-border/50 mt-2">
-                  {addr.district}, {addr.province} - {addr.department}
-                </p>
-              </div>
-
-              {!addr.is_default && (
-                <div className="mt-4 pt-3 border-t flex justify-end">
+                {addr.is_default ? (
+                  <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                ) : (
                   <button
                     onClick={() => handleSetDefault(addr.id)}
                     className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
                   >
-                    <Check className="w-3.5 h-3.5" />
-                    Establecer como predeterminada
+                    Establecer predeterminada
                   </button>
+                )}
+              </div>
+
+              <p className="text-base font-bold text-gray-900 dark:text-white mt-3">{addr.recipient_name}</p>
+              
+              <div className="flex items-start gap-2 mt-2 text-sm text-gray-600 dark:text-gray-300">
+                <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <div>
+                  <p>{addr.address}</p>
+                  <p className="text-gray-500 dark:text-gray-400">{addr.district}, {addr.province} - {addr.department}</p>
+                  {addr.reference && <p className="text-xs text-muted-foreground italic mt-0.5">Ref: {addr.reference}</p>}
                 </div>
-              )}
+              </div>
+
+              <div className="flex items-center gap-2 mt-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                <span>{addr.phone}</span>
+              </div>
+
+              <div className="border-t border-gray-200 dark:border-zinc-800 mt-4 pt-4 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => openEditModal(addr)}
+                  className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-gray-100 font-semibold text-sm py-2.5 px-6 rounded-xl transition-all shadow-sm"
+                >
+                  Editar dirección
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(addr.id)}
+                  className="text-rose-600 hover:text-rose-700 dark:text-rose-400 font-medium text-sm px-4 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition-all"
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
           ))}
         </div>
