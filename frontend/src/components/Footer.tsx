@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { StoreSettings } from '@/services/settings';
 import { Phone, ArrowUp, Plus, Minus, Mail, MapPin } from 'lucide-react';
+import { toast } from "sonner";
 
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -55,6 +56,24 @@ export function Footer({ settings }: { settings?: StoreSettings | null }) {
   // State for mobile accordions
   const [openSection, setOpenSection] = useState<number | null>(null);
   const [newsletterOpen, setNewsletterOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // El botón de subir solo se debe mostrar cuando esté al final de la página / scrolleado hacia el footer
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const threshold = document.documentElement.scrollHeight - 700;
+      if (scrollPosition >= threshold && window.scrollY > 300) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const toggleSection = (index: number) => {
     setOpenSection(openSection === index ? null : index);
@@ -183,18 +202,27 @@ export function Footer({ settings }: { settings?: StoreSettings | null }) {
               <p className="text-[14px] opacity-90 mb-4 leading-relaxed">
                 Entérate de los nuevos productos, e información de valor de nuestras principales categorías.
               </p>
-              <form className="relative flex items-center" onSubmit={(e) => e.preventDefault()}>
+              <form 
+                className="relative flex items-center mt-3 shadow-sm" 
+                onSubmit={(e) => { 
+                  e.preventDefault(); 
+                  toast.success("¡Gracias por suscribirte a nuestro boletín!"); 
+                }}
+              >
+                <div className="absolute left-4 text-gray-400 pointer-events-none z-10">
+                  <Mail className="w-4 h-4" />
+                </div>
                 <input 
                   type="email" 
-                  placeholder="Introduce tu dirección de correo electrónico" 
-                  className="w-full py-3.5 pl-4 pr-24 rounded-full text-gray-900 text-sm focus:outline-none border border-gray-200"
+                  placeholder="Tu correo electrónico..." 
+                  className="w-full py-3.5 pl-11 pr-32 rounded-full bg-white text-gray-900 placeholder-gray-400 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 border border-gray-300 shadow-inner"
                   required
                 />
                 <button 
                   type="submit" 
-                  className="absolute right-2 font-bold text-sm text-gray-900 hover:text-orange-500 transition-colors px-2"
+                  className="absolute right-1.5 top-1.5 bottom-1.5 px-5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs uppercase tracking-wider rounded-full shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex items-center gap-1.5 z-10"
                 >
-                  Suscribir
+                  <span>Suscribir</span>
                 </button>
               </form>
             </div>
@@ -259,14 +287,15 @@ export function Footer({ settings }: { settings?: StoreSettings | null }) {
         </div>
       </div>
 
-      {/* Floating Buttons */}
-      <div className="fixed bottom-24 right-6 flex flex-col gap-3 z-50">
+      {/* Floating Buttons - Volver arriba (Solo visible al final de la página) */}
+      <div className={`fixed bottom-24 right-6 flex flex-col gap-3 z-50 transition-all duration-300 transform ${showScrollTop ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
         <button 
           onClick={scrollToTop}
-          className="w-12 h-12 bg-white text-gray-900 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
+          className="w-12 h-12 bg-white text-gray-900 rounded-full shadow-xl border border-gray-100 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all duration-300 group"
           aria-label="Volver arriba"
+          title="Volver al inicio"
         >
-          <ArrowUp className="w-6 h-6" />
+          <ArrowUp className="w-6 h-6 group-hover:-translate-y-0.5 transition-transform" />
         </button>
       </div>
     </footer>

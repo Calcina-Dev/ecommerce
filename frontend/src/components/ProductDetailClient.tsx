@@ -103,13 +103,14 @@ SEGURIDAD, ADVERTENCIAS Y CONSERVACIÓN
     let currentIdx = 0;
     const interval = setInterval(() => {
       if (currentIdx < textToType.length) {
-        setDisplayedText(prev => prev + textToType.charAt(currentIdx));
-        currentIdx++;
+        const chunk = textToType.slice(currentIdx, currentIdx + 4);
+        setDisplayedText(prev => prev + chunk);
+        currentIdx += 4;
       } else {
         clearInterval(interval);
         setIsGenerating(false);
       }
-    }, 15);
+    }, 10);
   };
 
   useEffect(() => {
