@@ -819,89 +819,91 @@ export function Header() {
                     </div>
                   )}
 
-                  {/* Sección 2: Selector Interactivo de Ubigeo / Distrito (Estilo Mercado Libre Mapa/Zona) */}
-                  <div className="space-y-4">
-                    {/* Mapa interactivo visible directamente en el selector general */}
-                    <AddressMapSelector
-                      selectedDepartment={locDept}
-                      selectedProvince={locProv}
-                      selectedDistrict={locDist}
-                      onSelectLocation={(loc) => {
-                        if (loc.department) setLocDept(loc.department);
-                        if (loc.province) setLocProv(loc.province);
-                        if (loc.district) setLocDist(loc.district);
-                      }}
-                    />
+                  {/* Sección 2: Selector Interactivo de Ubigeo / Distrito (Solo si no ha iniciado sesión) */}
+                  {!user && (
+                    <div className="space-y-4">
+                      {/* Mapa interactivo visible directamente en el selector general */}
+                      <AddressMapSelector
+                        selectedDepartment={locDept}
+                        selectedProvince={locProv}
+                        selectedDistrict={locDist}
+                        onSelectLocation={(loc) => {
+                          if (loc.department) setLocDept(loc.department);
+                          if (loc.province) setLocProv(loc.province);
+                          if (loc.district) setLocDist(loc.district);
+                        }}
+                      />
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                      <div>
-                        <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Departamento</label>
-                        <select 
-                          value={locDept} 
-                          onChange={(e) => { 
-                            setLocDept(e.target.value); 
-                            setLocProv(""); 
-                            setLocDist(""); 
-                          }} 
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent"
-                        >
-                          {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                        </select>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                        <div>
+                          <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Departamento</label>
+                          <select 
+                            value={locDept} 
+                            onChange={(e) => { 
+                              setLocDept(e.target.value); 
+                              setLocProv(""); 
+                              setLocDist(""); 
+                            }} 
+                            className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent"
+                          >
+                            {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Provincia</label>
+                          <select 
+                            value={locProv} 
+                            onChange={(e) => { 
+                              setLocProv(e.target.value); 
+                              setLocDist(""); 
+                            }} 
+                            disabled={!locDept}
+                            className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+                          >
+                            {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Distrito</label>
+                          <select 
+                            value={locDist} 
+                            onChange={(e) => setLocDist(e.target.value)} 
+                            disabled={!locProv}
+                            className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+                          >
+                            {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                          </select>
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Provincia</label>
-                        <select 
-                          value={locProv} 
-                          onChange={(e) => { 
-                            setLocProv(e.target.value); 
-                            setLocDist(""); 
-                          }} 
-                          disabled={!locDept}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
-                        >
-                          {provinces.map(p => <option key={p} value={p}>{p}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Distrito</label>
-                        <select 
-                          value={locDist} 
-                          onChange={(e) => setLocDist(e.target.value)} 
-                          disabled={!locProv}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
-                        >
-                          {districts.map(d => <option key={d} value={d}>{d}</option>)}
-                        </select>
-                      </div>
+
+                      <button
+                        type="button"
+                        disabled={!locDist}
+                        onClick={() => {
+                          setSelectedAddress({
+                            id: 0,
+                            alias: locDist,
+                            recipient_name: "Ubicación seleccionada",
+                            phone: "",
+                            department: locDept,
+                            province: locProv,
+                            district: locDist,
+                            address: `${locDist}, ${locProv}`,
+                            postal_code: "",
+                            is_default: false
+                          });
+                          toast.success(`📍 Ubicación cambiada a ${locDist}, ${locProv}`, {
+                            description: "Los tiempos de entrega y envíos se calcularán para esta zona."
+                          });
+                          setShowLocationModal(false);
+                        }}
+                        className="w-full mt-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+                      >
+                        <MapPin className="w-4 h-4" />
+                        Aplicar esta ubicación para envíos
+                      </button>
                     </div>
-
-                    <button
-                      type="button"
-                      disabled={!locDist}
-                      onClick={() => {
-                        setSelectedAddress({
-                          id: 0,
-                          alias: locDist,
-                          recipient_name: user?.name || "Ubicación seleccionada",
-                          phone: "",
-                          department: locDept,
-                          province: locProv,
-                          district: locDist,
-                          address: `${locDist}, ${locProv}`,
-                          postal_code: "",
-                          is_default: false
-                        });
-                        toast.success(`📍 Ubicación cambiada a ${locDist}, ${locProv}`, {
-                          description: "Los tiempos de entrega y envíos se calcularán para esta zona."
-                        });
-                        setShowLocationModal(false);
-                      }}
-                      className="w-full mt-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
-                    >
-                      <MapPin className="w-4 h-4" />
-                      Aplicar esta ubicación para envíos
-                    </button>
-                  </div>
+                  )}
 
                   {/* Si no ha iniciado sesión */}
                   {!user && (

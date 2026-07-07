@@ -66,7 +66,7 @@ export default function CheckoutPage() {
       shipping_province: addr.province || "",
       shipping_district: addr.district || "",
       shipping_address: addr.address || "",
-      shipping_postal_code: addr.postal_code || "",
+      shipping_postal_code: addr.postal_code || "000000",
     }));
   };
 
@@ -548,10 +548,14 @@ export default function CheckoutPage() {
                               shipping_district: addr.district || "",
                               shipping_phone: addr.phone || "",
                               shipping_name: addr.recipient_name || prev.shipping_name,
+                              shipping_postal_code: addr.postal_code || "000000",
                             }));
-                            setSelectedAddressId(addr.id);
-                            const el = document.getElementById("checkout-form");
-                            if (el) el.scrollIntoView({ behavior: "smooth" });
+                            setSelectedAddressId(null);
+                            setSaveNewAddress(true);
+                            setTimeout(() => {
+                              const el = document.getElementById("checkout-form");
+                              if (el) el.scrollIntoView({ behavior: "smooth" });
+                            }, 100);
                           }}
                           className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium text-sm px-4 py-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-all"
                         >
@@ -605,104 +609,108 @@ export default function CheckoutPage() {
             )}
 
             <form id="checkout-form" onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Nombre completo</label>
-                  <input required name="shipping_name" value={formData.shipping_name} onChange={handleChange} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Correo electrónico</label>
-                  <input required type="email" name="shipping_email" value={formData.shipping_email} onChange={handleChange} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Teléfono / Celular</label>
-                <input 
-                  required 
-                  type="tel" 
-                  pattern="[0-9]{9}" 
-                  maxLength={9}
-                  title="El número debe tener exactamente 9 dígitos"
-                  name="shipping_phone" 
-                  value={formData.shipping_phone} 
-                  onChange={handlePhoneChange} 
-                  className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" 
-                  placeholder="Ej: 987654321"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Dirección de entrega</label>
-                <input required name="shipping_address" value={formData.shipping_address} onChange={handleChange} placeholder="Calle, Número, Depto" className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
-              </div>
-
-              <div className="space-y-3 pt-2 border-t border-gray-100">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-gray-900">Ubicación de entrega (Perú)</span>
-                  <span className="text-xs text-muted-foreground">Selecciona tu zona o ingresa Ubigeo</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Departamento</label>
-                    <select required name="shipping_department" value={formData.shipping_department} onChange={(e) => { handleChange(e); setFormData(p => ({...p, shipping_province: "", shipping_district: "", shipping_postal_code: ""})) }} className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white text-sm font-medium transition-all">
-                      <option value="">Seleccionar...</option>
-                      {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Provincia</label>
-                    <select required name="shipping_province" value={formData.shipping_province} onChange={(e) => { handleChange(e); setFormData(p => ({...p, shipping_district: "", shipping_postal_code: ""})) }} disabled={!formData.shipping_department} className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white text-sm font-medium disabled:bg-gray-50 disabled:text-gray-400 transition-all">
-                      <option value="">Seleccionar...</option>
-                      {provinces.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Distrito</label>
-                    <select required name="shipping_district" value={formData.shipping_district} onChange={handleDistrictChange} disabled={!formData.shipping_province} className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white text-sm font-medium disabled:bg-gray-50 disabled:text-gray-400 transition-all">
-                      <option value="">Seleccionar...</option>
-                      {districts.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 pt-1">
-                  <div className="w-40 flex-shrink-0">
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Ubigeo / C. Postal</label>
-                    <input required name="shipping_postal_code" maxLength={6} value={formData.shipping_postal_code} onChange={handlePostalCodeChange} placeholder="Ej: 150101" className="w-full px-3.5 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-mono bg-gray-50/50 focus:bg-white transition-all" />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-4 leading-snug">
-                    💡 <span className="font-medium">Se autocompleta al elegir tu distrito</span>, o puedes ingresarlo directamente para seleccionar tu zona.
-                  </p>
-                </div>
-
-                {user && (
-                  <div className="pt-4 border-t border-border mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/20 p-4 rounded-2xl">
-                    <div className="flex items-center gap-2.5">
-                      <input
-                        type="checkbox"
-                        id="save_addr_chk"
-                        checked={saveNewAddress || selectedAddressId === null}
-                        onChange={(e) => setSaveNewAddress(e.target.checked)}
-                        className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
-                      />
-                      <label htmlFor="save_addr_chk" className="text-sm font-semibold cursor-pointer text-foreground">
-                        Guardar esta dirección en mi cuenta para futuras compras
-                      </label>
+              {selectedAddressId === null && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Nombre completo</label>
+                      <input required name="shipping_name" value={formData.shipping_name} onChange={handleChange} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
                     </div>
-                    {(saveNewAddress || selectedAddressId === null) && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-muted-foreground">Alias:</span>
-                        <input
-                          type="text"
-                          value={newAddressAlias}
-                          onChange={(e) => setNewAddressAlias(e.target.value)}
-                          placeholder="Ej: Casa, Oficina"
-                          className="px-3 py-1 border rounded-xl text-xs w-28 bg-background font-medium outline-none focus:ring-2 focus:ring-primary"
-                        />
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Correo electrónico</label>
+                      <input required type="email" name="shipping_email" value={formData.shipping_email} onChange={handleChange} className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Teléfono / Celular</label>
+                    <input 
+                      required 
+                      type="tel" 
+                      pattern="[0-9]{9}" 
+                      maxLength={9}
+                      title="El número debe tener exactamente 9 dígitos"
+                      name="shipping_phone" 
+                      value={formData.shipping_phone} 
+                      onChange={handlePhoneChange} 
+                      className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" 
+                      placeholder="Ej: 987654321"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Dirección de entrega</label>
+                    <input required name="shipping_address" value={formData.shipping_address} onChange={handleChange} placeholder="Calle, Número, Depto" className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary outline-none" />
+                  </div>
+
+                  <div className="space-y-3 pt-2 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-gray-900">Ubicación de entrega (Perú)</span>
+                      <span className="text-xs text-muted-foreground">Selecciona tu zona o ingresa Ubigeo</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1.5">Departamento</label>
+                        <select required name="shipping_department" value={formData.shipping_department} onChange={(e) => { handleChange(e); setFormData(p => ({...p, shipping_province: "", shipping_district: "", shipping_postal_code: ""})) }} className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white text-sm font-medium transition-all">
+                          <option value="">Seleccionar...</option>
+                          {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1.5">Provincia</label>
+                        <select required name="shipping_province" value={formData.shipping_province} onChange={(e) => { handleChange(e); setFormData(p => ({...p, shipping_district: "", shipping_postal_code: ""})) }} disabled={!formData.shipping_department} className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white text-sm font-medium disabled:bg-gray-50 disabled:text-gray-400 transition-all">
+                          <option value="">Seleccionar...</option>
+                          {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1.5">Distrito</label>
+                        <select required name="shipping_district" value={formData.shipping_district} onChange={handleDistrictChange} disabled={!formData.shipping_province} className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white text-sm font-medium disabled:bg-gray-50 disabled:text-gray-400 transition-all">
+                          <option value="">Seleccionar...</option>
+                          {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-1">
+                      <div className="w-40 flex-shrink-0">
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Ubigeo / C. Postal</label>
+                        <input required name="shipping_postal_code" maxLength={6} value={formData.shipping_postal_code} onChange={handlePostalCodeChange} placeholder="Ej: 150101" className="w-full px-3.5 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-mono bg-gray-50/50 focus:bg-white transition-all" />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-4 leading-snug">
+                        💡 <span className="font-medium">Se autocompleta al elegir tu distrito</span>, o puedes ingresarlo directamente para seleccionar tu zona.
+                      </p>
+                    </div>
+
+                    {user && (
+                      <div className="pt-4 border-t border-border mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/20 p-4 rounded-2xl">
+                        <div className="flex items-center gap-2.5">
+                          <input
+                            type="checkbox"
+                            id="save_addr_chk"
+                            checked={saveNewAddress || selectedAddressId === null}
+                            onChange={(e) => setSaveNewAddress(e.target.checked)}
+                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                          />
+                          <label htmlFor="save_addr_chk" className="text-sm font-semibold cursor-pointer text-foreground">
+                            Guardar esta dirección en mi cuenta para futuras compras
+                          </label>
+                        </div>
+                        {(saveNewAddress || selectedAddressId === null) && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-muted-foreground">Alias:</span>
+                            <input
+                              type="text"
+                              value={newAddressAlias}
+                              onChange={(e) => setNewAddressAlias(e.target.value)}
+                              placeholder="Ej: Casa, Oficina"
+                              className="px-3 py-1 border rounded-xl text-xs w-28 bg-background font-medium outline-none focus:ring-2 focus:ring-primary"
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
+                </>
+              )}
             </form>
           </div>
         </div>
@@ -826,14 +834,21 @@ export default function CheckoutPage() {
                   className="w-full h-14 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all" 
                   disabled={
                     loading || 
-                    !formData.shipping_name.trim() || 
-                    !formData.shipping_email.trim() || 
-                    !formData.shipping_phone.trim() || 
-                    !formData.shipping_address.trim() || 
-                    !formData.shipping_department.trim() ||
-                    !formData.shipping_province.trim() ||
-                    !formData.shipping_district.trim() ||
-                    !formData.shipping_postal_code.trim()
+                    (selectedAddressId === null && (
+                      !formData.shipping_name.trim() || 
+                      !formData.shipping_email.trim() || 
+                      !formData.shipping_phone.trim() || 
+                      !formData.shipping_address.trim() || 
+                      !formData.shipping_department.trim() ||
+                      !formData.shipping_province.trim() ||
+                      !formData.shipping_district.trim() ||
+                      !formData.shipping_postal_code.trim()
+                    )) ||
+                    (selectedAddressId !== null && (
+                      !formData.shipping_name.trim() ||
+                      !formData.shipping_phone.trim() ||
+                      !formData.shipping_address.trim()
+                    ))
                   }
                 >
                   {loading ? "Procesando de forma segura..." : "Completar Pedido"}
