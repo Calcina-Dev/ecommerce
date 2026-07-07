@@ -3,7 +3,9 @@ import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
+import { useFavoriteStore } from "@/store/useFavoriteStore";
 import { motion } from "framer-motion";
+import { Heart } from "lucide-react";
 
 function cleanDescriptionText(text: string | null) {
   if (!text) return "";
@@ -224,6 +226,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
+  const { isFavorite, toggleItem } = useFavoriteStore();
+  const isFav = isFavorite(product.id);
 
   const images = product.images?.length > 0 
     ? product.images.map((img: any) => img.image_url.startsWith('http') ? img.image_url : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/storage/${img.image_url}`)
@@ -353,6 +357,40 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   }}
                 >
                   {(product.stock !== undefined && product.stock <= 0) ? "Agotado - Sin Stock" : "Agregar al Carrito"}
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.8 }}
+                  whileHover={{ scale: 1.05 }}
+                  onClick={async () => {
+                    const added = await toggleItem({
+                      id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      image_url: product.primary_image?.image_url || product.images?.[0]?.image_url || null,
+                      slug: product.slug,
+                    });
+                    import("sonner").then(({ toast }) => {
+                      if (added) {
+                        toast.success("Añadido a tus favoritos ❤️", {
+                          description: `${product.name} fue guardado en tu lista de deseos.`,
+                        });
+                      } else {
+                        toast("Eliminado de favoritos", {
+                          description: `${product.name} fue quitado de tu lista.`,
+                        });
+                      }
+                    });
+                  }}
+                  className={`h-14 w-14 rounded-2xl border flex items-center justify-center transition-colors shadow-sm flex-shrink-0 ${
+                    isFav 
+                      ? "bg-rose-500 border-rose-500 text-white" 
+                      : "border-border/80 bg-background hover:bg-rose-50 dark:hover:bg-rose-950/30 text-muted-foreground hover:text-rose-500 dark:hover:text-rose-400"
+                  }`}
+                  title={isFav ? "Quitar de favoritos" : "Añadir a favoritos"}
+                >
+                  <Heart className={`w-6 h-6 ${isFav ? "fill-white" : ""}`} />
                 </motion.button>
               </div>
               

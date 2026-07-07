@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
+import { useFavoriteStore } from "@/store/useFavoriteStore";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useState } from "react";
-import { CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 
 interface Product {
   id: number;
@@ -28,10 +29,34 @@ interface Product {
 
 export function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((state) => state.addItem);
+  const { isFavorite, toggleItem } = useFavoriteStore();
 
   if (!product || !product.id || !product.name || product.price === undefined || product.price === null || isNaN(Number(product.price)) || (product.stock !== undefined && product.stock <= 0)) {
     return null;
   }
+
+  const isFav = isFavorite(product.id);
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const added = await toggleItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image_url: product.primary_image?.image_url || null,
+      slug: product.slug,
+    });
+    if (added) {
+      toast.success("Añadido a tus favoritos ❤️", {
+        description: `${product.name} fue guardado en tu lista de deseos.`,
+      });
+    } else {
+      toast("Eliminado de favoritos", {
+        description: `${product.name} fue quitado de tu lista.`,
+      });
+    }
+  };
 
   const imageUrl = product.primary_image?.image_url 
     ? (product.primary_image.image_url.startsWith('http')
@@ -94,6 +119,21 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         )}
       </div>
+
+      {/* Favorite Heart Button */}
+      <motion.button
+        whileTap={{ scale: 0.7 }}
+        whileHover={{ scale: 1.1 }}
+        onClick={handleToggleFavorite}
+        className={`absolute top-3 right-3 z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-colors ${
+          isFav 
+            ? "bg-rose-500 text-white" 
+            : "bg-white/90 dark:bg-zinc-800/90 text-gray-400 hover:text-rose-500 dark:text-zinc-400 dark:hover:text-rose-400"
+        }`}
+        title={isFav ? "Quitar de favoritos" : "Añadir a favoritos"}
+      >
+        <Heart className={`w-4 h-4 ${isFav ? "fill-white" : ""}`} />
+      </motion.button>
 
       <Link href={`/productos/${product.slug}`} className="relative aspect-[4/5] bg-white dark:bg-white overflow-hidden rounded-t-2xl block p-4 group/slider border-b border-gray-100 dark:border-zinc-800/80" style={{ transform: 'translateZ(0)' }}>
         <Image

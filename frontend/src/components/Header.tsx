@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCartStore } from "@/store/useCartStore";
 import { useCatalogStore } from "@/store/useCatalogStore";
+import { useFavoriteStore } from "@/store/useFavoriteStore";
+import { Heart } from "lucide-react";
 
 export function Header() {
   const { user, logout } = useAuthStore();
   const { totalItems, setIsOpen } = useCartStore();
   const { setFilterData } = useCatalogStore();
+  const { items: favoriteItems, syncWithBackend } = useFavoriteStore();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isClient, setIsClient] = useState(false);
@@ -25,6 +28,9 @@ export function Header() {
 
   useEffect(() => {
     setIsClient(true);
+    if (user) {
+      syncWithBackend();
+    }
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/catalog/filters`)
       .then(res => res.json())
       .then(data => {
@@ -300,6 +306,22 @@ export function Header() {
                 <span className="text-sm font-medium hidden sm:block">Ingresar</span>
               </Link>
             )}
+
+            {/* Botón de Favoritos ❤️ */}
+            <Link 
+              href="/favoritos"
+              className="relative p-2 ml-1 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-all active:scale-90 duration-200 ease-[var(--spring-easing)] flex items-center group"
+              title="Mis Favoritos / Lista de Deseos"
+            >
+              <div className="relative">
+                <Heart className="w-6 h-6 text-gray-700 dark:text-zinc-300 group-hover:text-rose-500 transition-colors" />
+                {isClient && favoriteItems.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm">
+                    {favoriteItems.length}
+                  </span>
+                )}
+              </div>
+            </Link>
 
             <button 
               onClick={() => setIsOpen(true)}

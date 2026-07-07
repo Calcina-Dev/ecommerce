@@ -4,10 +4,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/store/useAuthStore";
-import { CheckCircle2, Package, Truck, Home } from "lucide-react";
+import { CheckCircle2, Package, Truck, Home, MapPin, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { UserAddressesManager } from "@/components/UserAddressesManager";
 
 export default function MiCuentaPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function MiCuentaPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'orders' | 'addresses'>('orders');
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', dni: '', phone: '' });
@@ -163,7 +165,44 @@ export default function MiCuentaPage() {
           )}
         </div>
 
-        <h2 className="text-xl font-bold mb-6">Historial de Pedidos</h2>
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-2 border-b border-border mb-8 overflow-x-auto pb-3">
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all ${
+              activeTab === 'orders'
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Package className="w-4 h-4" />
+            Mis Pedidos
+          </button>
+          <button
+            onClick={() => setActiveTab('addresses')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all ${
+              activeTab === 'addresses'
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <MapPin className="w-4 h-4" />
+            Mis Direcciones
+          </button>
+          <Link
+            href="/favoritos"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all ml-auto"
+          >
+            <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+            Ver Mis Favoritos ❤️
+          </Link>
+        </div>
+
+        {activeTab === 'addresses' ? (
+          <UserAddressesManager />
+        ) : (
+          <div>
+            <h2 className="text-xl font-bold mb-6">Historial de Pedidos</h2>
 
         {loading ? (
           <div className="text-center py-10 text-muted-foreground">Cargando pedidos...</div>
@@ -436,6 +475,8 @@ export default function MiCuentaPage() {
               </div>
             ))}
           </div>
+        )}
+        </div>
         )}
 
       </div>

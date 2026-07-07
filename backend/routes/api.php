@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\IzipayWebhookController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\StorefrontPageController;
 use App\Http\Controllers\Api\StoreSettingController;
+use App\Http\Controllers\Api\UserAddressController;
+use App\Http\Controllers\Api\FavoriteController;
 
 Route::get('/storefront/settings', [StoreSettingController::class, 'index']);
 Route::get('/storefront/pages/{slug}', [StorefrontPageController::class, 'show']);
@@ -22,6 +24,18 @@ Route::get('/user', function (Request $request) {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::put('/user/profile', [AuthController::class, 'updateProfile']);
+
+    // Direcciones guardadas (estilo Mercado Libre)
+    Route::get('/user/addresses', [UserAddressController::class, 'index']);
+    Route::post('/user/addresses', [UserAddressController::class, 'store']);
+    Route::put('/user/addresses/{id}', [UserAddressController::class, 'update']);
+    Route::delete('/user/addresses/{id}', [UserAddressController::class, 'destroy']);
+    Route::patch('/user/addresses/{id}/default', [UserAddressController::class, 'setDefault']);
+
+    // Favoritos / Lista de Deseos
+    Route::get('/favorites', [FavoriteController::class, 'index']);
+    Route::post('/favorites/toggle/{product_id}', [FavoriteController::class, 'toggle']);
+    Route::post('/favorites/sync', [FavoriteController::class, 'sync']);
 });
 
 Route::prefix('auth')->group(function () {

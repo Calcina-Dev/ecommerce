@@ -28,6 +28,11 @@ export default function CheckoutPage() {
     shipping_postal_code: "",
   });
 
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [saveNewAddress, setSaveNewAddress] = useState(false);
+  const [newAddressAlias, setNewAddressAlias] = useState("Casa");
+
   // Autocomplete lists
   const departments = Array.from(new Set(ubigeosData.map(u => u.department))).sort();
   const provinces = formData.shipping_department 
@@ -49,7 +54,22 @@ export default function CheckoutPage() {
   const [izipayLoading, setIzipayLoading] = useState(true);
   const [orderCreated, setOrderCreated] = useState<string | null>(null);
 
-  // Prellenar si el usuario está logueado
+  const handleSelectAddress = (addr: any) => {
+    setSelectedAddressId(addr.id);
+    setSaveNewAddress(false);
+    setFormData(prev => ({
+      ...prev,
+      shipping_name: addr.recipient_name || prev.shipping_name,
+      shipping_phone: addr.phone || prev.shipping_phone,
+      shipping_department: addr.department || "",
+      shipping_province: addr.province || "",
+      shipping_district: addr.district || "",
+      shipping_address: addr.address || "",
+      shipping_postal_code: addr.postal_code || "",
+    }));
+  };
+
+  // Prellenar si el usuario está logueado y cargar sus direcciones guardadas
   useEffect(() => {
     if (user) {
       setFormData((prev) => ({
@@ -57,6 +77,29 @@ export default function CheckoutPage() {
         shipping_name: user.name || "",
         shipping_email: user.email || "",
       }));
+
+      const token = useAuthStore.getState().token;
+      if (token) {
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/user/addresses`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json"
+          }
+        })
+        .then(res => res.ok ? res.json() : [])
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setSavedAddresses(data);
+            const def = data.find(a => a.is_default) || data[0];
+            if (def) {
+              handleSelectAddress(def);
+            }
+          } else {
+            setSaveNewAddress(true);
+          }
+        })
+        .catch(err => console.error("Error cargando direcciones en checkout:", err));
+      }
     }
   }, [user]);
 
@@ -152,6 +195,32 @@ export default function CheckoutPage() {
     setError("");
 
     try {
+      if ((saveNewAddress || selectedAddressId === null) && useAuthStore.getState().token) {
+        try {
+          await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/user/addresses`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${useAuthStore.getState().token}`,
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              alias: newAddressAlias || "Casa",
+              recipient_name: formData.shipping_name,
+              phone: formData.shipping_phone,
+              department: formData.shipping_department,
+              province: formData.shipping_province,
+              district: formData.shipping_district,
+              address: formData.shipping_address,
+              postal_code: formData.shipping_postal_code,
+              is_default: savedAddresses.length === 0
+            })
+          });
+        } catch (e) {
+          console.error("Error guardando nueva dirección", e);
+        }
+      }
+
       const payload = {
         ...formData,
         items: items.map(item => ({ id: item.id, quantity: item.quantity })),
@@ -354,6 +423,67 @@ export default function CheckoutPage() {
         <div className="lg:col-span-7 space-y-8">
           <div className="bg-background rounded-3xl p-8 border shadow-sm">
             <h2 className="text-2xl font-bold mb-6">Datos de Envío</h2>
+
+            {/* Mercado Libre Style Address Selector */}
+            {savedAddresses.length > 0 && (
+              <div className="mb-8 pb-6 border-b border-border/80">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  Mis direcciones guardadas (Estilo Mercado Libre)
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  {savedAddresses.map((addr) => (
+                    <div
+                      key={addr.id}
+                      onClick={() => handleSelectAddress(addr)}
+                      className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
+                        selectedAddressId === addr.id
+                          ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20 shadow-sm"
+                          : "border-border hover:border-gray-400 bg-background"
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-extrabold text-xs uppercase px-2 py-0.5 rounded-full bg-muted text-foreground">
+                            {addr.alias || "Casa"}
+                          </span>
+                          {selectedAddressId === addr.id && (
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center gap-1">
+                              ✓ Seleccionada
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-bold text-sm text-foreground mt-1">{addr.recipient_name} <span className="font-normal text-muted-foreground">({addr.phone})</span></p>
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{addr.address}</p>
+                        <p className="text-[11px] text-muted-foreground/80 mt-0.5">{addr.district}, {addr.province}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div
+                    onClick={() => {
+                      setSelectedAddressId(null);
+                      setSaveNewAddress(true);
+                      setFormData(prev => ({
+                        ...prev,
+                        shipping_address: "",
+                        shipping_department: "",
+                        shipping_province: "",
+                        shipping_district: "",
+                        shipping_postal_code: "",
+                      }));
+                    }}
+                    className={`p-4 rounded-2xl border border-dashed cursor-pointer transition-all flex flex-col items-center justify-center text-center ${
+                      selectedAddressId === null
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/20 text-primary font-bold"
+                        : "border-border hover:border-gray-400 text-muted-foreground"
+                    }`}
+                  >
+                    <span className="text-xl font-bold mb-1">+</span>
+                    <span className="text-xs font-semibold">Usar / Ingresar otra dirección</span>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {error && (
               <div className="mb-6 p-4 bg-destructive/10 text-destructive rounded-xl text-sm font-medium">
@@ -430,6 +560,35 @@ export default function CheckoutPage() {
                     💡 <span className="font-medium">Se autocompleta al elegir tu distrito</span>, o puedes ingresarlo directamente para seleccionar tu zona.
                   </p>
                 </div>
+
+                {user && (
+                  <div className="pt-4 border-t border-border mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/20 p-4 rounded-2xl">
+                    <div className="flex items-center gap-2.5">
+                      <input
+                        type="checkbox"
+                        id="save_addr_chk"
+                        checked={saveNewAddress || selectedAddressId === null}
+                        onChange={(e) => setSaveNewAddress(e.target.checked)}
+                        className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <label htmlFor="save_addr_chk" className="text-sm font-semibold cursor-pointer text-foreground">
+                        Guardar esta dirección en mi cuenta para futuras compras
+                      </label>
+                    </div>
+                    {(saveNewAddress || selectedAddressId === null) && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-muted-foreground">Alias:</span>
+                        <input
+                          type="text"
+                          value={newAddressAlias}
+                          onChange={(e) => setNewAddressAlias(e.target.value)}
+                          placeholder="Ej: Casa, Oficina"
+                          className="px-3 py-1 border rounded-xl text-xs w-28 bg-background font-medium outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </form>
           </div>
