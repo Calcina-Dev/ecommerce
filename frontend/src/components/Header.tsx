@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -23,6 +24,18 @@ export function Header() {
   const [categoriesTree, setCategoriesTree] = useState<any[]>([]);
   const [showMenu, setShowMenu] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+
+  // Estado para formulario modal de agregar dirección en vivo
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [newAddrForm, setNewAddrForm] = useState({
+    recipient_name: "",
+    phone: "",
+    address: "",
+    department: "Lima",
+    province: "Lima",
+    district: "Miraflores",
+    alias: "Casa"
+  });
 
   const [locDept, setLocDept] = useState("Lima");
   const [locProv, setLocProv] = useState("Lima");
@@ -401,10 +414,10 @@ export function Header() {
         {renderSuggestionsDropdown()}
       </div>
 
-      {/* Mercado Libre Style Location Modal */}
-      {showLocationModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 animate-in zoom-in-95 duration-200">
+      {/* Mercado Libre Style Location Modal (Rendered via createPortal to document.body to avoid header backdrop/sticky CSS clipping) */}
+      {isClient && showLocationModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 animate-in zoom-in-95 duration-200 my-auto">
             {/* Header */}
             <div className="p-5 bg-gradient-to-r from-accent/10 via-emerald-500/10 to-transparent border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -418,7 +431,10 @@ export function Header() {
               </div>
               <button 
                 type="button"
-                onClick={() => setShowLocationModal(false)}
+                onClick={() => {
+                  setShowLocationModal(false);
+                  setIsAddingAddress(false);
+                }}
                 className="w-8 h-8 rounded-full bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 text-gray-500 hover:text-foreground flex items-center justify-center transition-colors font-bold"
               >
                 ✕
@@ -426,170 +442,378 @@ export function Header() {
             </div>
 
             {/* Body */}
-            <div className="p-6 max-h-[70vh] overflow-y-auto space-y-6">
-              {/* Sección 1: Direcciones guardadas (si está logueado) */}
-              {user && savedAddresses.length > 0 && (
-                <div className="space-y-3">
-                  <p className="text-xs font-black text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-accent"></span>
-                    Mis direcciones guardadas
-                  </p>
-                  <div className="grid grid-cols-1 gap-2.5">
-                    {savedAddresses.map((addr) => {
-                      const isSel = selectedAddress?.id === addr.id;
-                      return (
-                        <div
-                          key={addr.id}
-                          onClick={() => {
-                            setSelectedAddress(addr);
-                            toast.success("¡Ubicación actualizada!", {
-                              description: `Tus compras se calcularán para envío a ${addr.alias || 'tu dirección'}.`,
-                            });
-                            setShowLocationModal(false);
-                          }}
-                          className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-3 ${
-                            isSel 
-                              ? "border-accent bg-accent/5 shadow-sm" 
-                              : "border-gray-200 dark:border-zinc-800 hover:border-gray-300 bg-background"
-                          }`}
-                        >
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 ${
-                            isSel ? "border-accent bg-accent text-white" : "border-gray-300"
-                          }`}>
-                            {isSel && <span className="w-2 h-2 rounded-full bg-white"></span>}
-                          </div>
-                          <div className="flex-1 text-left">
-                            <div className="flex items-center gap-2">
-                              <span className="font-black text-xs uppercase px-2 py-0.5 rounded-md bg-muted text-foreground">
-                                {addr.alias || "Casa"}
-                              </span>
-                              {addr.is_default && (
-                                <span className="text-amber-500 text-xs font-bold flex items-center gap-0.5">
-                                  ★ Predeterminada
-                                </span>
-                              )}
-                            </div>
-                            <p className="font-bold text-sm text-foreground mt-1">{addr.recipient_name} <span className="font-normal text-muted-foreground">({addr.phone})</span></p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{addr.address}</p>
-                            <p className="text-[11px] text-muted-foreground/80 mt-0.5 font-medium">{addr.district}, {addr.province}, {addr.department}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="pt-1">
+            <div className="p-6 max-h-[75vh] overflow-y-auto space-y-6">
+              {isAddingAddress ? (
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-3">
+                    <h4 className="font-black text-sm text-foreground flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-accent"></span>
+                      Nueva dirección de envío
+                    </h4>
                     <button 
-                      type="button"
-                      className="w-full rounded-xl font-bold py-3 border-dashed border-2 border-gray-300 dark:border-zinc-700 hover:border-accent hover:text-accent transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-1.5"
-                      onClick={() => {
-                        setShowLocationModal(false);
-                        router.push("/mi-cuenta");
-                      }}
+                      type="button" 
+                      onClick={() => setIsAddingAddress(false)}
+                      className="text-xs font-bold text-muted-foreground hover:text-foreground underline"
                     >
-                      + Administrar o agregar otra dirección en Mi Cuenta
+                      ← Volver al listado
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Etiqueta</label>
+                      <select
+                        value={newAddrForm.alias}
+                        onChange={(e) => setNewAddrForm({ ...newAddrForm, alias: e.target.value })}
+                        className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-accent"
+                      >
+                        <option value="Casa">🏠 Casa</option>
+                        <option value="Trabajo">💼 Trabajo</option>
+                        <option value="Oficina">🏢 Oficina</option>
+                        <option value="Otro">📍 Otro</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Teléfono / Celular</label>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={9}
+                        placeholder="Ej: 987654321"
+                        value={newAddrForm.phone}
+                        onChange={(e) => setNewAddrForm({ ...newAddrForm, phone: e.target.value })}
+                        className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-accent"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="text-left">
+                    <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Nombre de quien recibe</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nombre y Apellido"
+                      value={newAddrForm.recipient_name}
+                      onChange={(e) => setNewAddrForm({ ...newAddrForm, recipient_name: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-accent"
+                    />
+                  </div>
+
+                  <div className="text-left">
+                    <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Dirección (Calle, número, dpto)</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Av. Principal 123, Dpto 401"
+                      value={newAddrForm.address}
+                      onChange={(e) => setNewAddrForm({ ...newAddrForm, address: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-accent"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-left">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Dpto</label>
+                      <select 
+                        value={newAddrForm.department} 
+                        onChange={(e) => setNewAddrForm({ ...newAddrForm, department: e.target.value, province: "", district: "" })} 
+                        className="w-full px-2.5 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-accent"
+                      >
+                        {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Provincia</label>
+                      <select 
+                        value={newAddrForm.province} 
+                        onChange={(e) => setNewAddrForm({ ...newAddrForm, province: e.target.value, district: "" })} 
+                        disabled={!newAddrForm.department}
+                        className="w-full px-2.5 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+                      >
+                        {Array.from(new Set(ubigeosData.filter((u: any) => u.department === newAddrForm.department).map((u: any) => u.province))).sort().map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Distrito</label>
+                      <select 
+                        value={newAddrForm.district} 
+                        onChange={(e) => setNewAddrForm({ ...newAddrForm, district: e.target.value })} 
+                        disabled={!newAddrForm.province}
+                        className="w-full px-2.5 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+                      >
+                        {Array.from(new Set(ubigeosData.filter((u: any) => u.province === newAddrForm.province && u.department === newAddrForm.department).map((u: any) => u.district))).sort().map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingAddress(false)}
+                      className="flex-1 py-2.5 rounded-xl border border-gray-300 dark:border-zinc-700 text-xs font-bold hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!newAddrForm.address || !newAddrForm.phone || !newAddrForm.recipient_name || !newAddrForm.district}
+                      onClick={async () => {
+                        const token = useAuthStore.getState().token;
+                        if (token) {
+                          try {
+                            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/user/addresses`, {
+                              method: "POST",
+                              headers: {
+                                "Authorization": `Bearer ${token}`,
+                                "Content-Type": "application/json",
+                                "Accept": "application/json"
+                              },
+                              body: JSON.stringify({
+                                ...newAddrForm,
+                                postal_code: "000000",
+                                is_default: savedAddresses.length === 0
+                              })
+                            });
+                            if (res.ok) {
+                              await useAddressStore.getState().fetchAddresses();
+                              const newAddrObj = {
+                                id: Date.now(),
+                                ...newAddrForm,
+                                postal_code: "000000",
+                                is_default: false
+                              };
+                              setSelectedAddress(newAddrObj);
+                              toast.success("¡Dirección guardada y seleccionada!", {
+                                description: `Enviaremos tus pedidos a ${newAddrForm.alias}: ${newAddrForm.address}, ${newAddrForm.district}.`
+                              });
+                              setIsAddingAddress(false);
+                              setShowLocationModal(false);
+                            } else {
+                              toast.error("Error al guardar la dirección");
+                            }
+                          } catch (e) {
+                            console.error(e);
+                            toast.error("Error de conexión al guardar");
+                          }
+                        }
+                      }}
+                      className="flex-2 px-6 py-2.5 rounded-xl bg-accent text-white text-xs font-bold hover:bg-accent/90 transition-all shadow-md disabled:opacity-50"
+                    >
+                      Guardar y usar para envíos
                     </button>
                   </div>
                 </div>
-              )}
+              ) : (
+                <>
+                  {/* Sección 1: Direcciones guardadas (si está logueado) */}
+                  {user && savedAddresses.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-xs font-black text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-accent"></span>
+                        Mis direcciones guardadas
+                      </p>
+                      <div className="grid grid-cols-1 gap-2.5">
+                        {savedAddresses.map((addr) => {
+                          const isSel = selectedAddress?.id === addr.id;
+                          return (
+                            <div
+                              key={addr.id}
+                              onClick={() => {
+                                setSelectedAddress(addr);
+                                toast.success("¡Ubicación actualizada!", {
+                                  description: `Tus compras se calcularán para envío a ${addr.alias || 'tu dirección'}.`,
+                                });
+                                setShowLocationModal(false);
+                              }}
+                              className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-3 ${
+                                isSel 
+                                  ? "border-accent bg-accent/5 shadow-sm" 
+                                  : "border-gray-200 dark:border-zinc-800 hover:border-gray-300 bg-background"
+                              }`}
+                            >
+                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 ${
+                                isSel ? "border-accent bg-accent text-white" : "border-gray-300"
+                              }`}>
+                                {isSel && <span className="w-2 h-2 rounded-full bg-white"></span>}
+                              </div>
+                              <div className="flex-1 text-left">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-black text-xs uppercase px-2 py-0.5 rounded-md bg-muted text-foreground">
+                                    {addr.alias || "Casa"}
+                                  </span>
+                                  {addr.is_default && (
+                                    <span className="text-amber-500 text-xs font-bold flex items-center gap-0.5">
+                                      ★ Predeterminada
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="font-bold text-sm text-foreground mt-1">{addr.recipient_name} <span className="font-normal text-muted-foreground">({addr.phone})</span></p>
+                                <p className="text-xs text-muted-foreground mt-0.5">{addr.address}</p>
+                                <p className="text-[11px] text-muted-foreground/80 mt-0.5 font-medium">{addr.district}, {addr.province}, {addr.department}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="pt-1 flex flex-col sm:flex-row gap-2">
+                        <button 
+                          type="button"
+                          className="flex-1 rounded-xl font-bold py-2.5 px-3 border-2 border-accent/20 bg-accent/5 hover:bg-accent text-accent hover:text-white transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm"
+                          onClick={() => {
+                            setIsAddingAddress(true);
+                            setNewAddrForm({
+                              recipient_name: user?.name || "",
+                              phone: "",
+                              address: "",
+                              department: locDept || "Lima",
+                              province: locProv || "Lima",
+                              district: locDist || "Miraflores",
+                              alias: "Casa"
+                            });
+                          }}
+                        >
+                          + Agregar nueva dirección aquí
+                        </button>
+                        <button 
+                          type="button"
+                          className="rounded-xl font-semibold py-2.5 px-3 border border-gray-200 dark:border-zinc-700 hover:border-gray-400 text-muted-foreground hover:text-foreground transition-all text-xs flex items-center justify-center"
+                          onClick={() => {
+                            setShowLocationModal(false);
+                            router.push("/mi-cuenta");
+                          }}
+                        >
+                          ⚙️ Mi Cuenta
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
-              {/* Sección 2: Selector Interactivo de Ubigeo / Distrito (Estilo Mercado Libre Mapa/Zona) */}
-              <div className="bg-muted/30 p-5 rounded-3xl border border-gray-200/80 dark:border-zinc-800 space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">🗺️</span>
-                  <div>
-                    <h4 className="font-black text-sm text-foreground">Selecciona tu ubicación o zona de envío</h4>
-                    <p className="text-xs text-muted-foreground">Elige tu distrito para ver la disponibilidad y cálculo exacto</p>
-                  </div>
-                </div>
+                  {/* Si el usuario está logueado pero no tiene direcciones guardadas aún */}
+                  {user && savedAddresses.length === 0 && (
+                    <div className="text-center py-5 px-4 bg-accent/5 rounded-3xl border-2 border-dashed border-accent/30 space-y-3">
+                      <p className="text-sm font-bold text-foreground">Aún no tienes direcciones guardadas</p>
+                      <p className="text-xs text-muted-foreground">Agrega una dirección ahora para que tus compras se autocompleten siempre</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAddingAddress(true);
+                          setNewAddrForm({
+                            recipient_name: user?.name || "",
+                            phone: "",
+                            address: "",
+                            department: locDept || "Lima",
+                            province: locProv || "Lima",
+                            district: locDist || "Miraflores",
+                            alias: "Casa"
+                          });
+                        }}
+                        className="bg-accent text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md hover:bg-accent/90 transition-all"
+                      >
+                        + Agregar mi primera dirección
+                      </button>
+                    </div>
+                  )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Departamento</label>
-                    <select 
-                      value={locDept} 
-                      onChange={(e) => { 
-                        setLocDept(e.target.value); 
-                        setLocProv(""); 
-                        setLocDist(""); 
-                      }} 
-                      className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent"
+                  {/* Sección 2: Selector Interactivo de Ubigeo / Distrito (Estilo Mercado Libre Mapa/Zona) */}
+                  <div className="bg-muted/30 p-5 rounded-3xl border border-gray-200/80 dark:border-zinc-800 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🗺️</span>
+                      <div>
+                        <h4 className="font-black text-sm text-foreground">Selecciona tu ubicación o zona de envío</h4>
+                        <p className="text-xs text-muted-foreground">Elige tu distrito para ver la disponibilidad y cálculo exacto</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Departamento</label>
+                        <select 
+                          value={locDept} 
+                          onChange={(e) => { 
+                            setLocDept(e.target.value); 
+                            setLocProv(""); 
+                            setLocDist(""); 
+                          }} 
+                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent"
+                        >
+                          {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Provincia</label>
+                        <select 
+                          value={locProv} 
+                          onChange={(e) => { 
+                            setLocProv(e.target.value); 
+                            setLocDist(""); 
+                          }} 
+                          disabled={!locDept}
+                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+                        >
+                          {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Distrito</label>
+                        <select 
+                          value={locDist} 
+                          onChange={(e) => setLocDist(e.target.value)} 
+                          disabled={!locProv}
+                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+                        >
+                          {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={!locDist}
+                      onClick={() => {
+                        setSelectedAddress({
+                          id: 0,
+                          alias: locDist,
+                          recipient_name: user?.name || "Ubicación seleccionada",
+                          phone: "",
+                          department: locDept,
+                          province: locProv,
+                          district: locDist,
+                          address: `${locDist}, ${locProv}`,
+                          postal_code: "",
+                          is_default: false
+                        });
+                        toast.success(`📍 Ubicación cambiada a ${locDist}, ${locProv}`, {
+                          description: "Los tiempos de entrega y envíos se calcularán para esta zona."
+                        });
+                        setShowLocationModal(false);
+                      }}
+                      className="w-full mt-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
                     >
-                      {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
+                      <MapPin className="w-4 h-4" />
+                      Aplicar esta ubicación para envíos
+                    </button>
                   </div>
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Provincia</label>
-                    <select 
-                      value={locProv} 
-                      onChange={(e) => { 
-                        setLocProv(e.target.value); 
-                        setLocDist(""); 
-                      }} 
-                      disabled={!locDept}
-                      className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
-                    >
-                      {provinces.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase text-muted-foreground mb-1">Distrito</label>
-                    <select 
-                      value={locDist} 
-                      onChange={(e) => setLocDist(e.target.value)} 
-                      disabled={!locProv}
-                      className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
-                    >
-                      {districts.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                  </div>
-                </div>
 
-                <button
-                  type="button"
-                  disabled={!locDist}
-                  onClick={() => {
-                    setSelectedAddress({
-                      id: 0,
-                      alias: locDist,
-                      recipient_name: user?.name || "Ubicación seleccionada",
-                      phone: "",
-                      department: locDept,
-                      province: locProv,
-                      district: locDist,
-                      address: `${locDist}, ${locProv}`,
-                      postal_code: "",
-                      is_default: false
-                    });
-                    toast.success(`📍 Ubicación cambiada a ${locDist}, ${locProv}`, {
-                      description: "Los tiempos de entrega y envíos se calcularán para esta zona."
-                    });
-                    setShowLocationModal(false);
-                  }}
-                  className="w-full mt-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
-                >
-                  <MapPin className="w-4 h-4" />
-                  Aplicar esta ubicación para envíos
-                </button>
-              </div>
-
-              {/* Si no ha iniciado sesión */}
-              {!user && (
-                <div className="text-center py-4 px-4 bg-amber-500/10 rounded-2xl border border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <div className="text-left">
-                    <h5 className="font-bold text-xs sm:text-sm text-foreground">¿Ya tienes direcciones guardadas?</h5>
-                    <p className="text-[11px] text-muted-foreground">Inicia sesión para ver tu lista como en Mercado Libre</p>
-                  </div>
-                  <button 
-                    type="button"
-                    className="rounded-xl font-bold bg-accent hover:bg-accent/90 text-white px-5 py-2 text-xs transition-all shadow-sm flex-shrink-0"
-                    onClick={() => {
-                      setShowLocationModal(false);
-                      router.push("/login");
-                    }}
-                  >
-                    Ingresar a mi cuenta
-                  </button>
-                </div>
+                  {/* Si no ha iniciado sesión */}
+                  {!user && (
+                    <div className="text-center py-4 px-4 bg-amber-500/10 rounded-2xl border border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <div className="text-left">
+                        <h5 className="font-bold text-xs sm:text-sm text-foreground">¿Ya tienes direcciones guardadas?</h5>
+                        <p className="text-[11px] text-muted-foreground">Inicia sesión para ver tu lista como en Mercado Libre</p>
+                      </div>
+                      <button 
+                        type="button"
+                        className="rounded-xl font-bold bg-accent hover:bg-accent/90 text-white px-5 py-2 text-xs transition-all shadow-sm flex-shrink-0"
+                        onClick={() => {
+                          setShowLocationModal(false);
+                          router.push("/login");
+                        }}
+                      >
+                        Ingresar a mi cuenta
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -599,7 +823,8 @@ export function Header() {
               Envíos rápidos y seguros a todos los distritos del Perú
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );
