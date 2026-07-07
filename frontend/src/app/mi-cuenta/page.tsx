@@ -10,6 +10,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { UserAddressesManager } from "@/components/UserAddressesManager";
 
+const safeFormatDate = (dateVal: any, options?: Intl.DateTimeFormatOptions): string => {
+  if (!dateVal) return "--/--";
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return "--/--";
+  try {
+    return d.toLocaleDateString('es-PE', options || { month: 'short', day: 'numeric' });
+  } catch {
+    return "--/--";
+  }
+};
+
 export default function MiCuentaPage() {
   const router = useRouter();
   const { user, token, setAuth } = useAuthStore();
@@ -122,11 +133,11 @@ export default function MiCuentaPage() {
             <div className="flex items-center justify-between flex-wrap gap-6">
               <div className="flex items-center gap-6">
                 <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center text-2xl font-bold">
-                  {user.name.charAt(0).toUpperCase()}
+                  {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold">{user.name}</h1>
-                  <p className="text-muted-foreground">{user.email}</p>
+                  <h1 className="text-2xl font-bold">{user?.name || 'Usuario'}</h1>
+                  <p className="text-muted-foreground">{user?.email || ''}</p>
                   {(user.phone || user.dni) && (
                     <div className="mt-2 text-sm text-muted-foreground flex gap-4">
                       {user.phone && <span>📞 {user.phone}</span>}
@@ -232,14 +243,14 @@ export default function MiCuentaPage() {
                   <div>
                     <h3 className="font-bold text-lg">{order.order_number}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(order.created_at).toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      {safeFormatDate(order.created_at, { year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
                   </div>
                   
                   <div className="flex items-center gap-6">
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">Total</p>
-                      <p className="font-bold">S/ {parseFloat(order.total_amount).toFixed(2)}</p>
+                      <p className="font-bold">S/ {parseFloat(order.total_amount || 0).toFixed(2)}</p>
                     </div>
                     
                     <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
@@ -289,7 +300,7 @@ export default function MiCuentaPage() {
                           </div>
                           <div>
                             <p className="font-bold text-lg">Pedido Cancelado</p>
-                            {order.cancelled_at && <p className="text-sm text-red-500">{new Date(order.cancelled_at).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
+                            {order.cancelled_at && <p className="text-sm text-red-500">{safeFormatDate(order.cancelled_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>}
                           </div>
                         </div>
                       ) : (
@@ -341,9 +352,9 @@ export default function MiCuentaPage() {
                                 <div className={`absolute top-12 text-xs font-semibold ${isPastOrCurrent ? 'text-gray-900' : 'text-gray-400'}`}>
                                   {step.label}
                                 </div>
-                                {isPastOrCurrent ? (
+                                {isPastOrCurrent && displayDate && !isNaN(new Date(displayDate).getTime()) ? (
                                   <p className="absolute top-16 mt-1 text-[10px] text-muted-foreground whitespace-nowrap bg-muted/30 py-0.5 px-1.5 rounded-md">
-                                    {new Date(displayDate).toLocaleDateString('es-PE', { month: 'short', day: 'numeric' })}
+                                    {safeFormatDate(displayDate, { month: 'short', day: 'numeric' })}
                                   </p>
                                 ) : (
                                   <p className="absolute top-16 mt-1 text-[10px] text-transparent whitespace-nowrap select-none">
@@ -383,9 +394,9 @@ export default function MiCuentaPage() {
                                     <h4 className={`text-sm font-bold ${isPastOrCurrent ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-zinc-500'}`}>
                                       {step.label}
                                     </h4>
-                                    {isPastOrCurrent && displayDate && (
+                                    {isPastOrCurrent && displayDate && !isNaN(new Date(displayDate).getTime()) && (
                                       <span className="text-[11px] text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-md font-medium">
-                                        {new Date(displayDate).toLocaleDateString('es-PE', { month: 'short', day: 'numeric' })}
+                                        {safeFormatDate(displayDate, { month: 'short', day: 'numeric' })}
                                       </span>
                                     )}
                                   </div>
@@ -415,8 +426,8 @@ export default function MiCuentaPage() {
                     <div className="border-t border-gray-100 pt-8 mt-8">
                       <h4 className="text-lg font-bold text-gray-900 mb-4">Resumen del Pedido</h4>
                       <div className="space-y-3 mb-6">
-                        {order.items.map((item: any, i: number) => (
-                          <div key={item.id} className="flex justify-between items-center group hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors">
+                        {(order.items || []).map((item: any, i: number) => (
+                          <div key={item.id || i} className="flex justify-between items-center group hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors">
                             <div className="flex-1">
                               {item.product && item.product.slug ? (
                                 <Link href={`/productos/${item.product.slug}`} className="text-sm font-medium text-gray-900 group-hover:text-green-700 transition-colors">
@@ -425,10 +436,10 @@ export default function MiCuentaPage() {
                               ) : (
                                 <p className="text-sm font-medium text-gray-900">{item.product_name}</p>
                               )}
-                              <p className="text-xs text-gray-500">Cant: {item.quantity} (S/ {parseFloat(item.price).toFixed(2)} c/u)</p>
+                              <p className="text-xs text-gray-500">Cant: {item.quantity} (S/ {parseFloat(item.price || 0).toFixed(2)} c/u)</p>
                             </div>
                             <span className="text-sm font-semibold text-gray-900">
-                              S/ {parseFloat(item.subtotal).toFixed(2)}
+                              S/ {parseFloat(item.subtotal || 0).toFixed(2)}
                             </span>
                           </div>
                         ))}
@@ -437,7 +448,7 @@ export default function MiCuentaPage() {
                       <div className="bg-gray-50 p-5 rounded-xl space-y-2 border border-gray-100 mb-6">
                         <div className="flex justify-between text-sm text-gray-600">
                           <span>Subtotal</span>
-                          <span>S/ {order.items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0).toFixed(2)}</span>
+                          <span>S/ {(order.items || []).reduce((acc: number, item: any) => acc + ((parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1)), 0).toFixed(2)}</span>
                         </div>
                         {parseFloat(order.discount_amount) > 0 && (
                           <div className="flex justify-between text-sm text-red-600">

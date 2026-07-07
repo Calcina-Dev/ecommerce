@@ -110,12 +110,18 @@ function OrderTrackingContent() {
     return map[status] || { label: status, color: "bg-gray-100 text-gray-800", step: 0 };
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: any) => {
+    if (!dateString) return "--/--";
     const d = new Date(dateString);
-    return new Intl.DateTimeFormat('es-PE', { 
-      day: 'numeric', month: 'short', year: 'numeric', 
-      hour: '2-digit', minute: '2-digit' 
-    }).format(d);
+    if (isNaN(d.getTime())) return "--/--";
+    try {
+      return new Intl.DateTimeFormat('es-PE', { 
+        day: 'numeric', month: 'short', year: 'numeric', 
+        hour: '2-digit', minute: '2-digit' 
+      }).format(d);
+    } catch {
+      return "--/--";
+    }
   };
 
   return (
@@ -388,9 +394,9 @@ function OrderTrackingContent() {
                       <motion.div variants={itemVariants} className="border-t border-gray-100 pt-8 mt-8">
                         <h3 className="text-lg font-bold text-gray-900 mb-4">Resumen del Pedido</h3>
                         <div className="space-y-3 mb-6">
-                          {order.items.map((item: any, i: number) => (
+                          {(order.items || []).map((item: any, i: number) => (
                             <motion.div 
-                              key={item.id} 
+                              key={item.id || i} 
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: 0.4 + (i * 0.05) }}
@@ -398,10 +404,10 @@ function OrderTrackingContent() {
                             >
                               <div>
                                 <p className="text-sm font-medium text-gray-900 group-hover:text-green-700 transition-colors">{item.product_name}</p>
-                                <p className="text-xs text-gray-500">Cant: {item.quantity} (S/ {parseFloat(item.price).toFixed(2)} c/u)</p>
+                                <p className="text-xs text-gray-500">Cant: {item.quantity} (S/ {parseFloat(item.price || 0).toFixed(2)} c/u)</p>
                               </div>
                               <span className="text-sm font-semibold text-gray-900">
-                                S/ {(parseFloat(item.price) * item.quantity).toFixed(2)}
+                                S/ {((parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1)).toFixed(2)}
                               </span>
                             </motion.div>
                           ))}
@@ -413,7 +419,7 @@ function OrderTrackingContent() {
                         >
                           <div className="flex justify-between text-sm text-gray-600">
                             <span>Subtotal</span>
-                            <span>S/ {order.items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0).toFixed(2)}</span>
+                            <span>S/ {(order.items || []).reduce((acc: number, item: any) => acc + ((parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1)), 0).toFixed(2)}</span>
                           </div>
                           {parseFloat(order.discount_amount) > 0 && (
                             <div className="flex justify-between text-sm text-red-600">
