@@ -47,15 +47,12 @@ class OrderObserver
             $this->deductStock($order);
         }
 
-        // Enviar email de creación o pago inicial
+        // Enviar email solo si la orden se creó ya pagada o en proceso (ej. desde POS o Admin)
         if ($order->shipping_email) {
             try {
                 if ($isPaidOrProcessing) {
                     Mail::to($order->shipping_email)->send(new OrderPaid($order));
                     Log::info("Email de pago inicial enviado a {$order->shipping_email} para orden {$order->order_number}");
-                } else {
-                    Mail::to($order->shipping_email)->send(new OrderReceived($order));
-                    Log::info("Email de pedido recibido enviado a {$order->shipping_email} para orden {$order->order_number}");
                 }
             } catch (\Throwable $e) {
                 Log::error("Failed to send order creation email for order {$order->order_number}: " . $e->getMessage(), [
