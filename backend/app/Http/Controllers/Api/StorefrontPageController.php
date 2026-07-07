@@ -24,7 +24,11 @@ class StorefrontPageController extends Controller
 
             if ($block['type'] === 'featured_products') {
                 $productIds = $block['data']['product_ids'] ?? [];
-                $block['data']['products'] = Product::with(['primaryImage', 'brand'])->whereIn('id', $productIds)->get();
+                $block['data']['products'] = Product::with(['primaryImage', 'brand'])
+                    ->whereIn('id', $productIds)
+                    ->where('is_active', true)
+                    ->where('stock', '>', 0)
+                    ->get();
             }
 
             return $block;

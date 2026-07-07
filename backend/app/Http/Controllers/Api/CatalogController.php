@@ -18,6 +18,7 @@ class CatalogController extends Controller
             return [
                 'featured_products' => Product::with(['images', 'primaryImage', 'brand'])
                     ->where('is_active', true)
+                    ->where('stock', '>', 0)
                     ->where('is_featured', true)
                     ->limit(8)
                     ->get()
@@ -40,7 +41,8 @@ class CatalogController extends Controller
         
         $products = Cache::remember($cacheKey, 60, function () use ($request) {
             $query = Product::with(['images', 'primaryImage', 'brand', 'category'])
-                ->where('is_active', true);
+                ->where('is_active', true)
+                ->where('stock', '>', 0);
 
             if ($request->filled('category_id') && $request->category_id !== 'undefined') {
                 $catId = $request->category_id;

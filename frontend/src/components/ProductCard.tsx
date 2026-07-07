@@ -12,6 +12,7 @@ interface Product {
   slug: string;
   price: string;
   compare_at_price: string | null;
+  stock?: number;
   primary_image?: {
     image_url: string;
   };
@@ -28,7 +29,7 @@ interface Product {
 export function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((state) => state.addItem);
 
-  if (!product || !product.id || !product.name || product.price === undefined || product.price === null || isNaN(Number(product.price))) {
+  if (!product || !product.id || !product.name || product.price === undefined || product.price === null || isNaN(Number(product.price)) || (product.stock !== undefined && product.stock <= 0)) {
     return null;
   }
 

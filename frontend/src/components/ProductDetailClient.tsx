@@ -333,7 +333,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap text-lg font-bold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 rounded-2xl h-14 shadow-lg shadow-primary/20"
+                  disabled={product.stock !== undefined && product.stock <= 0}
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap text-lg font-bold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 disabled:bg-gray-400 rounded-2xl h-14 shadow-lg shadow-primary/20"
                   onClick={() => {
                     addItem({
                       id: product.id,
@@ -351,7 +352,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     });
                   }}
                 >
-                  Agregar al Carrito
+                  {(product.stock !== undefined && product.stock <= 0) ? "Agotado - Sin Stock" : "Agregar al Carrito"}
                 </motion.button>
               </div>
               
