@@ -37,7 +37,8 @@ class OrdersByCityTable extends BaseWidget
                 })->orWhere(function ($sub) {
                     $sub->whereNotNull('shipping_department')->where('shipping_department', '!=', '');
                 });
-            });
+            })
+            ->whereIn(DB::raw('LOWER(status)'), ['shipped', 'delivered', 'completed', 'received', 'recibido']);
 
         if ($period === 'week') {
             $subquery->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);

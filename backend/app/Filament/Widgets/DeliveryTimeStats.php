@@ -23,8 +23,8 @@ class DeliveryTimeStats extends BaseWidget
 
         // In a real app we would measure the diff between created_at and delivered_at.
         // Assuming we have 'created_at' and 'updated_at' (for when status became COMPLETED/DELIVERED)
-        $saleQuery = Sale::query()->where('status', 'DELIVERED');
-        $orderQuery = Order::query()->where('status', 'DELIVERED');
+        $saleQuery = Sale::query()->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['delivered', 'completed', 'received', 'recibido']);
+        $orderQuery = Order::query()->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(status)'), ['delivered', 'completed', 'received', 'recibido']);
 
         if ($period === 'week') {
             $saleQuery->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);

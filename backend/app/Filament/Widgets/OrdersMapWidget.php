@@ -33,7 +33,8 @@ class OrdersMapWidget extends Widget
                 })->orWhere(function ($sub) {
                     $sub->whereNotNull('shipping_city')->where('shipping_city', '!=', '');
                 });
-            });
+            })
+            ->whereIn(DB::raw('LOWER(status)'), ['shipped', 'delivered', 'completed', 'received', 'recibido']);
 
         if ($period === 'week') {
             $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);

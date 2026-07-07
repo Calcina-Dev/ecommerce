@@ -48,7 +48,7 @@ class LogisticsReportTable extends BaseWidget
                     ->leftJoin(DB::raw("(
                         SELECT shipping_method_id, COUNT(id) as total_orders, SUM(shipping_cost) as total_shipping_cost 
                         FROM orders 
-                        WHERE payment_status = 'paid' {$ordersFilter}
+                        WHERE payment_status = 'paid' AND LOWER(status) IN ('shipped', 'delivered', 'completed', 'received', 'recibido') {$ordersFilter}
                         GROUP BY shipping_method_id
                     ) o"), 'o.shipping_method_id', '=', 'shipping_methods.id')
                     ->whereRaw('COALESCE(o.total_orders, 0) > 0');
