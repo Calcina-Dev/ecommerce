@@ -142,4 +142,40 @@ Route::middleware('auth:sanctum')->group(function () {
             ], 500);
         }
     });
+
+    // Probar envío de email de orden específica
+    Route::post('/debug-order-email/{order_number}', function (Request $request, $order_number) {
+        if (!in_array($request->user()->role, ['admin', 'super_admin'])) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        $order = \App\Models\Order::where('order_number', $order_number)->orWhere('id', $order_number)->first();
+        if (!$order) {
+            return response()->json(['error' => 'Order not found'], 404);
+        }
+        $to = $request->input('email', $order->shipping_email ?? $request->user()->email);
+        $type = $request->input('type', 'paid'); // received, paid, shipped, completed, cancelled
+
+        try {
+            $mailable = match($type) {
+                'received' => new \App\Mail\OrderReceived($order),
+                'shipped' => new \App\Mail\OrderShipped($order),
+                'completed' => new \App\Mail\OrderCompleted($order),
+                'cancelled' => new \App\Mail\OrderCancelled($order),
+                default => new \App\Mail\OrderPaid($order),
+            };
+
+            \Illuminate\Support\Facades\Mail::to($to)->send($mailable);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Email de tipo '{$type}' para la orden {$order->order_number} enviado exitosamente a {$to}",
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'trace' => explode("\n", $e->getTraceAsString()),
+            ], 500);
+        }
+    });
 });

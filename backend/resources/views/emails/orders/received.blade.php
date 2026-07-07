@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>¡Pago confirmado para tu pedido #{{ $order->order_number }}!</title>
+    <title>¡Hemos recibido tu pedido #{{ $order->order_number }}!</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f4f6; padding: 40px 20px;">
@@ -11,7 +11,7 @@
                 <!-- Wrapper Principal -->
                 <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
                     
-                    <!-- HEADER PREMIO -->
+                    <!-- HEADER -->
                     <tr>
                         <td align="center" style="background-color: #ffffff; padding: 40px 0 30px; border-bottom: 1px solid #f3f4f6;">
                             <h1 style="color: #16a34a; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em;">Compra Saludable</h1>
@@ -22,16 +22,17 @@
                     <!-- MAIN MESSAGE -->
                     <tr>
                         <td style="padding: 40px;">
-                            <h2 style="color: #16a34a; margin: 0 0 20px 0; font-size: 24px; font-weight: 700; text-align: center;">¡Hemos recibido tu pago, {{ $order->shipping_name ?? ($order->user ? $order->user->name : 'Cliente') }}!</h2>
+                            <h2 style="color: #16a34a; margin: 0 0 20px 0; font-size: 24px; font-weight: 700; text-align: center;">¡Hola, {{ $order->shipping_name ?? ($order->user ? $order->user->name : 'Cliente') }}!</h2>
                             <p style="margin: 0 0 20px; font-size: 16px; line-height: 24px; color: #4b5563; text-align: center;">
-                                El pago de tu pedido <strong style="color: #111827;">#{{ $order->order_number }}</strong> se ha confirmado exitosamente. Ya estamos preparando tus productos.
+                                Hemos recibido tu pedido <strong style="color: #111827;">#{{ $order->order_number }}</strong> y está siendo procesado en nuestro sistema.
                             </p>
                             
-                            <!-- NOTE BLOCK / PAYMENT DETAILS -->
+                            <!-- NOTE BLOCK / STATUS -->
                             <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin-bottom: 32px; text-align: center;">
-                                <h3 style="color: #3b82f6; margin: 0 0 12px; font-size: 18px; font-weight: 700;">Monto Pagado: S/ {{ number_format($order->total_amount, 2) }}</h3>
+                                <h3 style="color: #3b82f6; margin: 0 0 12px; font-size: 18px; font-weight: 700;">Monto Total: S/ {{ number_format($order->total_amount, 2) }}</h3>
                                 <p style="margin: 0; font-size: 15px; color: #64748b;">
-                                    <strong>Método:</strong> {{ ucfirst($order->payment_method ?? 'Tarjeta') }}
+                                    <strong>Estado de pago:</strong> {{ $order->payment_status === 'paid' ? 'Pagado' : 'Pendiente / En proceso' }}<br>
+                                    <strong>Método seleccionado:</strong> {{ ucfirst($order->payment_method ?? 'Tarjeta / Pago web') }}
                                 </p>
                             </div>
                             
@@ -48,7 +49,7 @@
                             
                             <!-- SUMMARY HEADER -->
                             <div style="border-bottom: 2px solid #f3f4f6; margin-bottom: 24px; padding-bottom: 12px;">
-                                <h3 style="color: #111827; margin: 0; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Resumen de la Orden</h3>
+                                <h3 style="color: #111827; margin: 0; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Resumen del Pedido</h3>
                             </div>
                             
                             <!-- ORDER ITEMS -->
@@ -89,7 +90,7 @@
                                                 <td align="right" style="padding: 8px 0; font-size: 14px; color: #111827; font-weight: 500;">S/ {{ number_format($order->shipping_cost ?? 0, 2) }}</td>
                                             </tr>
                                             <tr>
-                                                <td align="left" style="padding: 16px 0 0; font-size: 16px; color: #111827; font-weight: 700; border-top: 1px solid #e5e7eb; margin-top: 8px;">Total Pagado</td>
+                                                <td align="left" style="padding: 16px 0 0; font-size: 16px; color: #111827; font-weight: 700; border-top: 1px solid #e5e7eb; margin-top: 8px;">Total</td>
                                                 <td align="right" style="padding: 16px 0 0; font-size: 18px; color: #3b82f6; font-weight: 800; border-top: 1px solid #e5e7eb; margin-top: 8px;">S/ {{ number_format($order->total_amount ?? 0, 2) }}</td>
                                             </tr>
                                         </table>
@@ -122,7 +123,7 @@
                     </tr>
                 </table>
                 
-                <!-- FOOTER EXTERNO -->
+                <!-- FOOTER -->
                 <table border="0" cellpadding="0" cellspacing="0" width="600">
                     <tr>
                         <td align="center" style="padding: 32px 20px; font-size: 13px; color: #9ca3af; line-height: 20px;">

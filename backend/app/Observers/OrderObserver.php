@@ -6,6 +6,11 @@ use App\Models\Order;
 use App\Services\InventoryService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderPaid;
+use App\Mail\OrderReceived;
+use App\Mail\OrderShipped;
+use App\Mail\OrderCompleted;
+use App\Mail\OrderCancelled;
 
 class OrderObserver
 {
@@ -41,6 +46,26 @@ class OrderObserver
         if ($isPaidOrProcessing) {
             $this->deductStock($order);
         }
+
+        // Enviar email de creación o pago inicial
+        if ($order->shipping_email) {
+            try {
+                if ($isPaidOrProcessing) {
+                    Mail::to($order->shipping_email)->send(new OrderPaid($order));
+                    Log::info("Email de pago inicial enviado a {$order->shipping_email} para orden {$order->order_number}");
+                } else {
+                    Mail::to($order->shipping_email)->send(new OrderReceived($order));
+                    Log::info("Email de pedido recibido enviado a {$order->shipping_email} para orden {$order->order_number}");
+                }
+            } catch (\Throwable $e) {
+                Log::error("Failed to send order creation email for order {$order->order_number}: " . $e->getMessage(), [
+                    'order_id' => $order->id,
+                    'status' => $order->status,
+                    'email' => $order->shipping_email,
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
+        }
     }
 
     /**
@@ -68,26 +93,31 @@ class OrderObserver
                 $this->restoreStock($order);
             }
 
-            // Email Notifications for status changes
+            // Email Notifications for status and payment changes
             if ($order->shipping_email) {
                 try {
-                    if ($order->status === 'processing' && $order->getOriginal('status') !== 'processing') {
-                        Mail::to($order->shipping_email)->send(new \App\Mail\OrderPaid($order));
-                        Log::info("Email de confirmación enviado a {$order->shipping_email} para orden {$order->order_number}");
+                    // Verificar si se acaba de pagar o pasar a processing
+                    $becamePaid = ($order->payment_status === 'paid' && $order->getOriginal('payment_status') !== 'paid')
+                               || ($order->status === 'processing' && $order->getOriginal('status') !== 'processing');
+
+                    if ($becamePaid) {
+                        Mail::to($order->shipping_email)->send(new OrderPaid($order));
+                        Log::info("Email de pago/confirmación enviado a {$order->shipping_email} para orden {$order->order_number}");
                     } elseif ($order->status === 'shipped' && $order->getOriginal('status') !== 'shipped') {
-                        Mail::to($order->shipping_email)->send(new \App\Mail\OrderShipped($order));
+                        Mail::to($order->shipping_email)->send(new OrderShipped($order));
                         Log::info("Email de envío enviado a {$order->shipping_email} para orden {$order->order_number}");
                     } elseif ($order->status === 'delivered' && $order->getOriginal('status') !== 'delivered') {
-                        Mail::to($order->shipping_email)->send(new \App\Mail\OrderCompleted($order));
+                        Mail::to($order->shipping_email)->send(new OrderCompleted($order));
                         Log::info("Email de entrega enviado a {$order->shipping_email} para orden {$order->order_number}");
                     } elseif ($order->status === 'cancelled' && $order->getOriginal('status') !== 'cancelled') {
-                        Mail::to($order->shipping_email)->send(new \App\Mail\OrderCancelled($order));
+                        Mail::to($order->shipping_email)->send(new OrderCancelled($order));
                         Log::info("Email de cancelación enviado a {$order->shipping_email} para orden {$order->order_number}");
                     }
                 } catch (\Throwable $e) {
                     Log::error("Failed to send order status email for order {$order->order_number}: " . $e->getMessage(), [
                         'order_id' => $order->id,
                         'status' => $order->status,
+                        'payment_status' => $order->payment_status,
                         'email' => $order->shipping_email,
                         'trace' => $e->getTraceAsString(),
                     ]);
@@ -102,23 +132,6 @@ class OrderObserver
                 'content' => "El estado de pago cambió de '" . ($order->getOriginal('payment_status') ?? 'pendiente') . "' a '{$order->payment_status}'.",
                 'type' => 'system',
             ]);
-
-            if ($order->payment_status === 'paid' && $order->shipping_email) {
-                // El email de pago ya se envía al cambiar a 'processing' arriba,
-                // solo enviamos aquí si el status no cambió (pago manual sin cambiar estado)
-                if (!$order->isDirty('status')) {
-                    try {
-                        Mail::to($order->shipping_email)->send(new \App\Mail\OrderPaid($order));
-                        Log::info("Email de pago enviado a {$order->shipping_email} para orden {$order->order_number}");
-                    } catch (\Throwable $e) {
-                        Log::error("Failed to send paid email for order {$order->order_number}: " . $e->getMessage(), [
-                            'order_id' => $order->id,
-                            'email' => $order->shipping_email,
-                            'trace' => $e->getTraceAsString(),
-                        ]);
-                    }
-                }
-            }
         }
     }
 
