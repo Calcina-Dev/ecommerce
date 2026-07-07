@@ -454,18 +454,20 @@ export function Header() {
             className="bg-background text-foreground rounded-3xl max-w-md w-full shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header del Modal */}
-            <div className="bg-gradient-to-r from-primary via-primary/90 to-accent px-6 py-4 flex items-center justify-between text-white shadow-md">
-              <div className="flex items-center gap-2.5">
-                <MapPin className="w-6 h-6 text-white shrink-0" />
+            {/* Header del Modal - Estilo Limpio y Minimalista de la Tienda */}
+            <div className="px-6 pt-6 pb-4 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between bg-background">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary shrink-0">
+                  <MapPin className="w-5 h-5" />
+                </div>
                 <div>
-                  <h3 className="font-black text-base leading-tight">Elige dónde recibir tus compras</h3>
-                  <p className="text-[11px] font-semibold text-white/80">Podrás ver costos y tiempos de envío exactos</p>
+                  <h3 className="font-extrabold text-base sm:text-lg text-foreground tracking-tight">Elige dónde recibir tus compras</h3>
+                  <p className="text-xs text-muted-foreground font-medium">Podrás ver costos y tiempos de envío exactos</p>
                 </div>
               </div>
               <button
                 onClick={() => { setShowLocationModal(false); setIsAddingAddress(false); }}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center font-bold transition-colors text-white"
+                className="w-8 h-8 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center font-bold transition-all"
               >
                 ✕
               </button>
