@@ -40,29 +40,39 @@ function OrderTrackingContent() {
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [lastSearched, setLastSearched] = useState("");
 
   const orderId = searchParams.get("order_id");
 
   useEffect(() => {
     if (orderId) {
-      setOrderIdInput(orderId);
-      fetchOrder(orderId);
+      const sanitized = orderId.trim().toUpperCase();
+      setOrderIdInput(sanitized);
+      // Solo buscar si no es el mismo que ya buscamos
+      if (sanitized !== lastSearched) {
+        fetchOrder(sanitized);
+      }
     } else {
       setOrder(null);
       setError("");
+      setLastSearched("");
     }
   }, [orderId]);
 
   const fetchOrder = async (id: string) => {
+    const sanitizedId = id.trim().toUpperCase();
+    if (!sanitizedId) return;
+    
     setLoading(true);
     setError("");
     setOrder(null);
+    setLastSearched(sanitizedId);
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      const response = await fetch(`${backendUrl}/api/orders/tracking/${id}`);
+      const response = await fetch(`${backendUrl}/api/orders/tracking/${encodeURIComponent(sanitizedId)}`);
       if (!response.ok) {
         if (response.status === 404) {
-          setError(`No hemos podido encontrar ningún pedido con el código ${id}. Por favor verifica que esté escrito correctamente.`);
+          setError(`No hemos podido encontrar ningún pedido con el código ${sanitizedId}. Por favor verifica que esté escrito correctamente.`);
         } else {
           setError("Ocurrió un error al intentar buscar el pedido. Intenta nuevamente.");
         }
@@ -79,8 +89,12 @@ function OrderTrackingContent() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (orderIdInput.trim()) {
-      router.push(`/rastrear-pedido?order_id=${orderIdInput.trim()}`);
+    const sanitized = orderIdInput.trim().toUpperCase();
+    if (sanitized) {
+      // Llamar fetchOrder directamente para evitar depender del useEffect
+      fetchOrder(sanitized);
+      // Actualizar la URL para que sea compartible/recargable
+      router.push(`/rastrear-pedido?order_id=${encodeURIComponent(sanitized)}`, { scroll: false });
     }
   };
 

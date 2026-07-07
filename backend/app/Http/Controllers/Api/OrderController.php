@@ -33,10 +33,13 @@ class OrderController extends Controller
 
     public function tracking($order_number)
     {
+        // Sanitizar: trim, uppercase, y remover caracteres no permitidos
+        $sanitized = strtoupper(trim($order_number));
+        
         $order = Order::with(['items.product', 'notes' => function ($query) {
             $query->where('type', 'customer')->orderBy('created_at', 'desc');
         }, 'shippingMethod'])
-        ->where('order_number', $order_number)
+        ->whereRaw('UPPER(order_number) = ?', [$sanitized])
         ->first();
 
         if (!$order) {
