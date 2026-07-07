@@ -455,17 +455,17 @@ export function Header() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del Modal */}
-            <div className="bg-[#fff059] px-6 py-4 flex items-center justify-between text-[#111827]">
+            <div className="bg-gradient-to-r from-primary via-primary/90 to-accent px-6 py-4 flex items-center justify-between text-white shadow-md">
               <div className="flex items-center gap-2.5">
-                <MapPin className="w-6 h-6 text-[#111827] shrink-0" />
+                <MapPin className="w-6 h-6 text-white shrink-0" />
                 <div>
                   <h3 className="font-black text-base leading-tight">Elige dónde recibir tus compras</h3>
-                  <p className="text-[11px] font-semibold text-[#111827]/70">Podrás ver costos y tiempos de envío exactos</p>
+                  <p className="text-[11px] font-semibold text-white/80">Podrás ver costos y tiempos de envío exactos</p>
                 </div>
               </div>
               <button
                 onClick={() => { setShowLocationModal(false); setIsAddingAddress(false); }}
-                className="w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center font-bold transition-colors"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center font-bold transition-colors text-white"
               >
                 ✕
               </button>

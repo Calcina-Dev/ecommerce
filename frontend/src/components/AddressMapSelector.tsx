@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { MapPin, Navigation, Loader2, Search, X, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 import ubigeosData from "@/data/ubigeos_peru.json";
 
 interface AddressMapSelectorProps {
@@ -30,6 +31,57 @@ const cleanStr = (s?: string) => {
     .replace(/\b(provincia|distrito|departamento|region|región|de|del|la|las|el|los|metropolitan|province|district|city|town|village|state|county)\b/gi, "")
     .replace(/[^a-z0-9]/g, "")
     .trim();
+};
+
+const searchNominatimRobust = async (rawQ: string, city?: string) => {
+  if (!rawQ || !rawQ.trim()) return [];
+  const q = rawQ.trim();
+  
+  // 1. Expandir abreviaturas peruanas comunes
+  let expanded = q
+    .replace(/\bjr\.?\b/gi, "Jirón")
+    .replace(/\bav\.?\b/gi, "Avenida")
+    .replace(/\bcl\.?\b/gi, "Calle")
+    .replace(/\bpsj\.?\b/gi, "Pasaje")
+    .replace(/\burb\.?\b/gi, "Urbanización")
+    .replace(/\bmz\.?\b/gi, "Manzana")
+    .replace(/\blt\.?\b/gi, "Lote")
+    .replace(/\bdpto\.?\b/gi, "");
+
+  // 2. Remover prefijo (jr, av, calle, jiron, etc.) por si en OSM la calle solo se llama "2 de Mayo" o "Grau"
+  let noPrefix = q
+    .replace(/^(jr\.?|jiron|jirón|av\.?|avenida|cl\.?|calle|psj\.?|pasaje|urb\.?|urbanizacion|urbanización)\s+/i, "")
+    .trim();
+
+  const cityPart = city && city !== "Lima" && !q.toLowerCase().includes(city.toLowerCase()) ? `, ${city}` : "";
+  
+  const queriesToTry = [
+    `${expanded}${cityPart}, Peru`,
+    `${q}${cityPart}, Peru`,
+    noPrefix && noPrefix !== q ? `${noPrefix}${cityPart}, Peru` : "",
+    `${expanded}, Peru`,
+    `${q}, Peru`,
+    noPrefix && noPrefix !== q ? `${noPrefix}, Peru` : "",
+  ].filter(Boolean);
+
+  const uniqueQueries = Array.from(new Set(queriesToTry));
+
+  for (const queryStr of uniqueQueries) {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryStr)}&countrycodes=pe&addressdetails=1&limit=5`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data) && data.length > 0) {
+          return data;
+        }
+      }
+    } catch (err) {
+      console.error("Error intentando query:", queryStr, err);
+    }
+  }
+  return [];
 };
 
 const matchUbigeo = (addr: any, fallbackName?: string) => {
@@ -141,20 +193,15 @@ export function AddressMapSelector({
     }
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery + ", Peru")}&countrycodes=pe&addressdetails=1&limit=5`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setSuggestions(data || []);
-          setShowSuggestions(true);
-        }
+        const data = await searchNominatimRobust(searchQuery, selectedDistrict || selectedProvince);
+        setSuggestions(data || []);
+        setShowSuggestions(true);
       } catch (err) {
         console.error("Error en autocompletado:", err);
       }
     }, 350);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, selectedDistrict, selectedProvince]);
 
   const reverseGeocode = async (lat: number, lng: number, fallbackName?: string) => {
     setLoadingGeo(true);
@@ -208,25 +255,32 @@ export function AddressMapSelector({
     setLoadingGeo(true);
     setShowSuggestions(false);
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ", Peru")}&countrycodes=pe&addressdetails=1&limit=5`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.length > 0) {
-          const first = data[0];
-          const lat = parseFloat(first.lat);
-          const lon = parseFloat(first.lon);
-          
-          if (mapInstanceRef.current && markerRef.current) {
-            const newLatLng = new L.LatLng(lat, lon);
-            markerRef.current.setLatLng(newLatLng);
-            mapInstanceRef.current.setView(newLatLng, 16);
-            reverseGeocode(lat, lon, q);
-          }
-        } else {
-          alert("No encontramos esa dirección exacta. Intenta con el nombre de tu calle, urbanización o distrito.");
+      const data = await searchNominatimRobust(q, selectedDistrict || selectedProvince);
+      if (data && data.length > 0) {
+        const first = data[0];
+        const lat = parseFloat(first.lat);
+        const lon = parseFloat(first.lon);
+        
+        if (mapInstanceRef.current && markerRef.current) {
+          const newLatLng = new L.LatLng(lat, lon);
+          markerRef.current.setLatLng(newLatLng);
+          mapInstanceRef.current.setView(newLatLng, 16);
+          reverseGeocode(lat, lon, q);
         }
+      } else {
+        // Si Nominatim no encuentra coordenadas en el mapa satelital, igual guardamos el texto que escribió el usuario
+        toast.warning("Dirección registrada en tu envío", {
+          description: `No ubicamos "${q}" en el mapa satelital, pero ya lo guardamos como tu calle. Mueve el pin si quieres ajustar el punto de entrega.`,
+        });
+        setSelectedText(`${q}, ${selectedDistrict || selectedProvince || "Perú"}`);
+        onSelectLocation({
+          address: q,
+          district: selectedDistrict || "Chepen",
+          province: selectedProvince || "Chepen",
+          department: selectedDepartment || "La Libertad",
+          lat: markerRef.current?.getLatLng().lat || initialLat,
+          lng: markerRef.current?.getLatLng().lng || initialLng,
+        });
       }
     } catch (err) {
       console.error("Error buscando dirección:", err);
