@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -21,12 +22,33 @@ function SuccessContent() {
         position: 'top-center',
         icon: '🎉',
       });
+
+      // Disparar celebración con confeti en la pantalla
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+      setTimeout(() => {
+        confetti({
+          particleCount: 80,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 }
+        });
+        confetti({
+          particleCount: 80,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 }
+        });
+      }, 400);
     }
   }, [orderId, clearCart]);
 
   return (
     <div className="min-h-[85vh] bg-gray-100 flex flex-col justify-between">
-      {/* Sección Superior: Verde Celebración (Estilo input_file_1) */}
+      {/* Sección Superior: Verde Celebración */}
       <div className="bg-[#4ade80] text-gray-950 py-16 px-6 text-center relative overflow-hidden shadow-sm">
         {/* Partículas festivas flotantes de la marca */}
         <div className="absolute inset-0 pointer-events-none">
@@ -36,11 +58,15 @@ function SuccessContent() {
           <div className="absolute bottom-8 right-1/4 w-3 h-3 bg-white rounded-full animate-ping delay-500"></div>
         </div>
 
-        {/* Círculo verde oscuro con Check animado */}
-        <div className="w-20 h-20 bg-[#14532d] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl animate-[scale-in_0.5s_cubic-bezier(0.16,1,0.3,1)] transform transition-all hover:scale-105">
-          <svg className="w-10 h-10 text-[#4ade80] animate-[pulse_1.5s_ease-in-out_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" d="M5 13l4 4L19 7"></path>
-          </svg>
+        {/* Lottie Animation Success Confetti (f5PdexvrBK) */}
+        <div className="w-56 h-56 sm:w-64 sm:h-64 mx-auto mb-2 relative flex items-center justify-center">
+          <iframe 
+            src="https://embed.lottiefiles.com/animation/f5PdexvrBK" 
+            className="w-full h-full border-0 pointer-events-none scale-125 sm:scale-150"
+            allowFullScreen
+            scrolling="no"
+            title="Success Confetti Animation"
+          />
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-extrabold mb-3 tracking-tight">
