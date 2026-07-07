@@ -201,7 +201,7 @@ export default function MiCuentaPage() {
             className="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all ml-auto"
           >
             <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-            Ver Mis Favoritos ❤️
+            Ver Mis Favoritos
           </Link>
         </div>
 

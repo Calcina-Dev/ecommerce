@@ -8,7 +8,7 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, ArrowLeft, AlertCircle, CheckCircle2 } from "lucide-react";
 
-const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "744860459189-gr15hataltrla8o1r23tmbpu6oj7pui1.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "744860459189-ej6h6nan488nk95enrgmr0fjhprcp32l.apps.googleusercontent.com";
 
 export default function LoginPage() {
   const [loginMethod, setLoginMethod] = useState<"otp" | "password">("otp");
