@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useAddressStore } from "@/store/useAddressStore";
 import { Button } from "@/components/ui/button";
 import KRGlue from "@lyracom/embedded-form-glue";
 import { toast } from "sonner";
@@ -90,9 +91,13 @@ export default function CheckoutPage() {
         .then(data => {
           if (Array.isArray(data) && data.length > 0) {
             setSavedAddresses(data);
-            const def = data.find(a => a.is_default) || data[0];
-            if (def) {
-              handleSelectAddress(def);
+            useAddressStore.getState().fetchAddresses();
+            const sel = useAddressStore.getState().selectedAddress || data.find(a => a.is_default) || data[0];
+            if (sel) {
+              handleSelectAddress(sel);
+              toast.success("📍 Dirección seleccionada automáticamente", {
+                description: `Enviando a ${sel.alias || 'tu dirección'}: ${sel.address}, ${sel.district}.`,
+              });
             }
           } else {
             setSaveNewAddress(true);
@@ -425,36 +430,48 @@ export default function CheckoutPage() {
             <h2 className="text-2xl font-bold mb-6">Datos de Envío</h2>
 
             {/* Mercado Libre Style Address Selector */}
-            {savedAddresses.length > 0 && (
+            {savedAddresses.length > 0 ? (
               <div className="mb-8 pb-6 border-b border-border/80">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  Mis direcciones guardadas (Estilo Mercado Libre)
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Mis direcciones guardadas (Estilo Mercado Libre)
+                  </p>
+                  <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                    ⚡ Selección automática activa
+                  </span>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                   {savedAddresses.map((addr) => (
                     <div
                       key={addr.id}
                       onClick={() => handleSelectAddress(addr)}
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                         selectedAddressId === addr.id
                           ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 ring-2 ring-emerald-500/20 shadow-sm"
                           : "border-border hover:border-gray-400 bg-background"
                       }`}
                     >
                       <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-extrabold text-xs uppercase px-2 py-0.5 rounded-full bg-muted text-foreground">
-                            {addr.alias || "Casa"}
-                          </span>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-black text-xs uppercase px-2.5 py-0.5 rounded-md bg-gray-900 text-white dark:bg-white dark:text-gray-900">
+                              {addr.alias || "Casa"}
+                            </span>
+                            {addr.is_default && (
+                              <span className="text-amber-500 text-[11px] font-extrabold flex items-center gap-0.5">
+                                ★ Predeterminada
+                              </span>
+                            )}
+                          </div>
                           {selectedAddressId === addr.id && (
-                            <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center gap-1">
-                              ✓ Seleccionada
+                            <span className="text-emerald-600 dark:text-emerald-400 font-black text-xs flex items-center gap-1 bg-emerald-100 dark:bg-emerald-900/50 px-2 py-0.5 rounded-full">
+                              ✓ Envío aquí
                             </span>
                           )}
                         </div>
-                        <p className="font-bold text-sm text-foreground mt-1">{addr.recipient_name} <span className="font-normal text-muted-foreground">({addr.phone})</span></p>
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{addr.address}</p>
+                        <p className="font-bold text-sm text-foreground mt-1.5">{addr.recipient_name} <span className="font-normal text-muted-foreground">({addr.phone})</span></p>
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5 font-medium">{addr.address}</p>
                         <p className="text-[11px] text-muted-foreground/80 mt-0.5">{addr.district}, {addr.province}</p>
                       </div>
                     </div>
@@ -472,15 +489,27 @@ export default function CheckoutPage() {
                         shipping_postal_code: "",
                       }));
                     }}
-                    className={`p-4 rounded-2xl border border-dashed cursor-pointer transition-all flex flex-col items-center justify-center text-center ${
+                    className={`p-4 rounded-2xl border-2 border-dashed cursor-pointer transition-all flex flex-col items-center justify-center text-center min-h-[110px] ${
                       selectedAddressId === null
-                        ? "border-primary bg-primary/5 ring-2 ring-primary/20 text-primary font-bold"
+                        ? "border-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/10 text-emerald-600 dark:text-emerald-400 font-bold shadow-sm"
                         : "border-border hover:border-gray-400 text-muted-foreground"
                     }`}
                   >
-                    <span className="text-xl font-bold mb-1">+</span>
-                    <span className="text-xs font-semibold">Usar / Ingresar otra dirección</span>
+                    <span className="text-2xl font-black mb-1">+</span>
+                    <span className="text-xs font-bold">Enviar a una nueva dirección</span>
                   </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-8 p-5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-foreground">Aún no tienes direcciones guardadas</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Al completar tu pedido abajo, podrás marcar la casilla <span className="font-bold text-foreground">&quot;Guardar esta dirección&quot;</span> para que en tus próximas compras se seleccione y complete automáticamente como en Mercado Libre.
+                  </p>
                 </div>
               </div>
             )}

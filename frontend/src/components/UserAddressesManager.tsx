@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useAddressStore } from "@/store/useAddressStore";
 import { toast } from "sonner";
 import { Plus, MapPin, Check, Trash2, Edit2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ export function UserAddressesManager() {
       if (res.ok) {
         const data = await res.json();
         setAddresses(data);
+        useAddressStore.getState().fetchAddresses();
       }
     } catch (err) {
       console.error("Error cargando direcciones:", err);
