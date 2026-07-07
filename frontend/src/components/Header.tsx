@@ -417,35 +417,7 @@ export function Header() {
         {renderSuggestionsDropdown()}
       </div>
 
-      {/* Barra de Navegación Rápida / Categorías */}
-      <nav className="bg-[#111827] text-white border-t border-white/10 text-xs font-extrabold">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-11 overflow-x-auto no-scrollbar py-1">
-            <div className="flex items-center gap-6 shrink-0">
-              <Link href="/productos" className="hover:text-accent transition-colors flex items-center gap-1.5">
-                <span className="text-accent">⚡</span> Todo el Catálogo
-              </Link>
-              {categoriesTree.slice(0, 6).map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/productos?category_slug=${cat.slug}`}
-                  className="hover:text-accent transition-colors whitespace-nowrap"
-                >
-                  {cat.name}
-                </Link>
-              ))}
-              <Link href="/rastrear-pedido" className="hover:text-accent transition-colors flex items-center gap-1 text-emerald-400">
-                📦 Rastrear Pedido
-              </Link>
-            </div>
-            
-            <div className="hidden lg:flex items-center gap-4 text-gray-400 font-semibold text-[11px]">
-              <span>📞 Soporte 24/7</span>
-              <span>🛡️ Garantía de Compra</span>
-            </div>
-          </div>
-        </div>
-      </nav>
+
 
       {/* Modal de Ubicación (Estilo Mercado Libre) - Renderizado vía Portal al Body para evitar recortes por Header/backdrop-blur */}
       {isClient && showLocationModal && createPortal(
