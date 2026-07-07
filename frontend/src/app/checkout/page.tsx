@@ -108,12 +108,25 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  // Si el carrito está vacío, redirigir al catálogo
+  const [cartHydrated, setCartHydrated] = useState(false);
+
   useEffect(() => {
-    if (items.length === 0) {
+    if (useCartStore.persist.hasHydrated()) {
+      setCartHydrated(true);
+    } else {
+      const unsub = useCartStore.persist.onFinishHydration(() => {
+        setCartHydrated(true);
+      });
+      return () => unsub();
+    }
+  }, []);
+
+  // Si el carrito está vacío DESPUÉS de que Zustand se haya hidratado desde localStorage, redirigir al catálogo
+  useEffect(() => {
+    if (cartHydrated && items.length === 0) {
       router.push("/productos");
     }
-  }, [items, router]);
+  }, [cartHydrated, items, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

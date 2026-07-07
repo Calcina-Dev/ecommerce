@@ -31,7 +31,14 @@ export default function MiCuentaPage() {
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    setIsHydrated(true);
+    if (useAuthStore.persist.hasHydrated()) {
+      setIsHydrated(true);
+    } else {
+      const unsub = useAuthStore.persist.onFinishHydration(() => {
+        setIsHydrated(true);
+      });
+      return () => unsub();
+    }
   }, []);
 
   useEffect(() => {
