@@ -61,28 +61,57 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             physics: const BouncingScrollPhysics(),
             slivers: [
               // Dynamic Header
+              // Dynamic Header matching web Header.tsx parity
               SliverAppBar(
-                expandedHeight: 140.0,
+                expandedHeight: 135.0,
                 floating: true,
                 pinned: true,
                 elevation: 0,
                 backgroundColor: Colors.white,
                 surfaceTintColor: Colors.white,
-                title: const Text('Descubre', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -0.5)),
+                title: RichText(
+                  text: const TextSpan(
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                    children: [
+                      TextSpan(text: 'COMPRA', style: TextStyle(color: Color(0xFF0F172A))),
+                      TextSpan(text: 'SALUDABLE', style: TextStyle(color: Color(0xFF059669))),
+                    ],
+                  ),
+                ),
                 centerTitle: false,
                 actions: [
                   IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-                      child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF0F172A), size: 20),
-                    ),
+                    icon: const Icon(Icons.person_outline, color: Color(0xFF475569), size: 22),
                     onPressed: () {},
                   ),
-                  const SizedBox(width: 8),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final cartCount = ref.watch(cartCountProvider);
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF475569), size: 22),
+                            onPressed: () {},
+                          ),
+                          if (cartCount > 0)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: const BoxDecoration(color: Color(0xFF059669), shape: BoxShape.circle),
+                                child: Text('$cartCount', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 6),
                 ],
                 bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(80),
+                  preferredSize: const Size.fromHeight(75),
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                     color: Colors.white,

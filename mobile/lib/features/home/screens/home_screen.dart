@@ -19,53 +19,133 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
+        preferredSize: const Size.fromHeight(115),
         child: SafeArea(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
-              border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+              border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
             ),
-            child: Row(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // Top Row: Logo & Action Icons
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.shopping_cart, color: Colors.green.shade700, size: 28),
-                    const SizedBox(width: 4),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    // Exact COMPRASALUDABLE text logo matching Header.tsx line 200
+                    GestureDetector(
+                      onTap: () {},
+                      child: RichText(
+                        text: const TextSpan(
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                          children: [
+                            TextSpan(text: 'COMPRA', style: TextStyle(color: Color(0xFF0F172A))),
+                            TextSpan(text: 'SALUDABLE', style: TextStyle(color: Color(0xFF059669))),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Right Icons: User, Login, Wishlist (badge 1), Bag (badge cartCount)
+                    Row(
                       children: [
-                        Text('Compra', style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.w900, fontSize: 12, height: 1)),
-                        Text('Saludable', style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.w900, fontSize: 12, height: 1)),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.person_outline, color: Color(0xFF475569), size: 22),
+                          onPressed: () {},
+                        ),
+                        const SizedBox(width: 14),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.exit_to_app_outlined, color: Color(0xFF475569), size: 22),
+                          onPressed: () {},
+                        ),
+                        const SizedBox(width: 14),
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            const Icon(Icons.favorite_border, color: Color(0xFF475569), size: 22),
+                            Positioned(
+                              top: -4,
+                              right: -6,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle),
+                                child: const Text('1', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 14),
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final cartCount = ref.watch(cartCountProvider);
+                            return Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                const Icon(Icons.shopping_bag_outlined, color: Color(0xFF475569), size: 22),
+                                if (cartCount > 0)
+                                  Positioned(
+                                    top: -4,
+                                    right: -6,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                      decoration: const BoxDecoration(color: Color(0xFF059669), shape: BoxShape.circle),
+                                      child: Text('$cartCount', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Container(
-                    height: 40,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text('¿Qué estás buscando?', style: TextStyle(color: Colors.grey.shade500, fontSize: 12), overflow: TextOverflow.ellipsis),
+
+                const SizedBox(height: 8),
+
+                // Bottom Row: Search Box with Buscar Pill Button
+                Container(
+                  height: 42,
+                  padding: const EdgeInsets.only(left: 14, right: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9), // Slate 100
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.search, color: Color(0xFF94A3B8), size: 18),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          '¿Qué estás buscando hoy?',
+                          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        Icon(Icons.search, color: Colors.grey.shade500, size: 18),
-                      ],
-                    ),
+                      ),
+                      GestureDetector(
+                        onTap: () {},
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A), // Dark Slate / Black pill button
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'Buscar',
+                            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                Icon(Icons.person_outline, color: Colors.grey.shade800),
-                const SizedBox(width: 12),
-                Icon(Icons.shopping_bag_outlined, color: Colors.grey.shade800),
               ],
             ),
           ),
