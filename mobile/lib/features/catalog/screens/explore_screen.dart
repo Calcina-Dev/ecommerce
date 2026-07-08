@@ -335,12 +335,24 @@ class _PremiumProductCard extends ConsumerWidget {
                       color: Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                     ),
-                    child: product['primary_image'] != null
-                        ? ClipRRect(
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                            child: Image.network(product['primary_image']['image_url'], fit: BoxFit.cover),
-                          )
-                        : const Icon(Icons.image, color: Colors.grey),
+                    child: Builder(
+                      builder: (context) {
+                        String rawUrl = product['primary_image']?['image_url']?.toString() ?? '';
+                        if (rawUrl.isEmpty) return const Icon(Icons.medication_outlined, color: Color(0xFF94A3B8), size: 40);
+                        if (!rawUrl.startsWith('http')) {
+                          final cleanPath = rawUrl.replaceAll(RegExp(r'^/'), '');
+                          rawUrl = 'http://127.0.0.1:8000/storage/$cleanPath';
+                        }
+                        return ClipRRect(
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                          child: Image.network(
+                            rawUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (c, e, s) => const Icon(Icons.medication_outlined, color: Color(0xFF94A3B8), size: 40),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   if (hasOffer)
                     Positioned(

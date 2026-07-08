@@ -122,8 +122,18 @@ class CartScreen extends ConsumerWidget {
                           final productId = product['id'] is int ? product['id'] as int : int.tryParse(product['id'].toString()) ?? 0;
                           final priceStr = product['price'].toString();
                           final price = double.tryParse(priceStr) ?? 0.0;
-                          final imageUrl = product['primary_image']?['image_url'] ??
+                          String? rawUrl = product['primary_image']?['image_url'] ??
                               (product['images'] != null && (product['images'] as List).isNotEmpty ? product['images'][0]['image_url'] : null);
+                          String? imageUrl;
+                          if (rawUrl != null && rawUrl.toString().isNotEmpty) {
+                            String urlStr = rawUrl.toString();
+                            if (urlStr.startsWith('http')) {
+                              imageUrl = urlStr;
+                            } else {
+                              final clean = urlStr.replaceAll(RegExp(r'^/'), '');
+                              imageUrl = 'http://127.0.0.1:8000/storage/$clean';
+                            }
+                          }
 
                           return Container(
                             padding: const EdgeInsets.all(14),

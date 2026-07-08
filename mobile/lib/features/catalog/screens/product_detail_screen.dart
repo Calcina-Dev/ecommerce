@@ -33,13 +33,19 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> with 
 
   List<String> _getImages() {
     final List<String> images = [];
+    String resolve(String url) {
+      if (url.isEmpty) return '';
+      if (url.startsWith('http')) return url;
+      final clean = url.replaceAll(RegExp(r'^/'), '');
+      return 'http://127.0.0.1:8000/storage/$clean';
+    }
     if (widget.product['primary_image'] != null && widget.product['primary_image']['image_url'] != null) {
-      images.add(widget.product['primary_image']['image_url'] as String);
+      images.add(resolve(widget.product['primary_image']['image_url'] as String));
     }
     if (widget.product['images'] != null && widget.product['images'] is List) {
       for (final img in (widget.product['images'] as List)) {
         if (img is Map && img['image_url'] != null) {
-          final url = img['image_url'] as String;
+          final url = resolve(img['image_url'] as String);
           if (!images.contains(url)) images.add(url);
         }
       }

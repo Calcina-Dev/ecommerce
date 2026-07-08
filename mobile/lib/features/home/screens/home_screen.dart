@@ -13,7 +13,6 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsAsyncValue = ref.watch(settingsProvider);
     final homeDataAsync = ref.watch(homeDataProvider);
     final settingsAsync = ref.watch(settingsProvider);
 
@@ -504,16 +503,24 @@ class HomeScreen extends ConsumerWidget {
                             color: Colors.orange.shade400, // Fallback color
                             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                           ),
-                          child: p['primary_image'] != null
-                              ? ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                                  child: Image.network(
-                                    p['primary_image']['image_url'],
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (c, e, s) => const Icon(Icons.image, color: Colors.white),
-                                  ),
-                                )
-                              : const Icon(Icons.image, color: Colors.white),
+                          child: Builder(
+                            builder: (context) {
+                              String rawUrl = p['primary_image']?['image_url']?.toString() ?? '';
+                              if (rawUrl.isEmpty) return const Icon(Icons.image, color: Colors.white);
+                              if (!rawUrl.startsWith('http')) {
+                                final clean = rawUrl.replaceAll(RegExp(r'^/'), '');
+                                rawUrl = 'http://127.0.0.1:8000/storage/$clean';
+                              }
+                              return ClipRRect(
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                                child: Image.network(
+                                  rawUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (c, e, s) => const Icon(Icons.image, color: Colors.white),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                       // Details Section
@@ -711,10 +718,11 @@ class _HomeCarouselBlockState extends State<_HomeCarouselBlock> {
               onPageChanged: (idx) => setState(() => _currentIndex = idx),
               itemBuilder: (context, index) {
                 final slide = slides[index] as Map<String, dynamic>? ?? {};
-                final imgUrl = slide['image'] as String? ?? '';
-                final fullUrl = imgUrl.startsWith('http')
-                    ? imgUrl
-                    : 'http://10.0.2.2:8000/storage/$imgUrl'; // iOS/Android compatible
+                final rawUrl = slide['image'] as String? ?? '';
+                final clean = rawUrl.replaceAll(RegExp(r'^/'), '');
+                final fullUrl = rawUrl.startsWith('http')
+                    ? rawUrl
+                    : 'http://127.0.0.1:8000/storage/$clean';
                 return GestureDetector(
                   onTap: () => context.go('/catalog'),
                   child: Image.network(
