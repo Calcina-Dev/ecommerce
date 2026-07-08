@@ -1,15 +1,84 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { StoreSettings } from "@/services/settings";
 
 export function WhatsAppButton({ settings }: { settings?: StoreSettings | null }) {
+  const pathname = usePathname() || "/";
+  const [contextData, setContextData] = useState<{
+    tooltipText: string;
+    messageText: string;
+  }>({
+    tooltipText: "¡Escríbenos en línea!",
+    messageText: `¡Hola! Más información de ${settings?.store_name || "Compra Saludable"} - TIENDA ONLINE DE SUPLEMENTOS Y VITAMINAS.`,
+  });
+
   const defaultPhone = "51928586883";
   const rawPhone = settings?.whatsapp_number || defaultPhone;
-  // Clean phone number (remove non-digits)
-  const phoneNumber = rawPhone.replace(/\D/g, '');
-  
+  const phoneNumber = rawPhone.replace(/\D/g, "");
   const storeName = settings?.store_name || "Compra Saludable";
-  const message = `¡Hola! Más información de ${storeName} - TIENDA ONLINE DE SUPLEMENTOS Y VITAMINAS en https://comprasaludable.com/`;
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+  useEffect(() => {
+    const updateContext = () => {
+      const currentUrl = typeof window !== "undefined" ? window.location.href : "https://comprasaludable.com";
+
+      if (pathname.startsWith("/productos/") && pathname !== "/productos") {
+        const h1 = document.querySelector("h1")?.textContent?.trim();
+        const pageTitle = document.title ? document.title.split(" | ")[0].trim() : "";
+        const productName = h1 || pageTitle || "este suplemento";
+
+        setContextData({
+          tooltipText: `Consultar: ${productName.length > 20 ? productName.substring(0, 20) + '...' : productName}`,
+          messageText: `¡Hola! Me interesa el producto "${productName}" de ${storeName}. ¿Podrían brindarme más información y disponibilidad? (Link: ${currentUrl})`,
+        });
+      } else if (pathname.startsWith("/checkout")) {
+        setContextData({
+          tooltipText: "¿Dudas con tu pago o envío?",
+          messageText: `¡Hola! Estoy finalizando mi compra en el Checkout de ${storeName} y tengo una consulta antes de pagar/despachar.`,
+        });
+      } else if (pathname.startsWith("/rastrear-pedido")) {
+        setContextData({
+          tooltipText: "¿Ayuda con tu pedido?",
+          messageText: `¡Hola! Me gustaría consultar el estado de seguimiento de mi pedido en ${storeName}. ¿Podrían ayudarme?`,
+        });
+      } else if (pathname.startsWith("/productos")) {
+        setContextData({
+          tooltipText: "¡Asesoría en vitaminas!",
+          messageText: `¡Hola! Estoy revisando el catálogo online de ${storeName} y me gustaría recibir asesoría personalizada para elegir el mejor suplemento.`,
+        });
+      } else if (pathname.startsWith("/favoritos")) {
+        setContextData({
+          tooltipText: "Consultar mi lista de deseos",
+          messageText: `¡Hola! Tengo algunos productos guardados en mi lista de favoritos de ${storeName}. Quisiera consultar promociones y disponibilidad.`,
+        });
+      } else if (pathname.startsWith("/login") || pathname.startsWith("/register") || pathname.startsWith("/mi-cuenta")) {
+        setContextData({
+          tooltipText: "¿Soporte con tu cuenta?",
+          messageText: `¡Hola! Necesito asistencia con mi cuenta de usuario en ${storeName}.`,
+        });
+      } else {
+        setContextData({
+          tooltipText: "¡Escríbenos en línea!",
+          messageText: `¡Hola! Más información de ${storeName} - TIENDA ONLINE DE SUPLEMENTOS Y VITAMINAS en ${currentUrl}`,
+        });
+      }
+    };
+
+    updateContext();
+
+    if (pathname.startsWith("/productos/") && pathname !== "/productos") {
+      const timer1 = setTimeout(updateContext, 300);
+      const timer2 = setTimeout(updateContext, 800);
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+      };
+    }
+  }, [pathname, storeName]);
+
+  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(contextData.messageText)}`;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex items-center justify-center group">
@@ -39,7 +108,7 @@ export function WhatsAppButton({ settings }: { settings?: StoreSettings | null }
       {/* Tooltip moderno con glassmorphism y microanimación de entrada */}
       <div className="absolute right-16 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-md text-gray-800 text-sm font-bold py-2 px-4 rounded-2xl shadow-xl border border-gray-100 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 pointer-events-none whitespace-nowrap hidden sm:flex items-center gap-2">
         <span className="w-2.5 h-2.5 rounded-full bg-[#25D366] animate-pulse"></span>
-        <span>¡Escríbenos en línea!</span>
+        <span>{contextData.tooltipText}</span>
       </div>
     </div>
   );
