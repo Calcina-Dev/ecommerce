@@ -34,71 +34,100 @@ class HomeScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Exact COMPRASALUDABLE text logo matching Header.tsx line 200
-                    GestureDetector(
-                      onTap: () {},
-                      child: RichText(
-                        text: const TextSpan(
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5),
-                          children: [
-                            TextSpan(text: 'COMPRA', style: TextStyle(color: Color(0xFF0F172A))),
-                            TextSpan(text: 'SALUDABLE', style: TextStyle(color: Color(0xFF059669))),
-                          ],
+                    // Exact COMPRASALUDABLE text logo matching Header.tsx line 200 with overflow protection
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: GestureDetector(
+                          onTap: () {},
+                          child: RichText(
+                            text: const TextSpan(
+                              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                              children: [
+                                TextSpan(text: 'COMPRA', style: TextStyle(color: Color(0xFF0F172A))),
+                                TextSpan(text: 'SALUDABLE', style: TextStyle(color: Color(0xFF059669))),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
 
-                    // Right Icons: User, Login, Wishlist (badge 1), Bag (badge cartCount)
+                    const SizedBox(width: 8),
+
+                    // Right Icons: User, Login, Wishlist (badge 1), Bag (badge cartCount) - Compact 30x30 boxes for zero overflow
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          icon: const Icon(Icons.person_outline, color: Color(0xFF475569), size: 22),
-                          onPressed: () {},
+                        GestureDetector(
+                          onTap: () {},
+                          behavior: HitTestBehavior.opaque,
+                          child: const SizedBox(
+                            width: 30, height: 30,
+                            child: Icon(Icons.person_outline, color: Color(0xFF475569), size: 22),
+                          ),
                         ),
-                        const SizedBox(width: 14),
-                        IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          icon: const Icon(Icons.exit_to_app_outlined, color: Color(0xFF475569), size: 22),
-                          onPressed: () {},
+                        const SizedBox(width: 6),
+                        GestureDetector(
+                          onTap: () {},
+                          behavior: HitTestBehavior.opaque,
+                          child: const SizedBox(
+                            width: 30, height: 30,
+                            child: Icon(Icons.exit_to_app_outlined, color: Color(0xFF475569), size: 22),
+                          ),
                         ),
-                        const SizedBox(width: 14),
-                        Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            const Icon(Icons.favorite_border, color: Color(0xFF475569), size: 22),
-                            Positioned(
-                              top: -4,
-                              right: -6,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle),
-                                child: const Text('1', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                              ),
+                        const SizedBox(width: 6),
+                        GestureDetector(
+                          onTap: () {},
+                          behavior: HitTestBehavior.opaque,
+                          child: SizedBox(
+                            width: 30, height: 30,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              alignment: Alignment.center,
+                              children: [
+                                const Icon(Icons.favorite_border, color: Color(0xFF475569), size: 22),
+                                Positioned(
+                                  top: 0,
+                                  right: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                    decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle),
+                                    child: const Text('1', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 6),
                         Consumer(
                           builder: (context, ref, _) {
                             final cartCount = ref.watch(cartCountProvider);
-                            return Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                const Icon(Icons.shopping_bag_outlined, color: Color(0xFF475569), size: 22),
-                                if (cartCount > 0)
-                                  Positioned(
-                                    top: -4,
-                                    right: -6,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                      decoration: const BoxDecoration(color: Color(0xFF059669), shape: BoxShape.circle),
-                                      child: Text('$cartCount', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                                    ),
-                                  ),
-                              ],
+                            return GestureDetector(
+                              onTap: () {},
+                              behavior: HitTestBehavior.opaque,
+                              child: SizedBox(
+                                width: 30, height: 30,
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  alignment: Alignment.center,
+                                  children: [
+                                    const Icon(Icons.shopping_bag_outlined, color: Color(0xFF475569), size: 22),
+                                    if (cartCount > 0)
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                          decoration: const BoxDecoration(color: Color(0xFF059669), shape: BoxShape.circle),
+                                          child: Text('$cartCount', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
                             );
                           },
                         ),
