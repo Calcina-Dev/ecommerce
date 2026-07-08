@@ -19,19 +19,18 @@ class CartNotifier extends Notifier<List<CartItem>> {
     return [];
   }
 
-  void addItem(Map<String, dynamic> product) {
+  void addItem(Map<String, dynamic> product, {int quantity = 1}) {
     final existingIndex = state.indexWhere((item) => item.product['id'] == product['id']);
     
     if (existingIndex >= 0) {
-      // Create a new list to trigger state update
       final newState = [...state];
       newState[existingIndex] = CartItem(
         product: product, 
-        quantity: newState[existingIndex].quantity + 1,
+        quantity: newState[existingIndex].quantity + quantity,
       );
       state = newState;
     } else {
-      state = [...state, CartItem(product: product)];
+      state = [...state, CartItem(product: product, quantity: quantity)];
     }
   }
 
