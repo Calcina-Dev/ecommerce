@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -40,7 +41,7 @@ class HomeScreen extends ConsumerWidget {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: GestureDetector(
-                          onTap: () {},
+                          onTap: () => context.go('/'),
                           child: RichText(
                             text: const TextSpan(
                               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: -0.5),
@@ -61,7 +62,7 @@ class HomeScreen extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         GestureDetector(
-                          onTap: () {},
+                          onTap: () => context.go('/account'),
                           behavior: HitTestBehavior.opaque,
                           child: const SizedBox(
                             width: 30, height: 30,
@@ -70,7 +71,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(width: 6),
                         GestureDetector(
-                          onTap: () {},
+                          onTap: () => context.go('/account'),
                           behavior: HitTestBehavior.opaque,
                           child: const SizedBox(
                             width: 30, height: 30,
@@ -79,7 +80,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(width: 6),
                         GestureDetector(
-                          onTap: () {},
+                          onTap: () => context.go('/catalog'),
                           behavior: HitTestBehavior.opaque,
                           child: SizedBox(
                             width: 30, height: 30,
@@ -106,7 +107,7 @@ class HomeScreen extends ConsumerWidget {
                           builder: (context, ref, _) {
                             final cartCount = ref.watch(cartCountProvider);
                             return GestureDetector(
-                              onTap: () {},
+                              onTap: () => context.go('/cart'),
                               behavior: HitTestBehavior.opaque,
                               child: SizedBox(
                                 width: 30, height: 30,
@@ -139,40 +140,44 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
 
                 // Bottom Row: Search Box with Buscar Pill Button
-                Container(
-                  height: 42,
-                  padding: const EdgeInsets.only(left: 14, right: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9), // Slate 100
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.search, color: Color(0xFF94A3B8), size: 18),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: Text(
-                          '¿Qué estás buscando hoy?',
-                          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {},
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0F172A), // Dark Slate / Black pill button
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'Buscar',
-                            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                GestureDetector(
+                  onTap: () => context.go('/catalog'),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    height: 42,
+                    padding: const EdgeInsets.only(left: 14, right: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9), // Slate 100
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search, color: Color(0xFF94A3B8), size: 18),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            '¿Qué estás buscando hoy?',
+                            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      ),
-                    ],
+                        GestureDetector(
+                          onTap: () => context.go('/catalog'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A), // Dark Slate / Black pill button
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'Buscar',
+                              style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -195,8 +200,14 @@ class HomeScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   ...blocks.map((block) {
-                    if (block['type'] == 'hero_modern') return _buildHeroModern(block['data']);
-                    if (block['type'] == 'featured_products') return _buildFeaturedProducts(block['data'], ref);
+                    final bType = block['type'];
+                    final bData = block['data'] as Map<String, dynamic>? ?? {};
+                    if (bType == 'hero_modern') return _buildHeroModern(bData, context);
+                    if (bType == 'category_grid') return _buildCategoryGrid(bData, context);
+                    if (bType == 'featured_products') return _buildFeaturedProducts(bData, ref, context);
+                    if (bType == 'carousel') return _HomeCarouselBlock(data: bData);
+                    if (bType == 'value_proposition') return _buildValueProp(bData, context);
+                    if (bType == 'custom_html') return _buildCustomHtml(bData, context);
                     return const SizedBox.shrink();
                   }).toList(),
                   
@@ -289,7 +300,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeroModern(Map<String, dynamic> heroData) {
+  Widget _buildHeroModern(Map<String, dynamic> heroData, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -322,7 +333,7 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(height: 32),
         if (heroData['button_text'] != null)
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () => context.go('/catalog'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0F172A),
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -372,7 +383,56 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFeaturedProducts(Map<String, dynamic> data, WidgetRef ref) {
+  Widget _buildCategoryGrid(Map<String, dynamic> data, BuildContext context) {
+    final categories = data['categories'] as List? ?? [];
+    if (categories.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            data['title'] ?? 'Compra por Categoría',
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: categories.map((cat) {
+              final catMap = cat as Map<String, dynamic>? ?? {};
+              return GestureDetector(
+                onTap: () => context.go('/catalog?category=${catMap['id']}'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 6, offset: const Offset(0, 2))],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFF059669), shape: BoxShape.circle)),
+                      const SizedBox(width: 8),
+                      Text(
+                        catMap['name'] ?? 'Categoría',
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF334155)),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeaturedProducts(Map<String, dynamic> data, WidgetRef ref, BuildContext context) {
     final products = data['products'] as List? ?? [];
     if (products.isEmpty) return const SizedBox.shrink();
 
@@ -392,12 +452,16 @@ class HomeScreen extends ConsumerWidget {
                   style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF0F172A), height: 1.1, letterSpacing: -1),
                 ),
               ),
-              Row(
-                children: const [
-                  Text('VER\nTODO', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12), textAlign: TextAlign.right),
-                  SizedBox(width: 4),
-                  Icon(Icons.chevron_right, color: Colors.green, size: 16),
-                ],
+              GestureDetector(
+                onTap: () => context.go('/catalog'),
+                behavior: HitTestBehavior.opaque,
+                child: Row(
+                  children: const [
+                    Text('VER\nTODO', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12), textAlign: TextAlign.right),
+                    SizedBox(width: 4),
+                    Icon(Icons.chevron_right, color: Colors.green, size: 16),
+                  ],
+                ),
               ),
             ],
           ),
@@ -489,7 +553,7 @@ class HomeScreen extends ConsumerWidget {
                                 GestureDetector(
                                   onTap: () {
                                     ref.read(cartProvider.notifier).addItem(p);
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                                       content: Text('Agregado al carrito'),
                                       backgroundColor: Color(0xFF059669),
                                       duration: Duration(seconds: 1),
@@ -515,6 +579,181 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildValueProp(Map<String, dynamic> data, BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 48),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 50),
+      decoration: const BoxDecoration(color: Color(0xFF0F172A)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            data['title'] ?? 'Propuesta de Valor',
+            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, height: 1.2),
+            textAlign: TextAlign.center,
+          ),
+          if (data['description'] != null) ...[
+            const SizedBox(height: 16),
+            Text(
+              data['description'],
+              style: const TextStyle(fontSize: 16, color: Color(0xFF94A3B8), height: 1.5),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          if (data['button_text'] != null) ...[
+            const SizedBox(height: 32),
+            OutlinedButton(
+              onPressed: () => context.go('/catalog'),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.white, width: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              ),
+              child: Text(
+                data['button_text'],
+                style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomHtml(Map<String, dynamic> data, BuildContext context) {
+    final content = data['content'] as String? ?? '';
+    if (content.isEmpty) return const SizedBox.shrink();
+    // Strip simple HTML tags for clean text display if any custom HTML block is passed
+    final cleanText = content.replaceAll(RegExp(r'<[^>]*>'), ' ').trim();
+    if (cleanText.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Text(
+        cleanText,
+        style: const TextStyle(fontSize: 14, color: Color(0xFF334155), height: 1.5),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+}
+
+class _HomeCarouselBlock extends StatefulWidget {
+  final Map<String, dynamic> data;
+  const _HomeCarouselBlock({required this.data});
+
+  @override
+  State<_HomeCarouselBlock> createState() => _HomeCarouselBlockState();
+}
+
+class _HomeCarouselBlockState extends State<_HomeCarouselBlock> {
+  late PageController _pageController;
+  int _currentIndex = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    final slides = widget.data['slides'] as List? ?? [];
+    final autoplay = widget.data['autoplay'] != false;
+    if (autoplay && slides.length > 1) {
+      _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+        if (!mounted) return;
+        final nextIndex = (_currentIndex + 1) % slides.length;
+        _pageController.animateToPage(
+          nextIndex,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut,
+        );
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final slides = widget.data['slides'] as List? ?? [];
+    if (slides.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      height: 340,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 10))],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(32),
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: _pageController,
+              itemCount: slides.length,
+              onPageChanged: (idx) => setState(() => _currentIndex = idx),
+              itemBuilder: (context, index) {
+                final slide = slides[index] as Map<String, dynamic>? ?? {};
+                final imgUrl = slide['image'] as String? ?? '';
+                final fullUrl = imgUrl.startsWith('http')
+                    ? imgUrl
+                    : 'http://10.0.2.2:8000/storage/$imgUrl'; // iOS/Android compatible
+                return GestureDetector(
+                  onTap: () => context.go('/catalog'),
+                  child: Image.network(
+                    fullUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, e, s) => Container(
+                      color: const Color(0xFF0F172A),
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.image, color: Colors.white38, size: 48),
+                    ),
+                  ),
+                );
+              },
+            ),
+            if (slides.length > 1)
+              Positioned(
+                bottom: 16,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(slides.length, (index) {
+                    final isSelected = index == _currentIndex;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: isSelected ? 24 : 8,
+                      height: 8,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
