@@ -14,7 +14,7 @@ class LeadResource extends Resource
 {
     protected static ?string $model = Lead::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-phone';
+    protected static \BackedEnum|string|null $navigationIcon = 'heroicon-o-phone';
     
     protected static \UnitEnum|string|null $navigationGroup = 'CRM y Ventas';
     
