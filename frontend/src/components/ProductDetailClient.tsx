@@ -1,10 +1,11 @@
 "use client"
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
 import { useFavoriteStore } from "@/store/useFavoriteStore";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Phone } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -252,7 +253,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const isFav = isFavorite(product.id);
 
   const user = useAuthStore((state) => state.user);
+  const [mounted, setMounted] = useState(false);
   
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [isCallModalOpen, setIsCallModalOpen] = useState(false);
   const [callForm, setCallForm] = useState({
     name: user?.name || "",
@@ -553,64 +559,88 @@ export default function ProductDetailClient({ product }: { product: any }) {
         </div>
       </div>
 
-      {isCallModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 w-full max-w-md shadow-2xl relative border border-gray-100 dark:border-zinc-800">
-            <button 
-              onClick={() => setIsCallModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-            <h3 className="text-xl font-bold text-foreground mb-2">Comprar por llamada</h3>
-            <p className="text-sm text-muted-foreground mb-6">Déjanos tus datos y un asesor te contactará en breve para completar tu pedido.</p>
-            
-            <form onSubmit={handleCallSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Nombre completo *</label>
-                <input 
-                  type="text" 
-                  required
-                  value={callForm.name}
-                  onChange={e => setCallForm({...callForm, name: e.target.value})}
-                  className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-foreground"
-                  placeholder="Ej. Juan Pérez"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Teléfono *</label>
-                <input 
-                  type="tel" 
-                  required
-                  value={callForm.phone}
-                  onChange={e => setCallForm({...callForm, phone: e.target.value})}
-                  className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-foreground"
-                  placeholder="Ej. 987654321"
-                />
-              </div>
-              <div className="flex items-start gap-2 pt-2">
-                <input 
-                  type="checkbox" 
-                  id="terms" 
-                  required
-                  checked={callForm.termsAccepted}
-                  onChange={e => setCallForm({...callForm, termsAccepted: e.target.checked})}
-                  className="mt-1 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
-                />
-                <label htmlFor="terms" className="text-xs text-muted-foreground">
-                  Acepto los términos y condiciones y el tratamiento de mis datos personales.
-                </label>
-              </div>
-              <button
-                type="submit"
-                disabled={isSubmittingCall}
-                className="w-full mt-2 flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-gray-100 text-white dark:text-slate-900 font-bold py-3.5 px-4 rounded-xl transition-colors disabled:opacity-70"
+      </div>
+
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isCallModalOpen && (
+            <div className="fixed inset-0 z-[9999] pointer-events-none flex justify-center pt-4 sm:pt-8 px-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/20 backdrop-blur-sm pointer-events-auto"
+                onClick={() => setIsCallModalOpen(false)}
+              />
+              <motion.div 
+                initial={{ y: -100, opacity: 0, scale: 0.95 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: -100, opacity: 0, scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="bg-white dark:bg-zinc-900 rounded-[24px] p-6 w-full max-w-sm shadow-2xl relative border border-gray-100 dark:border-zinc-800 pointer-events-auto flex flex-col"
               >
-                {isSubmittingCall ? "Enviando..." : "Solicitar llamada"}
-              </button>
-            </form>
-          </div>
-        </div>
+                <div className="w-12 h-1.5 bg-gray-200 dark:bg-zinc-700 rounded-full mx-auto mb-4" />
+                <button 
+                  onClick={() => setIsCallModalOpen(false)}
+                  className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 bg-gray-50 dark:bg-zinc-800 rounded-full p-1"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                
+                <h3 className="text-xl font-bold text-foreground mb-1 text-center">Te llamamos</h3>
+                <p className="text-sm text-muted-foreground mb-6 text-center leading-relaxed">Déjanos tus datos y un asesor te contactará para completar tu pedido.</p>
+                
+                <form onSubmit={handleCallSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-[13px] font-semibold text-foreground mb-1.5 ml-1">Nombre completo</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={callForm.name}
+                      onChange={e => setCallForm({...callForm, name: e.target.value})}
+                      className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-zinc-800/50 px-4 py-3.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-foreground placeholder:text-gray-400"
+                      placeholder="Ej. Juan Pérez"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[13px] font-semibold text-foreground mb-1.5 ml-1">Teléfono</label>
+                    <input 
+                      type="tel" 
+                      required
+                      value={callForm.phone}
+                      onChange={e => setCallForm({...callForm, phone: e.target.value})}
+                      className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-zinc-800/50 px-4 py-3.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-foreground placeholder:text-gray-400"
+                      placeholder="Ej. 987654321"
+                    />
+                  </div>
+                  <div className="flex items-start gap-2.5 pt-2 px-1">
+                    <input 
+                      type="checkbox" 
+                      id="terms" 
+                      required
+                      checked={callForm.termsAccepted}
+                      onChange={e => setCallForm({...callForm, termsAccepted: e.target.checked})}
+                      className="mt-0.5 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600 transition-colors cursor-pointer"
+                    />
+                    <label htmlFor="terms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
+                      Acepto los términos y el tratamiento de mis datos personales.
+                    </label>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingCall}
+                    className="w-full mt-4 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-4 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-70 disabled:shadow-none active:scale-[0.98]"
+                  >
+                    {isSubmittingCall ? (
+                      <svg className="w-5 h-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    ) : "Solicitar llamada"}
+                  </button>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
       )}
     </div>
   );
