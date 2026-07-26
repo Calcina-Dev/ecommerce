@@ -562,7 +562,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       {mounted && createPortal(
         <AnimatePresence>
           {isCallModalOpen && (
-            <div className="fixed inset-0 z-[9999] pointer-events-none flex justify-center pt-4 sm:pt-8 px-4">
+            <div className="fixed inset-0 z-[9999] pointer-events-none flex items-start justify-center pt-4 sm:pt-8 px-4">
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
