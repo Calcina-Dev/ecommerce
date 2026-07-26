@@ -509,7 +509,7 @@ class HomeScreen extends ConsumerWidget {
                               if (rawUrl.isEmpty) return const Icon(Icons.image, color: Colors.white);
                               if (!rawUrl.startsWith('http')) {
                                 final clean = rawUrl.replaceAll(RegExp(r'^/'), '');
-                                rawUrl = 'http://127.0.0.1:8000/storage/$clean';
+                                rawUrl = 'https://backend-production-1b91.up.railway.app/storage/$clean';
                               }
                               return ClipRRect(
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -722,7 +722,7 @@ class _HomeCarouselBlockState extends State<_HomeCarouselBlock> {
                 final clean = rawUrl.replaceAll(RegExp(r'^/'), '');
                 final fullUrl = rawUrl.startsWith('http')
                     ? rawUrl
-                    : 'http://127.0.0.1:8000/storage/$clean';
+                    : 'https://backend-production-1b91.up.railway.app/storage/$clean';
                 return GestureDetector(
                   onTap: () => context.go('/catalog'),
                   child: Image.network(

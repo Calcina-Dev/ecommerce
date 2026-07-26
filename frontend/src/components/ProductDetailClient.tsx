@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
 import { useFavoriteStore } from "@/store/useFavoriteStore";
 import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
+import { Heart, Phone } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
 
 function cleanDescriptionText(text: string | null) {
   if (!text) return "";
@@ -250,6 +251,55 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const { isFavorite, toggleItem } = useFavoriteStore();
   const isFav = isFavorite(product.id);
 
+  const user = useAuthStore((state) => state.user);
+  
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false);
+  const [callForm, setCallForm] = useState({
+    name: user?.name || "",
+    phone: user?.phone || "",
+    termsAccepted: false
+  });
+  const [isSubmittingCall, setIsSubmittingCall] = useState(false);
+
+  const handleCallSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!callForm.name || !callForm.phone) {
+      import("sonner").then(({ toast }) => toast.error("Por favor completa los datos obligatorios"));
+      return;
+    }
+    if (!callForm.termsAccepted) {
+      import("sonner").then(({ toast }) => toast.error("Debes aceptar los términos y condiciones"));
+      return;
+    }
+    setIsSubmittingCall(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/leads`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          name: callForm.name,
+          phone: callForm.phone,
+          product_id: product.id?.toString(),
+          product_name: product.name,
+        }),
+      });
+      
+      if (res.ok) {
+        import("sonner").then(({ toast }) => toast.success("¡Solicitud enviada!", { description: "Un asesor te contactará pronto." }));
+        setIsCallModalOpen(false);
+      } else {
+        import("sonner").then(({ toast }) => toast.error("Hubo un error al enviar tu solicitud"));
+      }
+    } catch (err) {
+      import("sonner").then(({ toast }) => toast.error("Error de conexión"));
+    } finally {
+      setIsSubmittingCall(false);
+    }
+  };
+
   const images = product.images?.length > 0 
     ? product.images.map((img: any) => img.image_url.startsWith('http') ? img.image_url : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/storage/${img.image_url}`)
     : ["https://images.unsplash.com/photo-1584308666744-24d5e47ac9db?q=80&w=600&auto=format&fit=crop"];
@@ -424,6 +474,77 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </motion.button>
               </div>
             </div>
+            
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => setIsCallModalOpen(true)}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors shadow-sm"
+              >
+                <Phone className="w-5 h-5" />
+                Continuar compra por llamada
+              </button>
+            </div>
+
+            {isCallModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 w-full max-w-md shadow-2xl relative border border-gray-100 dark:border-zinc-800">
+                  <button 
+                    onClick={() => setIsCallModalOpen(false)}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Comprar por llamada</h3>
+                  <p className="text-sm text-muted-foreground mb-6">Déjanos tus datos y un asesor te contactará en breve para completar tu pedido.</p>
+                  
+                  <form onSubmit={handleCallSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">Nombre completo *</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={callForm.name}
+                        onChange={e => setCallForm({...callForm, name: e.target.value})}
+                        className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-foreground"
+                        placeholder="Ej. Juan Pérez"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">Teléfono *</label>
+                      <input 
+                        type="tel" 
+                        required
+                        value={callForm.phone}
+                        onChange={e => setCallForm({...callForm, phone: e.target.value})}
+                        className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-foreground"
+                        placeholder="Ej. 987654321"
+                      />
+                    </div>
+                    <div className="flex items-start gap-2 pt-2">
+                      <input 
+                        type="checkbox" 
+                        id="terms" 
+                        required
+                        checked={callForm.termsAccepted}
+                        onChange={e => setCallForm({...callForm, termsAccepted: e.target.checked})}
+                        className="mt-1 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+                      />
+                      <label htmlFor="terms" className="text-xs text-muted-foreground">
+                        Acepto los términos y condiciones y el tratamiento de mis datos personales.
+                      </label>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isSubmittingCall}
+                      className="w-full mt-2 flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-gray-100 text-white dark:text-slate-900 font-bold py-3.5 px-4 rounded-xl transition-colors disabled:opacity-70"
+                    >
+                      {isSubmittingCall ? "Enviando..." : "Solicitar llamada"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
 
             <div 
               className="text-lg text-foreground/80 mb-6 leading-relaxed prose prose-sm sm:prose-base dark:prose-invert max-w-none"

@@ -50,6 +50,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
 
+Route::post('/leads', [\App\Http\Controllers\LeadController::class, 'store']);
+
 Route::prefix('catalog')->group(function () {
     Route::get('/home', [CatalogController::class, 'home']);
     Route::get('/products', [CatalogController::class, 'products']);
