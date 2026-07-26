@@ -559,8 +559,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
         </div>
       </div>
 
-      </div>
-
       {mounted && createPortal(
         <AnimatePresence>
           {isCallModalOpen && (
