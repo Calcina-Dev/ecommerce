@@ -16,7 +16,7 @@ class LeadResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-phone';
     
-    protected static ?string $navigationGroup = 'CRM y Ventas';
+    protected static \UnitEnum|string|null $navigationGroup = 'CRM y Ventas';
     
     protected static ?string $modelLabel = 'Lead (Contacto Telefónico)';
     protected static ?string $pluralModelLabel = 'Leads (Contactos Telefónicos)';
