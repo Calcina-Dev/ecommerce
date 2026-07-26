@@ -486,65 +486,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               </button>
             </div>
 
-            {isCallModalOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
-                <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 w-full max-w-md shadow-2xl relative border border-gray-100 dark:border-zinc-800">
-                  <button 
-                    onClick={() => setIsCallModalOpen(false)}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                  </button>
-                  <h3 className="text-xl font-bold text-foreground mb-2">Comprar por llamada</h3>
-                  <p className="text-sm text-muted-foreground mb-6">Déjanos tus datos y un asesor te contactará en breve para completar tu pedido.</p>
-                  
-                  <form onSubmit={handleCallSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1">Nombre completo *</label>
-                      <input 
-                        type="text" 
-                        required
-                        value={callForm.name}
-                        onChange={e => setCallForm({...callForm, name: e.target.value})}
-                        className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-foreground"
-                        placeholder="Ej. Juan Pérez"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1">Teléfono *</label>
-                      <input 
-                        type="tel" 
-                        required
-                        value={callForm.phone}
-                        onChange={e => setCallForm({...callForm, phone: e.target.value})}
-                        className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-foreground"
-                        placeholder="Ej. 987654321"
-                      />
-                    </div>
-                    <div className="flex items-start gap-2 pt-2">
-                      <input 
-                        type="checkbox" 
-                        id="terms" 
-                        required
-                        checked={callForm.termsAccepted}
-                        onChange={e => setCallForm({...callForm, termsAccepted: e.target.checked})}
-                        className="mt-1 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
-                      />
-                      <label htmlFor="terms" className="text-xs text-muted-foreground">
-                        Acepto los términos y condiciones y el tratamiento de mis datos personales.
-                      </label>
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={isSubmittingCall}
-                      className="w-full mt-2 flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-gray-100 text-white dark:text-slate-900 font-bold py-3.5 px-4 rounded-xl transition-colors disabled:opacity-70"
-                    >
-                      {isSubmittingCall ? "Enviando..." : "Solicitar llamada"}
-                    </button>
-                  </form>
-                </div>
-              </div>
-            )}
+
 
             <div 
               className="text-lg text-foreground/80 mb-6 leading-relaxed prose prose-sm sm:prose-base dark:prose-invert max-w-none"
@@ -610,6 +552,66 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </div>
         </div>
       </div>
+
+      {isCallModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 w-full max-w-md shadow-2xl relative border border-gray-100 dark:border-zinc-800">
+            <button 
+              onClick={() => setIsCallModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h3 className="text-xl font-bold text-foreground mb-2">Comprar por llamada</h3>
+            <p className="text-sm text-muted-foreground mb-6">Déjanos tus datos y un asesor te contactará en breve para completar tu pedido.</p>
+            
+            <form onSubmit={handleCallSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Nombre completo *</label>
+                <input 
+                  type="text" 
+                  required
+                  value={callForm.name}
+                  onChange={e => setCallForm({...callForm, name: e.target.value})}
+                  className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-foreground"
+                  placeholder="Ej. Juan Pérez"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Teléfono *</label>
+                <input 
+                  type="tel" 
+                  required
+                  value={callForm.phone}
+                  onChange={e => setCallForm({...callForm, phone: e.target.value})}
+                  className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-foreground"
+                  placeholder="Ej. 987654321"
+                />
+              </div>
+              <div className="flex items-start gap-2 pt-2">
+                <input 
+                  type="checkbox" 
+                  id="terms" 
+                  required
+                  checked={callForm.termsAccepted}
+                  onChange={e => setCallForm({...callForm, termsAccepted: e.target.checked})}
+                  className="mt-1 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+                />
+                <label htmlFor="terms" className="text-xs text-muted-foreground">
+                  Acepto los términos y condiciones y el tratamiento de mis datos personales.
+                </label>
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmittingCall}
+                className="w-full mt-2 flex items-center justify-center gap-2 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-gray-100 text-white dark:text-slate-900 font-bold py-3.5 px-4 rounded-xl transition-colors disabled:opacity-70"
+              >
+                {isSubmittingCall ? "Enviando..." : "Solicitar llamada"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
