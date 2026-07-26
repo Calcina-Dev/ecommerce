@@ -56,6 +56,16 @@ class StockBalanceResource extends Resource
                     ->state(function ($record) {
                         return $record->on_hand * ($record->batch->unit_cost ?? 0);
                     }),
+                \Filament\Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Última Modificación')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+                \Filament\Tables\Columns\TextColumn::make('created_at')
+                    ->label('Fecha de Creación')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 \Filament\Tables\Filters\SelectFilter::make('warehouse_id')
@@ -79,7 +89,8 @@ class StockBalanceResource extends Resource
                     ),
             ])
             ->actions([])
-            ->bulkActions([]);
+            ->bulkActions([])
+            ->defaultSort('updated_at', 'desc');
     }
 
     public static function getRelations(): array
