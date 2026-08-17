@@ -210,8 +210,8 @@ class ImportWooCommerceProducts extends Command
             $slug = Str::slug($name);
             $originalSlug = $slug;
             $counter = 1;
-            // Si el slug ya existe para OTRO producto distinto, le agregamos un sufijo
-            while (Product::where('slug', $slug)->where('sku', '!=', $cleanSku)->exists()) {
+            // Si el slug ya existe para OTRO producto distinto (incluso en papelera), le agregamos un sufijo
+            while (Product::withTrashed()->where('slug', $slug)->where('sku', '!=', $cleanSku)->exists()) {
                 $slug = $originalSlug . '-' . $counter;
                 $counter++;
             }
