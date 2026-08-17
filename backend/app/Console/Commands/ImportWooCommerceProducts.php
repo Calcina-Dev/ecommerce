@@ -206,11 +206,21 @@ class ImportWooCommerceProducts extends Command
 
             // 4. Producto
             $cleanSku = !empty($sku) ? $sku : 'WC-' . strtoupper(Str::slug(substr($name, 0, 20)));
+
+            $slug = Str::slug($name);
+            $originalSlug = $slug;
+            $counter = 1;
+            // Si el slug ya existe para OTRO producto distinto, le agregamos un sufijo
+            while (Product::where('slug', $slug)->where('sku', '!=', $cleanSku)->exists()) {
+                $slug = $originalSlug . '-' . $counter;
+                $counter++;
+            }
+
             $product = Product::updateOrCreate(
                 ['sku' => $cleanSku],
                 [
                     'name' => $name,
-                    'slug' => Str::slug($name),
+                    'slug' => $slug,
                     'short_description' => substr(strip_tags($shortDesc), 0, 255),
                     'description' => $desc ?: $shortDesc,
                     'price' => $finalPrice,
