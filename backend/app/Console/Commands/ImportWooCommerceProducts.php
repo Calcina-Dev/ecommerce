@@ -216,21 +216,32 @@ class ImportWooCommerceProducts extends Command
                 $counter++;
             }
 
-            $product = Product::updateOrCreate(
-                ['sku' => $cleanSku],
-                [
-                    'name' => $name,
-                    'slug' => $slug,
-                    'short_description' => substr(strip_tags($shortDesc), 0, 255),
-                    'description' => $desc ?: $shortDesc,
-                    'price' => $finalPrice,
-                    'compare_at_price' => $comparePrice,
-                    'stock' => $stockQty,
-                    'is_active' => true,
-                    'category_id' => $primaryCategoryId,
-                    'brand_id' => $brandId,
-                ]
-            );
+            $product = Product::withTrashed()->where('sku', $cleanSku)->first();
+            
+            $productData = [
+                'name' => $name,
+                'slug' => $slug,
+                'short_description' => substr(strip_tags($shortDesc), 0, 255),
+                'description' => $desc ?: $shortDesc,
+                'price' => $finalPrice,
+                'compare_at_price' => $comparePrice,
+                'stock' => $stockQty,
+                'is_active' => true,
+                'category_id' => $primaryCategoryId,
+                'brand_id' => $brandId,
+            ];
+
+            if ($product) {
+                if ($product->trashed()) {
+                    $product->restore();
+                }
+                $product->update($productData);
+                $product->wasRecentlyCreated = false;
+            } else {
+                $productData['sku'] = $cleanSku;
+                $product = Product::create($productData);
+                $product->wasRecentlyCreated = true;
+            }
 
             if (!empty($allCategoryIds)) {
                 $product->categories()->syncWithoutDetaching(array_unique($allCategoryIds));
