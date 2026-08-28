@@ -64,11 +64,27 @@ class IzipayService
         $answer = $postData['kr-answer'];
         $hash = $postData['kr-hash'];
 
-        // Calculate the hash using HMAC-SHA-256
-        $calculatedHash = hash_hmac('sha256', $answer, $this->hmacKey);
+        $hashKeyField = $postData['kr-hash-key'] ?? null;
+        $keysToTry = [];
 
-        // Securely compare the hashes to prevent timing attacks
-        return hash_equals($calculatedHash, $hash);
+        if ($hashKeyField === 'sha256_hmac') {
+            $keysToTry[] = $this->hmacKey;
+        } elseif ($hashKeyField === 'password') {
+            $keysToTry[] = $this->clientSecret;
+        } else {
+            // En el retorno del navegador (JS) suele usarse la contraseña, en el IPN la hmacKey
+            $keysToTry[] = $this->clientSecret;
+            $keysToTry[] = $this->hmacKey;
+        }
+
+        foreach ($keysToTry as $key) {
+            $calculatedHash = hash_hmac('sha256', $answer, $key);
+            if (hash_equals($calculatedHash, $hash)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
